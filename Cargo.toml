@@ -8,3 +8,4 @@ edition = "2021"
 [dependencies]
 iced = "0.10.0"
 iced_core = "0.10.0"
+raplay = "0.2.2"
