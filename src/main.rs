@@ -1,5 +1,4 @@
 use gui::app::Counter;
-use iced::widget::{Button, Column, Container, Text};
 use iced::Sandbox;
 use iced::Settings;
 

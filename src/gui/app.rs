@@ -1,6 +1,5 @@
-use iced::widget::{Button, Column, Container, Text};
-use iced::Sandbox;
-use iced::Settings;
+use iced::widget::{button, column, text};
+use iced::{Alignment, Element, Sandbox, Settings};
 
 #[derive(Debug)]
 pub struct Counter {
@@ -31,18 +30,14 @@ impl Sandbox for Counter {
         }
     }
 
-    fn view(&self) -> iced::Element<'_, Self::Message> {
-        let label = Text::new(format!("Count: {}", self.count));
-        let incr = Button::new("Increment").on_press(CounterMessage::Increment);
-        let decr = Button::new("Decrement").on_press(CounterMessage::Decrement);
-
-        let col = Column::new().push(incr).push(label).push(decr);
-
-        Container::new(col)
-            .center_x()
-            .center_y()
-            .width(iced::Length::Fill)
-            .height(iced::Length::Fill)
-            .into()
+    fn view(&self) -> Element<CounterMessage> {
+        column![
+            button("Increment").on_press(CounterMessage::Increment),
+            text(self.count).size(50),
+            button("Decrement").on_press(CounterMessage::Decrement)
+        ]
+        .padding(20)
+        .align_items(Alignment::Center)
+        .into()
     }
 }
