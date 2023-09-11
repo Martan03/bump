@@ -4,27 +4,30 @@
 use std::fs::File;
 
 use eyre::Result;
-use raplay::{Sink, source::{Symph, symph::SymphOptions}};
+use raplay::{
+    source::{symph::SymphOptions, Symph},
+    Sink,
+};
 
 #[derive(PartialEq)]
 pub enum PlayState {
     NotPlaying,
     Playing,
-    Paused
-}   
+    Paused,
+}
 
 pub struct Player {
     sink: Sink,
     symph: SymphOptions,
-    state: PlayState
+    state: PlayState,
 }
 
 impl Player {
     pub fn new() -> Self {
-        Player { 
+        Player {
             sink: Sink::default(),
             symph: SymphOptions::default(),
-            state: PlayState::NotPlaying
+            state: PlayState::NotPlaying,
         }
     }
 
@@ -41,7 +44,10 @@ impl Player {
 
     pub fn play(&mut self, play: bool) -> Result<()> {
         if self.state == PlayState::NotPlaying {
-            self.load("/home/martan03/Music/Imagine Dragons - Mercury - Act 1/01 - My Life.mp3", false)?;
+            self.load(
+                "/home/martan03/Music/Imagine Dragons - Mercury - Act 1/01 - My Life.mp3",
+                false,
+            )?;
         }
         self.sink.volume(0.16)?;
         self.state = if play {
@@ -53,4 +59,3 @@ impl Player {
         Ok(())
     }
 }
-

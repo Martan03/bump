@@ -1,5 +1,7 @@
-use std::{path::PathBuf, time::Duration};
+use audiotags::Tag;
+use eyre::Result;
 use serde_derive::{Deserialize, Serialize};
+use std::{path::PathBuf, time::Duration};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Song {
@@ -10,10 +12,20 @@ pub struct Song {
     /// Song artist
     artist: String,
     /// Song length
-    length: Duration
+    length: Duration,
 }
 
 impl Song {
+    pub fn load(path: &PathBuf) -> Result<Self> {
+        let tag = Tag::new().read_from_path(path)?;
+        Ok(Song {
+            path: path.to_path_buf(),
+            name: tag.title().unwrap_or("-").to_owned(),
+            artist: tag.artist().unwrap_or("-").to_owned(),
+            length: Duration::from_secs_f64(tag.duration().unwrap_or(0.0))
+        })
+    }
+
     /// Gets song path
     pub fn get_path(&self) -> &PathBuf {
         &self.path
