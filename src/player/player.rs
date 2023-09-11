@@ -6,6 +6,7 @@ use std::fs::File;
 use eyre::Result;
 use raplay::{Sink, source::{Symph, symph::SymphOptions}};
 
+#[derive(PartialEq)]
 pub enum PlayState {
     NotPlaying,
     Playing,
@@ -27,31 +28,27 @@ impl Player {
         }
     }
 
-    pub fn load(&mut self, path: String) -> Result<()> {
+    pub fn load(&mut self, path: &str, play: bool) -> Result<()> {
         let file = File::open(path)?;
         let src = Symph::try_new(file, &self.symph)?;
         self.sink.load(src, true)?;
         Ok(())
     }
 
-    pub fn togglePlay(&mut self) -> Result<()> {
-        match self.state {
-            PlayState::Playing => {
-                self.state = PlayState::Paused;
-                self.sink.pause()?;
-            }
-            _ => {
-                self.state = PlayState::Playing;
-                self.sink.resume()?;
-            }
-        }
-        Ok(())
+    pub fn is_playing(&mut self) -> bool {
+        self.state == PlayState::Playing
     }
 
-    pub fn play(&mut self) -> Result<()> {
-        print!("test");
-        self.load("/home/martan03/Music/Imagine Dragons - Mercury - Act 1/".to_owned())?;
-        self.togglePlay()?;
+    pub fn play(&mut self, play: bool) -> Result<()> {
+        if self.state == PlayState::NotPlaying {
+            self.load("/home/martan03/Music/Imagine Dragons - Mercury - Act 1/01 - My Life.mp3", false)?;
+        }
+        self.state = if play {
+            PlayState::Playing
+        } else {
+            PlayState::Paused
+        };
+        self.sink.play(play)?;
         Ok(())
     }
 }

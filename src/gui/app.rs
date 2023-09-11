@@ -9,16 +9,10 @@ pub struct Counter {
 }
 
 #[derive(Debug, Clone, Copy)]
-pub enum PlayMessage {
-    Play,
-    Pause,
-}
-
-#[derive(Debug, Clone, Copy)]
 pub enum CounterMessage {
     Increment,
     Decrement,
-    Play(PlayMessage)
+    Play(Option<bool>)
 }
 
 impl Sandbox for Counter {
@@ -39,8 +33,10 @@ impl Sandbox for Counter {
         match message {
             CounterMessage::Increment => self.count += 1,
             CounterMessage::Decrement => self.count -= 1,
-            CounterMessage::Play(PlayMessage::Play) => _ = self.player.play(),
-            CounterMessage::Play(PlayMessage::Pause) => _ = self.player.togglePlay(),
+            CounterMessage::Play(play) => {
+                let playing = self.player.is_playing();
+                _ = self.player.play(play.unwrap_or(!playing));
+            }
         };
     }
 
@@ -49,7 +45,7 @@ impl Sandbox for Counter {
             button("Increment").on_press(CounterMessage::Increment),
             text(self.count).size(50),
             button("Decrement").on_press(CounterMessage::Decrement),
-            button("Play").on_press(CounterMessage::Play(PlayMessage::Play))
+            button("Play").on_press(CounterMessage::Play(None))
         ]
         .padding(20)
         .align_items(Alignment::Center)
