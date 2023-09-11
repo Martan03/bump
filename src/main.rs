@@ -1,5 +1,5 @@
-use gui::app::Counter;
-use iced::Sandbox;
+use gui::app::BumpApp;
+use iced::Application;
 use iced::Settings;
 
 mod player {
@@ -11,5 +11,5 @@ mod gui {
 }
 
 fn main() -> Result<(), iced::Error> {
-    Counter::run(Settings::default())
+    BumpApp::run(Settings::default())
 }

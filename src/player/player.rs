@@ -31,7 +31,7 @@ impl Player {
     pub fn load(&mut self, path: &str, play: bool) -> Result<()> {
         let file = File::open(path)?;
         let src = Symph::try_new(file, &self.symph)?;
-        self.sink.load(src, true)?;
+        self.sink.load(src, play)?;
         Ok(())
     }
 
@@ -43,6 +43,7 @@ impl Player {
         if self.state == PlayState::NotPlaying {
             self.load("/home/martan03/Music/Imagine Dragons - Mercury - Act 1/01 - My Life.mp3", false)?;
         }
+        self.sink.volume(0.16)?;
         self.state = if play {
             PlayState::Playing
         } else {

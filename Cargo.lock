@@ -3,16 +3,6 @@
 version = 3
 
 [[package]]
-name = "BUMP"
-version = "0.1.0"
-dependencies = [
- "eyre",
- "iced",
- "iced_core",
- "raplay",
-]
-
-[[package]]
 name = "ab_glyph"
 version = "0.2.21"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -268,6 +258,16 @@ checksum = "8dd9e63c1744f755c2f60332b88de39d341e5e86239014ad839bd71c106dec42"
 dependencies = [
  "block-sys",
  "objc2-encode",
+]
+
+[[package]]
+name = "bump"
+version = "0.1.0"
+dependencies = [
+ "eyre",
+ "iced",
+ "iced_core",
+ "raplay",
 ]
 
 [[package]]
