@@ -1,7 +1,7 @@
 // Hi Bonny4, I'm using your library
 // There's so much, I know! But I'm tired now
 
-use std::fs::File;
+use std::{fs::File, path::PathBuf};
 
 use eyre::Result;
 use raplay::{
@@ -31,7 +31,7 @@ impl Player {
         }
     }
 
-    pub fn load(&mut self, path: &str, play: bool) -> Result<()> {
+    pub fn load(&mut self, path: &PathBuf, play: bool) -> Result<()> {
         let file = File::open(path)?;
         let src = Symph::try_new(file, &self.symph)?;
         self.sink.load(src, play)?;
@@ -43,13 +43,6 @@ impl Player {
     }
 
     pub fn play(&mut self, play: bool) -> Result<()> {
-        if self.state == PlayState::NotPlaying {
-            self.load(
-                "/home/martan03/Music/Imagine Dragons - Mercury - Act 1/01 - My Life.mp3",
-                false,
-            )?;
-        }
-        self.sink.volume(0.16)?;
         self.state = if play {
             PlayState::Playing
         } else {

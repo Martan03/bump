@@ -17,6 +17,7 @@ pub enum BumpMessage {
     Increment,
     Decrement,
     Play(Option<bool>),
+    PlaySong(Option<usize>)
 }
 
 impl Application for BumpApp {
@@ -43,12 +44,22 @@ impl Application for BumpApp {
 
     fn update(&mut self, message: Self::Message) -> Command<Self::Message> {
         match message {
-            BumpMessage::Increment => self.count += 1,
+            BumpMessage::Increment => {
+                self.count += 1;
+            },
             BumpMessage::Decrement => self.count -= 1,
             BumpMessage::Play(play) => {
                 self.library.find(&mut self.config);
                 let playing = self.player.is_playing();
                 _ = self.player.play(play.unwrap_or(!playing));
+            },
+            BumpMessage::PlaySong(id) => {
+                let songs = self.library.get_songs();
+                let playing = self.player.is_playing();
+                _ = self.player.load(
+                    songs[id.unwrap_or(0)].get_path(),
+                    playing
+                );
             }
         };
         Command::none()

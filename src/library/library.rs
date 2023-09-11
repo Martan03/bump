@@ -53,4 +53,8 @@ impl Library {
 
     /// Saves songs to the library (TODO)
     pub fn save() {}
+
+    pub fn get_songs(&self) -> &Vec<Song> {
+        &self.songs
+    }
 }
