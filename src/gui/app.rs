@@ -5,7 +5,7 @@ use iced::{
     executor, Alignment, Application, Command, Element, Renderer,
     Subscription, Theme,
 };
-use iced_core::{window, Event};
+use iced_core::{window, Event, Length};
 use tokio::sync::mpsc::{self, UnboundedReceiver, UnboundedSender};
 
 use crate::config::config::Config;
@@ -89,8 +89,16 @@ impl Application for BumpApp {
 
     fn view(&self) -> Element<'_, Self::Message, Renderer<Self::Theme>> {
         let active = self.player.get_current();
+        let handle = svg::Handle::from_path(format!(
+            "{}/{}",
+            env!("CARGO_MANIFEST_DIR"),
+            "assets/icons/play.svg"
+        ));
         column![
-            SvgButton::new(32.0, 32.0, "test".to_owned()),
+            SvgButton::new(handle)
+                .width(Length::from(32))
+                .height(Length::from(32))
+                .on_press(BumpMessage::Play(None)),
             button("Update library").on_press(BumpMessage::Update),
             text(active),
             self.vector_display(),
