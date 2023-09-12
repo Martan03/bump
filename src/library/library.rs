@@ -42,7 +42,16 @@ impl Library {
                         continue;
                     }
                     if let Ok(song) = Song::load(&path) {
-                        self.songs.push(song);
+                        let mut exist = false;
+                        for s in self.get_songs() {
+                            if s.get_path() == song.get_path() {
+                                exist = true;
+                                break;
+                            }
+                        }
+                        if !exist {
+                            self.songs.push(song);
+                        }
                     }
                 }
             }
