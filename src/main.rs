@@ -10,6 +10,9 @@ mod config {
 }
 mod gui {
     pub mod app;
+    pub mod widgets {
+        pub mod svg_button;
+    }
 }
 mod library {
     pub mod library;

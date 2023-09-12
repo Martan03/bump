@@ -12,6 +12,8 @@ use crate::config::config::Config;
 use crate::library::library::Library;
 use crate::player::player::Player;
 
+use super::widgets::svg_button::SvgButton;
+
 pub struct BumpApp {
     player: Player,
     library: Library,
@@ -88,6 +90,7 @@ impl Application for BumpApp {
     fn view(&self) -> Element<'_, Self::Message, Renderer<Self::Theme>> {
         let active = self.player.get_current();
         column![
+            SvgButton::new(32.0, 32.0, "test".to_owned()),
             button("Update library").on_press(BumpMessage::Update),
             text(active),
             self.vector_display(),
@@ -156,7 +159,7 @@ impl BumpApp {
         if self.player.is_playing() {
             pp_icon = "assets/icons/pause.svg";
         }
-        
+
         row![
             self.svg_button("assets/icons/prev.svg", BumpMessage::Decrement),
             self.svg_button(pp_icon, BumpMessage::Play(None)),
@@ -178,6 +181,11 @@ impl BumpApp {
         ));
 
         let svg = svg(handle).width(32).height(32);
-        Button::new(svg).width(32).height(32).padding(5).on_press(msg).into()
+        Button::new(svg)
+            .width(32)
+            .height(32)
+            .padding(5)
+            .on_press(msg)
+            .into()
     }
 }
