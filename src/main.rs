@@ -36,6 +36,7 @@ fn main() -> Result<(), iced::Error> {
             .ok(),
             ..Default::default()
         },
+        exit_on_close_request: false,
         ..Default::default()
     })
 }

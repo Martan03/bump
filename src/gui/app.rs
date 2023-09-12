@@ -5,6 +5,7 @@ use iced::{
     executor, Alignment, Application, Command, Element, Renderer,
     Subscription, Theme,
 };
+use iced_core::{window, Event};
 use tokio::sync::mpsc::{self, UnboundedReceiver, UnboundedSender};
 
 use crate::config::config::Config;
@@ -27,6 +28,7 @@ pub enum BumpMessage {
     Play(Option<bool>),
     PlaySong(usize),
     SongEnd,
+    Close,
 }
 
 impl Application for BumpApp {
@@ -72,6 +74,10 @@ impl Application for BumpApp {
             BumpMessage::SongEnd => {
                 _ = self.player.next(&self.library);
             }
+            BumpMessage::Close => {
+                
+                return iced::window::close();
+            }
         };
         Command::none()
     }
@@ -97,15 +103,23 @@ impl Application for BumpApp {
     }
 
     fn subscription(&self) -> Subscription<Self::Message> {
-        iced::subscription::unfold(
-            "69".to_owned(),
-            self.receiver.take(),
-            |receiver| async {
-                let mut receiver = receiver.unwrap();
-                let message = receiver.recv().await.unwrap();
-                (message, Some(receiver))
-            },
-        )
+        Subscription::batch([
+            iced::subscription::unfold(
+                "69".to_owned(),
+                self.receiver.take(),
+                |receiver| async {
+                    let mut receiver = receiver.unwrap();
+                    let message = receiver.recv().await.unwrap();
+                    (message, Some(receiver))
+                },
+            ),
+            iced::subscription::events_with(|event, _| match event {
+                Event::Window(window::Event::CloseRequested) => {
+                    Some(BumpMessage::Close)
+                }
+                _ => None
+            }),
+        ])
     }
 }
 

@@ -1,5 +1,6 @@
+use eyre::Result;
 use serde_derive::{Deserialize, Serialize};
-use std::path::PathBuf;
+use std::{path::PathBuf, fs::{self, File}};
 
 #[derive(Serialize, Deserialize)]
 pub struct Config {
@@ -17,9 +18,21 @@ impl Config {
                 "mp3".to_owned(),
                 "flac".to_owned(),
                 "m4a".to_owned(),
-                "mp4".to_owned()
+                "mp4".to_owned(),
             ],
         }
+    }
+
+    pub fn save(&self) -> Result<()> {
+        let mut dir = Config::get_config_dir();
+        fs::create_dir_all(&dir)?;
+        dir.push("config.json");
+        File::create(&dir)?;
+
+        let text = serde_json::to_string::<Config>(self)?;
+        fs::write(dir, text)?;
+
+        Ok(())
     }
 
     /// Gets all paths songs are saved in
