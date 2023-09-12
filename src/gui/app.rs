@@ -75,7 +75,7 @@ impl Application for BumpApp {
                 _ = self.player.next(&self.library);
             }
             BumpMessage::Close => {
-                
+                _ = self.config.save();
                 return iced::window::close();
             }
         };
