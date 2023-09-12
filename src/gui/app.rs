@@ -1,5 +1,11 @@
+use std::cell::Cell;
+
 use iced::widget::{button, column, scrollable, text};
-use iced::{executor, Alignment, Application, Command, Element, Renderer, Theme};
+use iced::{
+    executor, Alignment, Application, Command, Element, Renderer,
+    Subscription, Theme,
+};
+use tokio::sync::mpsc::{self, UnboundedReceiver, UnboundedSender};
 
 use crate::config::config::Config;
 use crate::library::library::Library;
@@ -9,6 +15,8 @@ pub struct BumpApp {
     player: Player,
     library: Library,
     config: Config,
+    sender: UnboundedSender<BumpMessage>,
+    receiver: Cell<Option<UnboundedReceiver<BumpMessage>>>,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -18,6 +26,7 @@ pub enum BumpMessage {
     Decrement,
     Play(Option<bool>),
     PlaySong(usize),
+    SongEnd,
 }
 
 impl Application for BumpApp {
@@ -27,11 +36,14 @@ impl Application for BumpApp {
     type Message = BumpMessage;
 
     fn new(_flags: Self::Flags) -> (Self, Command<Self::Message>) {
+        let (sender, receiver) = mpsc::unbounded_channel::<BumpMessage>();
         (
             BumpApp {
-                player: Player::new(),
+                player: Player::new(sender.clone()),
                 library: Library::new(),
                 config: Config::load(),
+                sender: sender,
+                receiver: Cell::new(Some(receiver)),
             },
             Command::none(),
         )
@@ -57,6 +69,9 @@ impl Application for BumpApp {
             BumpMessage::PlaySong(id) => {
                 _ = self.player.play_at(&self.library, id as i128, true);
             }
+            BumpMessage::SongEnd => {
+                _ = self.player.next(&self.library);
+            }
         };
         Command::none()
     }
@@ -80,6 +95,18 @@ impl Application for BumpApp {
     fn theme(&self) -> Self::Theme {
         Theme::Dark
     }
+
+    fn subscription(&self) -> Subscription<Self::Message> {
+        iced::subscription::unfold(
+            "69".to_owned(),
+            self.receiver.take(),
+            |receiver| async {
+                let mut receiver = receiver.unwrap();
+                let message = receiver.recv().await.unwrap();
+                (message, Some(receiver))
+            },
+        )
+    }
 }
 
 impl BumpApp {
@@ -87,18 +114,25 @@ impl BumpApp {
         let songs = self.library.get_songs();
         let mut c = 0;
 
-        scrollable(column(
-            songs
-                .iter()
-                .map(|s| {
-                    c += 1;
-                    button(text(format!("{}", s.get_name())))
+        scrollable(
+            column(
+                songs
+                    .iter()
+                    .map(|s| {
+                        c += 1;
+                        button(text(format!(
+                            "{} - {}",
+                            s.get_name(),
+                            s.get_artist()
+                        )))
                         .width(iced::Length::Fill)
                         .on_press(BumpMessage::PlaySong(c - 1))
                         .into()
-                })
-                .collect(),
-        ).spacing(3))
+                    })
+                    .collect(),
+            )
+            .spacing(3),
+        )
         .into()
     }
 }

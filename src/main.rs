@@ -18,5 +18,8 @@ mod player {
 }
 
 fn main() -> Result<(), iced::Error> {
+    // on wayland, the app freezes when not drawn, this is temporary workaround
+    // until it is fixed
+    //env::set_var("WINIT_UNIX_BACKEND", "x11");
     BumpApp::run(Settings::default())
 }

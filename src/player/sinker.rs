@@ -2,6 +2,7 @@ use std::fs::File;
 
 use eyre::{Report, Result};
 use raplay::{
+    sink::CallbackInfo,
     source::{symph::SymphOptions, Symph},
     Sink,
 };
@@ -24,7 +25,12 @@ impl Sinker {
     }
 
     /// Loads given song
-    pub fn load(&mut self, library: &Library, index: usize, play: bool) -> Result<()> {
+    pub fn load(
+        &mut self,
+        library: &Library,
+        index: usize,
+        play: bool,
+    ) -> Result<()> {
         let song = library.get_songs().get(index);
         if song.is_none() {
             return Err(Report::msg("Song can't be accessed"));
@@ -38,6 +44,14 @@ impl Sinker {
     /// Sets the play state based on given bool
     pub fn play(&mut self, play: bool) -> Result<()> {
         self.sink.play(play)?;
+        Ok(())
+    }
+
+    pub fn song_end<F>(&mut self, f: F) -> Result<()>
+    where
+        F: Send + 'static + Fn(CallbackInfo),
+    {
+        self.sink.on_callback(Some(f))?;
         Ok(())
     }
 }

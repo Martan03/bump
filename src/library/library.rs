@@ -38,7 +38,11 @@ impl Library {
 
                 if let Some(ext) = path.extension() {
                     let ext = ext.to_string_lossy();
-                    if !config.get_extensions().iter().any(|e| e == ext.as_ref()) {
+                    if !config
+                        .get_extensions()
+                        .iter()
+                        .any(|e| e == ext.as_ref())
+                    {
                         continue;
                     }
                     if let Ok(song) = Song::load(&path) {

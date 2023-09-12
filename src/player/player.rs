@@ -1,11 +1,8 @@
-// Hi Bonny4, I'm using your library
-// There's so much, I know! But I'm tired now
-
-use std::{fs::File, path::PathBuf};
-
 use eyre::Result;
+use raplay::sink::CallbackInfo;
+use tokio::sync::mpsc::UnboundedSender;
 
-use crate::library::library::Library;
+use crate::{gui::app::BumpMessage, library::library::Library};
 
 use super::sinker::Sinker;
 
@@ -24,9 +21,16 @@ pub struct Player {
 
 impl Player {
     /// Constructs new Player
-    pub fn new() -> Self {
+    pub fn new(sender: UnboundedSender<BumpMessage>) -> Self {
+        let mut sinker = Sinker::new();
+        _ = sinker.song_end(move |info| match info {
+            CallbackInfo::SourceEnded => {
+                _ = sender.send(BumpMessage::SongEnd);
+            }
+            _ => todo!(),
+        });
         Player {
-            sinker: Sinker::new(),
+            sinker,
             state: PlayState::NotPlaying,
             current: 0,
         }
@@ -64,7 +68,7 @@ impl Player {
         &mut self,
         library: &Library,
         index: i128,
-        play: bool
+        play: bool,
     ) -> Result<()> {
         self.set_current(library, index);
         self.load(library, play)?;
