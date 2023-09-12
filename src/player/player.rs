@@ -49,24 +49,24 @@ impl Player {
     /// Plays next song
     pub fn next(&mut self, library: &Library) -> Result<()> {
         let play = self.is_playing();
-        self.play_at(library, self.current + 1, play)?;
+        self.play_at(library, self.current as i128 + 1, play)?;
         Ok(())
     }
 
     /// Plays previous song
     pub fn prev(&mut self, library: &Library) -> Result<()> {
         let play = self.is_playing();
-        self.play_at(library, self.current - 1, play)?;
+        self.play_at(library, self.current as i128 - 1, play)?;
         Ok(())
     }
 
     pub fn play_at(
         &mut self,
         library: &Library,
-        index: usize,
+        index: i128,
         play: bool
     ) -> Result<()> {
-        self.current = index;
+        self.set_current(library, index);
         self.load(library, play)?;
         Ok(())
     }
@@ -80,6 +80,17 @@ impl Player {
             PlayState::Playing
         } else {
             PlayState::Paused
+        }
+    }
+
+    pub fn set_current(&mut self, library: &Library, index: i128) {
+        let count = library.count() - 1;
+        if index < 0 {
+            self.current = count;
+        } else if index as usize > count {
+            self.current = 0;
+        } else {
+            self.current = index as usize;
         }
     }
 

@@ -67,4 +67,8 @@ impl Library {
     pub fn get_songs(&self) -> &Vec<Song> {
         &self.songs
     }
+
+    pub fn count(&self) -> usize {
+        self.songs.len()
+    }
 }

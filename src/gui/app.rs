@@ -1,4 +1,4 @@
-use iced::widget::{self, button, column, scrollable, text, Column, Text};
+use iced::widget::{button, column, scrollable, text};
 use iced::{executor, Alignment, Application, Command, Element, Renderer, Theme};
 
 use crate::config::config::Config;
@@ -6,7 +6,6 @@ use crate::library::library::Library;
 use crate::player::player::Player;
 
 pub struct BumpApp {
-    count: usize,
     player: Player,
     library: Library,
     config: Config,
@@ -30,7 +29,6 @@ impl Application for BumpApp {
     fn new(_flags: Self::Flags) -> (Self, Command<Self::Message>) {
         (
             BumpApp {
-                count: 0,
                 player: Player::new(),
                 library: Library::new(),
                 config: Config::load(),
@@ -57,20 +55,23 @@ impl Application for BumpApp {
                 _ = self.player.play(play.unwrap_or(!playing));
             }
             BumpMessage::PlaySong(id) => {
-                _ = self.player.play_at(&self.library, id, true);
+                _ = self.player.play_at(&self.library, id as i128, true);
             }
         };
         Command::none()
     }
 
     fn view(&self) -> Element<'_, Self::Message, Renderer<Self::Theme>> {
+        let active = self.player.get_current();
         column![
             button("Update library").on_press(BumpMessage::Update),
             button("Increment").on_press(BumpMessage::Increment),
+            text(active),
             button("Decrement").on_press(BumpMessage::Decrement),
             button("Play").on_press(BumpMessage::Play(None)),
             self.vector_display(),
         ]
+        .spacing(3)
         .padding(20)
         .align_items(Alignment::Center)
         .into()
@@ -92,11 +93,12 @@ impl BumpApp {
                 .map(|s| {
                     c += 1;
                     button(text(format!("{}", s.get_name())))
+                        .width(iced::Length::Fill)
                         .on_press(BumpMessage::PlaySong(c - 1))
                         .into()
                 })
                 .collect(),
-        ))
+        ).spacing(3))
         .into()
     }
 }
