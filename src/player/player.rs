@@ -4,10 +4,10 @@
 use std::{fs::File, path::PathBuf};
 
 use eyre::Result;
-use raplay::{
-    source::{symph::SymphOptions, Symph},
-    Sink,
-};
+
+use crate::library::library::Library;
+
+use super::sinker::Sinker;
 
 #[derive(PartialEq)]
 pub enum PlayState {
@@ -17,24 +17,57 @@ pub enum PlayState {
 }
 
 pub struct Player {
-    sink: Sink,
-    symph: SymphOptions,
+    sinker: Sinker,
     state: PlayState,
+    current: usize,
 }
 
 impl Player {
+    /// Constructs new Player
     pub fn new() -> Self {
         Player {
-            sink: Sink::default(),
-            symph: SymphOptions::default(),
+            sinker: Sinker::new(),
             state: PlayState::NotPlaying,
+            current: 0,
         }
     }
 
-    pub fn load(&mut self, path: &PathBuf, play: bool) -> Result<()> {
-        let file = File::open(path)?;
-        let src = Symph::try_new(file, &self.symph)?;
-        self.sink.load(src, play)?;
+    /// Loads song from the library
+    pub fn load(&mut self, library: &Library, play: bool) -> Result<()> {
+        self.set_state(play);
+        self.sinker.load(library, self.current, play)?;
+        Ok(())
+    }
+
+    /// Sets playing state based on the given bool
+    pub fn play(&mut self, play: bool) -> Result<()> {
+        self.set_state(play);
+        self.sinker.play(play)?;
+        Ok(())
+    }
+
+    /// Plays next song
+    pub fn next(&mut self, library: &Library) -> Result<()> {
+        let play = self.is_playing();
+        self.play_at(library, self.current + 1, play)?;
+        Ok(())
+    }
+
+    /// Plays previous song
+    pub fn prev(&mut self, library: &Library) -> Result<()> {
+        let play = self.is_playing();
+        self.play_at(library, self.current - 1, play)?;
+        Ok(())
+    }
+
+    pub fn play_at(
+        &mut self,
+        library: &Library,
+        index: usize,
+        play: bool
+    ) -> Result<()> {
+        self.current = index;
+        self.load(library, play)?;
         Ok(())
     }
 
@@ -42,13 +75,15 @@ impl Player {
         self.state == PlayState::Playing
     }
 
-    pub fn play(&mut self, play: bool) -> Result<()> {
+    pub fn set_state(&mut self, play: bool) {
         self.state = if play {
             PlayState::Playing
         } else {
             PlayState::Paused
-        };
-        self.sink.play(play)?;
-        Ok(())
+        }
+    }
+
+    pub fn get_current(&self) -> usize {
+        self.current
     }
 }

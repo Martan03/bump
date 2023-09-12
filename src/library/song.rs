@@ -22,7 +22,7 @@ impl Song {
             path: path.to_path_buf(),
             name: tag.title().unwrap_or("-").to_owned(),
             artist: tag.artist().unwrap_or("-").to_owned(),
-            length: Duration::from_secs_f64(tag.duration().unwrap_or(0.0))
+            length: Duration::from_secs_f64(tag.duration().unwrap_or(0.0)),
         })
     }
 

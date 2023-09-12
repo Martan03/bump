@@ -14,6 +14,7 @@ mod library {
 }
 mod player {
     pub mod player;
+    pub mod sinker;
 }
 
 fn main() -> Result<(), iced::Error> {

@@ -1,5 +1,5 @@
 use crate::config::config::Config;
-use std::{fs::read_dir, path::PathBuf};
+use std::fs::read_dir;
 
 use super::song::Song;
 use serde_derive::{Deserialize, Serialize};
@@ -38,10 +38,11 @@ impl Library {
 
                 if let Some(ext) = path.extension() {
                     let ext = ext.to_string_lossy();
-                    if config.get_extensions().iter().any(|e| e == ext.as_ref()) {
-                        if let Ok(song) = Song::load(&path) {
-                            self.songs.push(song);
-                        }
+                    if !config.get_extensions().iter().any(|e| e == ext.as_ref()) {
+                        continue;
+                    }
+                    if let Ok(song) = Song::load(&path) {
+                        self.songs.push(song);
                     }
                 }
             }
@@ -49,10 +50,10 @@ impl Library {
     }
 
     /// Loads songs from the library (TODO)
-    pub fn load() {}
+    /// pub fn load() {}
 
     /// Saves songs to the library (TODO)
-    pub fn save() {}
+    /// pub fn save() {}
 
     pub fn get_songs(&self) -> &Vec<Song> {
         &self.songs
