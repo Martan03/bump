@@ -1,5 +1,5 @@
 use crate::config::config::Config;
-use std::fs::read_dir;
+use std::fs::{read_dir, File, self};
 
 use super::song::Song;
 use eyre::Result;
@@ -63,26 +63,32 @@ impl Library {
         }
     }
 
-    /// Loads songs from the library (TODO)
-    /// pub fn load() {}
-
-    /// Saves songs to the library (TODO)
-    /*
-    pub fn save(&self) -> Result<()> {
+    /// Loads songs from the library
+    pub fn load() -> Result<Library> {
         let dir = Config::get_config_dir();
-        let path = std::path::Path::new(&filename);
-        let prefix = path
-        .parent()
-        .ok_or(Report::msg("Error creating stats directory"))?;
-    std::fs::create_dir_all(&prefix)?;
-    std::fs::File::create(&path)?;
-    
-    let text = serde_json::to_string_pretty::<Stats>(self)?;
-    std::fs::write(&path, text)?;
-    
-    Ok(())
+        let mut path = dir.clone();
+        path.push("library.json");
+        let library = match fs::read_to_string(path) {
+            Err(_) => Library {
+                songs: Vec::new(),
+            },
+            Ok(l) => serde_json::from_str::<Library>(&l)?,
+        };
+        Ok(library)
+    }
+
+    /// Saves songs to the library
+    pub fn save(&self) -> Result<()> {
+        let mut dir = Config::get_config_dir();
+        fs::create_dir_all(&dir)?;
+        dir.push("library.json");
+        File::create(&dir)?;
+        
+        let text = serde_json::to_string::<Library>(self)?;
+        fs::write(dir, text)?;
+        
+        Ok(())
 }
-*/
 
 
     pub fn get_songs(&self) -> &Vec<Song> {
