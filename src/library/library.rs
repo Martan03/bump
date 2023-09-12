@@ -18,11 +18,9 @@ impl Library {
 
         match fs::read_to_string(path) {
             Err(_) => Library::default(),
-            Ok(l) => {
-                match serde_json::from_str::<Library>(&l) {
-                    Err(_) => Library::default(),
-                    Ok(lib) => lib,
-                }
+            Ok(l) => match serde_json::from_str::<Library>(&l) {
+                Err(_) => Library::default(),
+                Ok(lib) => lib,
             },
         }
     }

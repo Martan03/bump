@@ -1,6 +1,6 @@
 use std::cell::Cell;
 
-use iced::widget::{button, column, scrollable, text};
+use iced::widget::{button, column, row, scrollable, svg, text, Button};
 use iced::{
     executor, Alignment, Application, Command, Element, Renderer,
     Subscription, Theme,
@@ -89,11 +89,9 @@ impl Application for BumpApp {
         let active = self.player.get_current();
         column![
             button("Update library").on_press(BumpMessage::Update),
-            button("Increment").on_press(BumpMessage::Increment),
             text(active),
-            button("Decrement").on_press(BumpMessage::Decrement),
-            button("Play").on_press(BumpMessage::Play(None)),
             self.vector_display(),
+            self.bottom_bar(),
         ]
         .spacing(3)
         .padding(20)
@@ -120,7 +118,7 @@ impl Application for BumpApp {
                 Event::Window(window::Event::CloseRequested) => {
                     Some(BumpMessage::Close)
                 }
-                _ => None
+                _ => None,
             }),
         ])
     }
@@ -152,9 +150,34 @@ impl BumpApp {
         )
         .into()
     }
-    /*
-    fn bottom_bar(&self) -> Element<BumpMessage> {
 
+    fn bottom_bar(&self) -> Element<BumpMessage> {
+        let mut pp_icon = "assets/icons/play.svg";
+        if self.player.is_playing() {
+            pp_icon = "assets/icons/pause.svg";
+        }
+        
+        row![
+            self.svg_button("assets/icons/prev.svg", BumpMessage::Decrement),
+            self.svg_button(pp_icon, BumpMessage::Play(None)),
+            self.svg_button("assets/icons/next.svg", BumpMessage::Increment),
+        ]
+        .spacing(3)
+        .into()
     }
-    */
+
+    fn svg_button(
+        &self,
+        path: &str,
+        msg: BumpMessage,
+    ) -> Element<'static, BumpMessage> {
+        let handle = svg::Handle::from_path(format!(
+            "{}/{}",
+            env!("CARGO_MANIFEST_DIR"),
+            path
+        ));
+
+        let svg = svg(handle).width(32).height(32);
+        Button::new(svg).width(32).height(32).padding(5).on_press(msg).into()
+    }
 }

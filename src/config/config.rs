@@ -1,6 +1,9 @@
 use eyre::Result;
 use serde_derive::{Deserialize, Serialize};
-use std::{path::PathBuf, fs::{self, File}};
+use std::{
+    fs::{self, File},
+    path::PathBuf,
+};
 
 #[derive(Serialize, Deserialize)]
 pub struct Config {
@@ -20,12 +23,10 @@ impl Config {
 
         match fs::read_to_string(path) {
             Err(_) => Config::default(),
-            Ok(c) => {
-                match serde_json::from_str::<Config>(&c) {
-                    Err(_) => Config::default(),
-                    Ok(conf) => conf,
-                }
-            }
+            Ok(c) => match serde_json::from_str::<Config>(&c) {
+                Err(_) => Config::default(),
+                Ok(conf) => conf,
+            },
         }
     }
 
