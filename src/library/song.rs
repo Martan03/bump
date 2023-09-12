@@ -42,7 +42,7 @@ impl Song {
     }
 
     /// Gets song length
-    pub fn get_length(&self) -> &Duration {
+    pub fn _get_length(&self) -> &Duration {
         &self.length
     }
 }

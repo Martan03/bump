@@ -2,6 +2,7 @@ use crate::config::config::Config;
 use std::fs::read_dir;
 
 use super::song::Song;
+use eyre::Result;
 use serde_derive::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
@@ -66,7 +67,23 @@ impl Library {
     /// pub fn load() {}
 
     /// Saves songs to the library (TODO)
-    /// pub fn save() {}
+    /*
+    pub fn save(&self) -> Result<()> {
+        let dir = Config::get_config_dir();
+        let path = std::path::Path::new(&filename);
+        let prefix = path
+        .parent()
+        .ok_or(Report::msg("Error creating stats directory"))?;
+    std::fs::create_dir_all(&prefix)?;
+    std::fs::File::create(&path)?;
+    
+    let text = serde_json::to_string_pretty::<Stats>(self)?;
+    std::fs::write(&path, text)?;
+    
+    Ok(())
+}
+*/
+
 
     pub fn get_songs(&self) -> &Vec<Song> {
         &self.songs

@@ -15,7 +15,7 @@ pub struct BumpApp {
     player: Player,
     library: Library,
     config: Config,
-    sender: UnboundedSender<BumpMessage>,
+    _sender: UnboundedSender<BumpMessage>,
     receiver: Cell<Option<UnboundedReceiver<BumpMessage>>>,
 }
 
@@ -42,7 +42,7 @@ impl Application for BumpApp {
                 player: Player::new(sender.clone()),
                 library: Library::new(),
                 config: Config::load(),
-                sender: sender,
+                _sender: sender,
                 receiver: Cell::new(Some(receiver)),
             },
             Command::none(),
@@ -135,4 +135,9 @@ impl BumpApp {
         )
         .into()
     }
+    /*
+    fn bottom_bar(&self) -> Element<BumpMessage> {
+
+    }
+    */
 }

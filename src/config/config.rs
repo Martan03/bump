@@ -13,7 +13,12 @@ impl Config {
     pub fn load() -> Self {
         Config {
             paths: vec![Config::default_songs_path()],
-            extensions: vec!["mp3".to_owned()],
+            extensions: vec![
+                "mp3".to_owned(),
+                "flac".to_owned(),
+                "m4a".to_owned(),
+                "mp4".to_owned()
+            ],
         }
     }
 
@@ -29,6 +34,15 @@ impl Config {
     /// Gets default songs path
     pub fn default_songs_path() -> PathBuf {
         if let Some(dir) = dirs::audio_dir() {
+            dir
+        } else {
+            PathBuf::from(".")
+        }
+    }
+
+    /// Gets config dir path
+    pub fn get_config_dir() -> PathBuf {
+        if let Some(dir) = dirs::config_dir() {
             dir
         } else {
             PathBuf::from(".")
