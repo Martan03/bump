@@ -23,7 +23,7 @@ impl Config {
             Ok(c) => {
                 match serde_json::from_str::<Config>(&c) {
                     Err(_) => Config::default(),
-                    Ok(c) => c,
+                    Ok(conf) => conf,
                 }
             }
         }
@@ -48,6 +48,12 @@ impl Config {
         &self.paths
     }
 
+    /// Gets library path
+    pub fn get_library_path(&mut self) -> &PathBuf {
+        &self.library_path
+    }
+
+    /// Gets valid extensions
     pub fn get_extensions(&mut self) -> &Vec<String> {
         &self.extensions
     }

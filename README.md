@@ -1,6 +1,6 @@
 # bump
 
-Best Universal Music Player written in Rust and iced
+Best Universal Music Player written in Rust and iced  
 (not quite the best, but I'm trying my best)
 
 ## Configuration

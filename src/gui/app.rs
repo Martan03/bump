@@ -39,11 +39,13 @@ impl Application for BumpApp {
 
     fn new(_flags: Self::Flags) -> (Self, Command<Self::Message>) {
         let (sender, receiver) = mpsc::unbounded_channel::<BumpMessage>();
+        let mut config = Config::load();
+        let library = Library::load(&mut config);
         (
             BumpApp {
                 player: Player::new(sender.clone()),
-                library: Library::new(),
-                config: Config::load(),
+                library,
+                config,
                 _sender: sender,
                 receiver: Cell::new(Some(receiver)),
             },
@@ -76,6 +78,7 @@ impl Application for BumpApp {
             }
             BumpMessage::Close => {
                 _ = self.config.save();
+                _ = self.library.save();
                 return iced::window::close();
             }
         };

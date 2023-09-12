@@ -12,11 +12,35 @@ pub struct Library {
 }
 
 impl Library {
-    /// Creates empty library
-    pub fn new() -> Self {
-        Library { songs: Vec::new() }
+    /// Loads songs from the library
+    pub fn load(config: &mut Config) -> Library {
+        let path = config.get_library_path();
+
+        match fs::read_to_string(path) {
+            Err(_) => Library::default(),
+            Ok(l) => {
+                match serde_json::from_str::<Library>(&l) {
+                    Err(_) => Library::default(),
+                    Ok(lib) => lib,
+                }
+            },
+        }
     }
 
+    /// Saves songs to the library
+    pub fn save(&self) -> Result<()> {
+        let mut dir = Config::get_config_dir();
+        fs::create_dir_all(&dir)?;
+        dir.push("library.json");
+        File::create(&dir)?;
+
+        let text = serde_json::to_string::<Library>(self)?;
+        fs::write(dir, text)?;
+
+        Ok(())
+    }
+
+    /// Finds songs from song directories
     pub fn find(&mut self, config: &mut Config) {
         let mut paths = config.get_paths().clone();
         let mut i = 0;
@@ -63,36 +87,20 @@ impl Library {
         }
     }
 
-    /// Loads songs from the library
-    pub fn load() -> Result<Library> {
-        let dir = Config::get_config_dir();
-        let mut path = dir.clone();
-        path.push("library.json");
-        let library = match fs::read_to_string(path) {
-            Err(_) => Library { songs: Vec::new() },
-            Ok(l) => serde_json::from_str::<Library>(&l)?,
-        };
-        Ok(library)
-    }
-
-    /// Saves songs to the library
-    pub fn save(&self) -> Result<()> {
-        let mut dir = Config::get_config_dir();
-        fs::create_dir_all(&dir)?;
-        dir.push("library.json");
-        File::create(&dir)?;
-
-        let text = serde_json::to_string::<Library>(self)?;
-        fs::write(dir, text)?;
-
-        Ok(())
-    }
-
+    /// Gets songs from the library
     pub fn get_songs(&self) -> &Vec<Song> {
         &self.songs
     }
 
+    /// Gets number of songs in the library
     pub fn count(&self) -> usize {
         self.songs.len()
+    }
+}
+
+impl Default for Library {
+    /// Creates default Library
+    fn default() -> Self {
+        Library { songs: Vec::new() }
     }
 }
