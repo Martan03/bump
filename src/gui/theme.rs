@@ -8,6 +8,8 @@ use iced::{
 };
 use iced_core::{Background, BorderRadius, Color, Vector};
 
+use super::widgets::svg_button;
+
 /// Background colors
 const BG: Color = Color::from_rgb(27. / 255., 27. / 255., 27. / 255.);
 const BG_LIGHT: Color = Color::from_rgb(37. / 255., 37. / 255., 37. / 255.);
@@ -15,8 +17,8 @@ const BG_DARK: Color = Color::from_rgb(15. / 255., 15. / 255., 15. / 255.);
 
 /// Foreground color
 const FG: Color = Color::from_rgb(221. / 255., 221. / 255., 221. / 255.);
-const _FG_LIGHT: Color =
-    Color::from_rgb(240. / 240., 221. / 240., 221. / 255.);
+const FG_LIGHT: Color =
+    Color::from_rgb(255. / 255., 255. / 255., 255. / 255.);
 const FG_DARK: Color = Color::from_rgb(200. / 255., 200. / 255., 200. / 255.);
 
 const PRIM: Color = Color::from_rgb(58. / 255., 203. / 255., 175. / 255.);
@@ -86,8 +88,8 @@ impl checkbox::StyleSheet for Theme {
 
     fn active(
         &self,
-        style: &Self::Style,
-        is_checked: bool,
+        _style: &Self::Style,
+        _is_checked: bool,
     ) -> checkbox::Appearance {
         checkbox::Appearance {
             background: Background::Color(BG_DARK),
@@ -132,7 +134,7 @@ impl container::StyleSheet for Theme {
 impl menu::StyleSheet for Theme {
     type Style = ();
 
-    fn appearance(&self, style: &Self::Style) -> menu::Appearance {
+    fn appearance(&self, _style: &Self::Style) -> menu::Appearance {
         menu::Appearance {
             text_color: FG,
             background: Background::Color(BG_LIGHT),
@@ -148,7 +150,7 @@ impl menu::StyleSheet for Theme {
 impl pane_grid::StyleSheet for Theme {
     type Style = ();
 
-    fn hovered_region(&self, style: &Self::Style) -> pane_grid::Appearance {
+    fn hovered_region(&self, _style: &Self::Style) -> pane_grid::Appearance {
         pane_grid::Appearance {
             background: Background::Color(BG_LIGHT),
             border_width: 0.,
@@ -157,14 +159,14 @@ impl pane_grid::StyleSheet for Theme {
         }
     }
 
-    fn picked_split(&self, style: &Self::Style) -> Option<pane_grid::Line> {
+    fn picked_split(&self, _style: &Self::Style) -> Option<pane_grid::Line> {
         Some(pane_grid::Line {
             color: PRIM,
             width: 0.,
         })
     }
 
-    fn hovered_split(&self, style: &Self::Style) -> Option<pane_grid::Line> {
+    fn hovered_split(&self, _style: &Self::Style) -> Option<pane_grid::Line> {
         Some(pane_grid::Line {
             color: PRIM,
             width: 0.,
@@ -177,7 +179,7 @@ impl pick_list::StyleSheet for Theme {
 
     fn active(
         &self,
-        style: &<Self as pick_list::StyleSheet>::Style,
+        _style: &<Self as pick_list::StyleSheet>::Style,
     ) -> pick_list::Appearance {
         pick_list::Appearance {
             text_color: FG,
@@ -201,7 +203,7 @@ impl pick_list::StyleSheet for Theme {
 impl progress_bar::StyleSheet for Theme {
     type Style = ();
 
-    fn appearance(&self, style: &Self::Style) -> progress_bar::Appearance {
+    fn appearance(&self, _style: &Self::Style) -> progress_bar::Appearance {
         progress_bar::Appearance {
             background: Background::Color(BG_LIGHT),
             bar: Background::Color(PRIM),
@@ -216,7 +218,7 @@ impl radio::StyleSheet for Theme {
     fn active(
         &self,
         _style: &Self::Style,
-        is_selected: bool,
+        _is_selected: bool,
     ) -> radio::Appearance {
         radio::Appearance {
             background: Background::Color(BG_DARK),
@@ -239,7 +241,7 @@ impl radio::StyleSheet for Theme {
 impl rule::StyleSheet for Theme {
     type Style = ();
 
-    fn appearance(&self, style: &Self::Style) -> rule::Appearance {
+    fn appearance(&self, _style: &Self::Style) -> rule::Appearance {
         rule::Appearance {
             color: PRIM,
             width: 10,
@@ -276,33 +278,25 @@ impl scrollable::StyleSheet for Theme {
     }
 }
 
-#[derive(Copy, Clone, Default, Debug)]
-pub enum Slider {
-    #[default]
-    Default,
-}
-
 impl slider::StyleSheet for Theme {
-    type Style = Slider;
+    type Style = ();
 
     fn active(
         &self,
-        style: &Self::Style,
+        _style: &Self::Style,
     ) -> iced::widget::vertical_slider::Appearance {
-        match style {
-            _ => slider::Appearance {
-                rail: slider::Rail {
-                    colors: (PRIM, PRIM),
-                    width: 4.,
-                    border_radius: 2.0.into(),
-                },
-                handle: slider::Handle {
-                    shape: slider::HandleShape::Circle { radius: 0. },
-                    color: Color::TRANSPARENT,
-                    border_width: 0.,
-                    border_color: BG,
-                },
+        slider::Appearance {
+            rail: slider::Rail {
+                colors: (PRIM, BG_LIGHT),
+                width: 4.,
+                border_radius: BorderRadius::from(2.),
             },
+            handle: slider::Handle {
+                shape: slider::HandleShape::Circle { radius: 0. },
+                color: Color::TRANSPARENT,
+                border_width: 0.,
+                border_color: BG_LIGHT,
+            }
         }
     }
 
@@ -310,14 +304,30 @@ impl slider::StyleSheet for Theme {
         &self,
         style: &Self::Style,
     ) -> iced::widget::vertical_slider::Appearance {
-        todo!()
+        let active = self.active(style);
+        slider::Appearance {
+            handle: slider::Handle {
+                shape: slider::HandleShape::Circle { radius: 5. },
+                color: FG,
+                ..active.handle
+            },
+            ..active
+        }
     }
 
     fn dragging(
         &self,
         style: &Self::Style,
     ) -> iced::widget::vertical_slider::Appearance {
-        todo!()
+        let active = self.active(style);
+        slider::Appearance {
+            handle: slider::Handle {
+                shape: slider::HandleShape::Circle { radius: 5. },
+                color: FG_DARK,
+                ..active.handle
+            },
+            ..active
+        }
     }
 }
 
@@ -342,6 +352,9 @@ pub enum Text {
     /// The default text style
     #[default]
     Default,
+    Normal,
+    Dark,
+    Light,
 }
 
 impl text::StyleSheet for Theme {
@@ -350,6 +363,9 @@ impl text::StyleSheet for Theme {
     fn appearance(&self, style: Self::Style) -> text::Appearance {
         text::Appearance {
             color: match style {
+                Text::Light => Some(FG_LIGHT),
+                Text::Normal => Some(FG),
+                Text::Dark => Some(FG_DARK),
                 _ => None,
             },
         }
@@ -359,7 +375,7 @@ impl text::StyleSheet for Theme {
 impl text_input::StyleSheet for Theme {
     type Style = ();
 
-    fn active(&self, style: &Self::Style) -> text_input::Appearance {
+    fn active(&self, _style: &Self::Style) -> text_input::Appearance {
         text_input::Appearance {
             background: Background::Color(BG_LIGHT),
             border_radius: BorderRadius::from(6.),
@@ -373,19 +389,19 @@ impl text_input::StyleSheet for Theme {
         self.active(style)
     }
 
-    fn placeholder_color(&self, style: &Self::Style) -> Color {
+    fn placeholder_color(&self, _style: &Self::Style) -> Color {
         FG
     }
 
-    fn value_color(&self, style: &Self::Style) -> Color {
+    fn value_color(&self, _style: &Self::Style) -> Color {
         FG
     }
 
-    fn disabled_color(&self, style: &Self::Style) -> Color {
+    fn disabled_color(&self, _style: &Self::Style) -> Color {
         FG
     }
 
-    fn selection_color(&self, style: &Self::Style) -> Color {
+    fn selection_color(&self, _style: &Self::Style) -> Color {
         FG
     }
 
@@ -399,8 +415,8 @@ impl toggler::StyleSheet for Theme {
 
     fn active(
         &self,
-        style: &Self::Style,
-        is_active: bool,
+        _style: &Self::Style,
+        _is_active: bool,
     ) -> toggler::Appearance {
         toggler::Appearance {
             background: BG_DARK,
@@ -420,3 +436,48 @@ impl toggler::StyleSheet for Theme {
 }
 
 // Custom Widgets
+#[derive(Clone, Default, Copy)]
+pub enum SvgButton {
+    #[default]
+    Transparent,
+}
+
+impl svg_button::StyleSheet for Theme {
+    type Style = SvgButton;
+
+    fn active(&self, style: &Self::Style) -> svg_button::Appearance {
+        let transparent = svg_button::Appearance {
+            background: Background::Color(Color::TRANSPARENT),
+            border_color: Color::TRANSPARENT,
+            border_radius: BorderRadius::from(0.),
+            border_thickness: 0.,
+            color: None,
+        };
+        
+        match style {
+            _ => transparent,
+        }
+    }
+
+    fn hovered(&self, style: &Self::Style) -> svg_button::Appearance {
+        let active = self.active(style);
+
+        match style {
+            _ => svg_button::Appearance {
+                color: Some(PRIM),
+                ..active
+            }
+        }
+    }
+
+    fn pressed(&self, style: &Self::Style) -> svg_button::Appearance {
+        let active = self.active(style);
+
+        match style {
+            _ => svg_button::Appearance {
+                color: Some(PRIM),
+                ..active
+            }
+        }
+    }
+}

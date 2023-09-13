@@ -4,10 +4,10 @@ use iced::widget::{
     button, column, container, row, scrollable, slider, svg, text,
 };
 use iced::{
-    executor, Alignment, Application, Command, Element, Padding, Renderer,
+    executor, Alignment, Application, Command, Element, Renderer,
     Subscription,
 };
-use iced_core::alignment::Horizontal;
+use iced_core::alignment::{Horizontal, Vertical};
 use iced_core::{window, Event, Length};
 use tokio::sync::mpsc::{self, UnboundedReceiver, UnboundedSender};
 
@@ -15,7 +15,7 @@ use crate::config::config::Config;
 use crate::library::library::Library;
 use crate::player::player::Player;
 
-use super::theme::{Button, Theme};
+use super::theme::{Button, Theme, Container, Text};
 use super::widgets::svg_button::SvgButton;
 
 pub struct BumpApp {
@@ -34,6 +34,7 @@ pub enum BumpMessage {
     Prev,
     Play(Option<bool>),
     PlaySong(usize),
+    SeekTo(f32),
     SongEnd,
     Volume(f32),
     Mute(Option<bool>),
@@ -83,6 +84,9 @@ impl Application for BumpApp {
             BumpMessage::PlaySong(id) => {
                 _ = self.player.play_at(&self.library, id as i128, true);
             }
+            BumpMessage::SeekTo(secs) => {
+                println!("{}", secs);
+            }
             BumpMessage::SongEnd => {
                 _ = self.player.next(&self.library);
             }
@@ -112,7 +116,6 @@ impl Application for BumpApp {
             self.bottom_bar(),
         ]
         .spacing(3)
-        .padding(10)
         .align_items(Alignment::Center)
         .into()
     }
@@ -170,22 +173,34 @@ impl BumpApp {
     }
 
     fn bottom_bar(&self) -> Element<'_, BumpMessage, Renderer<Theme>> {
-        row![
-            container(self.title_bar(),).width(Length::FillPortion(1)),
-            self.play_menu(),
-            container(self.volume_menu(),).width(Length::FillPortion(1)),
-        ]
+        container(
+            column![
+                slider(0.0..=1., self.player.get_volume(), |v| {
+                    BumpMessage::SeekTo(v)
+                })
+                .height(4)
+                .step(0.01),
+                row![
+                    container(self.title_bar(),).width(Length::FillPortion(1)),
+                    self.play_menu(),
+                    container(self.volume_menu(),).width(Length::FillPortion(1)),
+                ]
+                .height(Length::Fill)
+                .padding(5)
+                .align_items(Alignment::Center)
+            ]
+        )
+        .align_y(Vertical::Center)
         .height(60)
-        .align_items(Alignment::Center)
-        .padding(Padding::from([10, 0, 0, 0]))
+        .style(Container::Dark)
         .into()
     }
 
     fn title_bar(&self) -> Element<'_, BumpMessage, Renderer<Theme>> {
         let song = self.player.get_current_song(&self.library);
         column![
-            text(song.get_name()).size(16),
-            text(song.get_artist()).size(14),
+            text(song.get_name()).size(16).style(Text::Light),
+            text(song.get_artist()).size(14).style(Text::Dark),
         ]
         .into()
     }
@@ -215,16 +230,16 @@ impl BumpApp {
 
         row![
             SvgButton::new(prev_handle)
-                .width(18)
-                .height(18)
+                .width(16)
+                .height(16)
                 .on_press(BumpMessage::Prev),
             SvgButton::new(pp_handle)
-                .width(33)
-                .height(33)
+                .width(30)
+                .height(30)
                 .on_press(BumpMessage::Play(None)),
             SvgButton::new(next_handle)
-                .width(18)
-                .height(18)
+                .width(16)
+                .height(16)
                 .on_press(BumpMessage::Next),
         ]
         .align_items(Alignment::Center)
@@ -250,7 +265,8 @@ impl BumpApp {
                     .height(18)
                     .on_press(BumpMessage::Mute(None)),
                 text(format!("{:.0}", self.player.get_volume() * 100.0))
-                    .width(28),
+                    .width(28)
+                    .style(Text::Normal),
                 slider(0.0..=1., self.player.get_volume(), |v| {
                     BumpMessage::Volume(v)
                 })

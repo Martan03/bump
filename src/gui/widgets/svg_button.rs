@@ -2,16 +2,18 @@ use iced::Length;
 use iced_core::event::Status;
 use iced_core::layout::{Limits, Node};
 use iced_core::mouse::{self, Cursor};
-use iced_core::renderer::Style;
+use iced_core::renderer::{Style, Quad};
 use iced_core::svg::{self, Handle};
 use iced_core::widget::{tree, Tree};
 use iced_core::{
     touch, Clipboard, Color, Element, Event, Layout, Padding, Pixels,
-    Rectangle, Shell, Widget,
+    Rectangle, Shell, Widget, BorderRadius, Background,
 };
 
-pub struct SvgButton<Message>
+pub struct SvgButton<Message, Renderer>
 where
+    Renderer: svg::Renderer,
+    Renderer::Theme: StyleSheet,
     Message: Clone,
 {
     width: Length,
@@ -21,10 +23,13 @@ where
     padding: Padding,
     svg: Handle,
     on_press: Option<Message>,
+    style: <Renderer::Theme as StyleSheet>::Style,
 }
 
-impl<Message> SvgButton<Message>
+impl<Message, Renderer> SvgButton<Message, Renderer>
 where
+    Renderer: svg::Renderer,
+    Renderer::Theme: StyleSheet,
     Message: Clone,
 {
     pub fn new(svg: Handle) -> Self {
@@ -36,6 +41,7 @@ where
             padding: Padding::ZERO,
             svg,
             on_press: None,
+            style: Default::default(),
         }
     }
 
@@ -75,9 +81,10 @@ where
     }
 }
 
-impl<Message, Renderer> Widget<Message, Renderer> for SvgButton<Message>
+impl<Message, Renderer> Widget<Message, Renderer> for SvgButton<Message, Renderer>
 where
     Renderer: svg::Renderer,
+    Renderer::Theme: StyleSheet,
     Message: Clone,
 {
     fn state(&self) -> tree::State {
@@ -159,15 +166,16 @@ where
 
     fn draw(
         &self,
-        _state: &Tree,
+        state: &Tree,
         renderer: &mut Renderer,
-        _theme: &Renderer::Theme,
+        theme: &Renderer::Theme,
         _style: &Style,
         layout: Layout<'_>,
         cursor: Cursor,
         _viewport: &Rectangle,
     ) {
         let bounds = layout.bounds();
+        let state = state.state.downcast_ref::<State>();
 
         let svg_bounds = Rectangle {
             x: bounds.x + self.padding.left,
@@ -176,24 +184,53 @@ where
             height: bounds.height - self.padding.left - self.padding.right,
         };
 
-        let color = if cursor.is_over(bounds) {
-            Some(Color::new(0.1, 0.7, 1.0, 1.0))
+        let th = if cursor.is_over(bounds) {
+            theme.hovered(&self.style)
+        } else if state.is_pressed {
+            theme.pressed(&self.style)
         } else {
-            None
+            theme.active(&self.style)
         };
-        renderer.draw(self.svg.clone(), color, svg_bounds);
+
+        renderer.draw(self.svg.clone(), th.color, svg_bounds);
+
+        let quad = Quad {
+            bounds,
+            border_radius: th.border_radius,
+            border_width: th.border_thickness,
+            border_color: th.border_color,
+        };
+
+        renderer.fill_quad(quad, th.background);
     }
 }
 
-impl<'a, Message, Renderer> From<SvgButton<Message>>
+impl<'a, Message, Renderer> From<SvgButton<Message, Renderer>>
     for Element<'a, Message, Renderer>
 where
     Renderer: svg::Renderer + 'a,
+    Renderer::Theme: StyleSheet,
     Message: Clone + 'a,
 {
-    fn from(button: SvgButton<Message>) -> Self {
+    fn from(button: SvgButton<Message, Renderer>) -> Self {
         Self::new(button)
     }
+}
+
+pub struct Appearance {
+    pub background: Background,
+    pub border_color: Color,
+    pub border_radius: BorderRadius,
+    pub border_thickness: f32,
+    pub color: Option<Color>,
+}
+
+pub trait StyleSheet {
+    type Style: Default;
+
+    fn active(&self, style: &Self::Style) -> Appearance;
+    fn hovered(&self, style: &Self::Style) -> Appearance;
+    fn pressed(&self, style: &Self::Style) -> Appearance;
 }
 
 /// The local state of a [`SvgButton`].
