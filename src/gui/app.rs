@@ -4,8 +4,8 @@ use iced::widget::{
     button, column, container, row, scrollable, slider, svg, text,
 };
 use iced::{
-    executor, Alignment, Application, Command, Element, Renderer,
-    Subscription, Theme, Padding
+    executor, Alignment, Application, Command, Element, Padding, Renderer,
+    Subscription, Theme,
 };
 use iced_core::alignment::Horizontal;
 use iced_core::{window, Event, Length};
@@ -34,6 +34,7 @@ pub enum BumpMessage {
     PlaySong(usize),
     SongEnd,
     Volume(f32),
+    Mute(Option<bool>),
     Close,
 }
 
@@ -82,8 +83,10 @@ impl Application for BumpApp {
             BumpMessage::SongEnd => {
                 _ = self.player.next(&self.library);
             }
-            BumpMessage::Volume(vol) => {
-                _ = self.player.set_volume(vol)
+            BumpMessage::Volume(vol) => _ = self.player.set_volume(vol),
+            BumpMessage::Mute(mute) => {
+                let mute = mute.unwrap_or(!self.player.get_mute());
+                _ = self.player.set_mute(mute);
             }
             BumpMessage::Close => {
                 _ = self.config.save();
@@ -99,11 +102,8 @@ impl Application for BumpApp {
 
         column![
             button("Update library").on_press(BumpMessage::Update),
-            text(active),
-            container(
-                self.vector_display(),
-            )
-            .height(Length::FillPortion(1)),
+            text(format!("{}/{}", active, self.library.count())),
+            container(self.vector_display(),).height(Length::FillPortion(1)),
             self.bottom_bar(),
         ]
         .spacing(3)
@@ -228,14 +228,33 @@ impl BumpApp {
     }
 
     fn volume_menu(&self) -> Element<BumpMessage> {
-        container(row![
-            text(format!("{:.0}", self.player.get_volume() * 100.0)),
-            slider(0.0..=1., self.player.get_volume(), |v| {
-                BumpMessage::Volume(v)
-            })
-            .step(0.01)
-            .width(100),
-        ])
+        let mut icon = "assets/icons/volume.svg";
+        if self.player.get_mute() {
+            icon = "assets/icons/volume_muted.svg";
+        }
+        let handle = svg::Handle::from_path(format!(
+            "{}/{}",
+            env!("CARGO_MANIFEST_DIR"),
+            icon
+        ));
+
+        container(
+            row![
+                SvgButton::new(handle)
+                    .width(18)
+                    .height(18)
+                    .on_press(BumpMessage::Mute(None)),
+                text(format!("{:.0}", self.player.get_volume() * 100.0))
+                    .width(28),
+                slider(0.0..=1., self.player.get_volume(), |v| {
+                    BumpMessage::Volume(v)
+                })
+                .step(0.01)
+                .width(100),
+            ]
+            .align_items(Alignment::Center)
+            .spacing(10),
+        )
         .width(Length::Fill)
         .align_x(Horizontal::Right)
         .into()

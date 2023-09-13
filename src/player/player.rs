@@ -21,6 +21,7 @@ pub struct Player {
     state: PlayState,
     current: usize,
     volume: f32,
+    mute: bool,
 }
 
 impl Player {
@@ -38,6 +39,7 @@ impl Player {
             state: PlayState::NotPlaying,
             current: 0,
             volume: 1.,
+            mute: false,
         }
     }
 
@@ -114,16 +116,35 @@ impl Player {
         library.get_song(self.current)
     }
 
+    /// Gets current volume of the playback
     pub fn get_volume(&self) -> f32 {
         self.volume
     }
 
+    /// Sets playback volume
     pub fn set_volume(&mut self, volume: f32) -> Result<()> {
         match self.sinker.set_volume(volume) {
             Ok(_) => {
                 self.volume = volume;
                 Ok(())
-            },
+            }
+            Err(e) => Err(e),
+        }
+    }
+
+    /// Gets whether playback is muted
+    pub fn get_mute(&self) -> bool {
+        self.mute
+    }
+
+    /// Sets mute
+    pub fn set_mute(&mut self, mute: bool) -> Result<()> {
+        let volume = if mute { 0. } else { self.volume };
+        match self.sinker.set_volume(volume) {
+            Ok(_) => {
+                self.mute = mute;
+                Ok(())
+            }
             Err(e) => Err(e),
         }
     }
