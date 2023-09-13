@@ -179,7 +179,7 @@ where
         let color = if cursor.is_over(bounds) {
             Some(Color::new(0.1, 0.7, 1.0, 1.0))
         } else {
-            Some(Color::WHITE)
+            None
         };
         renderer.draw(self.svg.clone(), color, svg_bounds);
     }

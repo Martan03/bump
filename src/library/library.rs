@@ -90,6 +90,15 @@ impl Library {
         &self.songs
     }
 
+    /// Gets song on given ID
+    pub fn get_song(&self, id: usize) -> Song {
+        if let Some(song) = self.songs.get(id) {
+            song.clone()
+        } else {
+            Song::default()
+        }
+    }
+
     /// Gets number of songs in the library
     pub fn count(&self) -> usize {
         self.songs.len()

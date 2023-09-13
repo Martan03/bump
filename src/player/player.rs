@@ -2,7 +2,10 @@ use eyre::Result;
 use raplay::sink::CallbackInfo;
 use tokio::sync::mpsc::UnboundedSender;
 
-use crate::{gui::app::BumpMessage, library::library::Library};
+use crate::{
+    gui::app::BumpMessage,
+    library::{library::Library, song::Song},
+};
 
 use super::sinker::Sinker;
 
@@ -100,5 +103,12 @@ impl Player {
 
     pub fn get_current(&self) -> usize {
         self.current
+    }
+
+    pub fn get_current_song(&self, library: &Library) -> Song {
+        if self.state == PlayState::NotPlaying {
+            return Song::default()
+        }
+        library.get_song(self.current)
     }
 }

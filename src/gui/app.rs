@@ -1,11 +1,13 @@
 use std::cell::Cell;
 
-use iced::widget::{button, column, row, scrollable, svg, text};
+use iced::widget::{
+    button, column, container, row, scrollable, svg, text, Space,
+};
 use iced::{
     executor, Alignment, Application, Command, Element, Renderer,
     Subscription, Theme,
 };
-use iced_core::{window, Event};
+use iced_core::{window, Event, Length};
 use tokio::sync::mpsc::{self, UnboundedReceiver, UnboundedSender};
 
 use crate::config::config::Config;
@@ -93,8 +95,8 @@ impl Application for BumpApp {
         column![
             button("Update library").on_press(BumpMessage::Update),
             text(active),
-            self.vector_display(),
             self.bottom_bar(),
+            self.vector_display(),
         ]
         .spacing(3)
         .padding(20)
@@ -155,6 +157,27 @@ impl BumpApp {
     }
 
     fn bottom_bar(&self) -> Element<BumpMessage> {
+        row![
+            container(
+                self.title_bar(),
+            ).width(Length::FillPortion(1)),
+            self.play_menu(),
+            Space::new(Length::FillPortion(1), Length::Shrink),
+        ]
+        .align_items(Alignment::Center)
+        .into()
+    }
+
+    fn title_bar(&self) -> Element<BumpMessage> {
+        let song = self.player.get_current_song(&self.library);
+        column![
+            text(song.get_name()).size(16),
+            text(song.get_artist()).size(14),
+        ]
+        .into()
+    }
+
+    fn play_menu(&self) -> Element<BumpMessage> {
         let mut pp_icon = "assets/icons/play.svg";
         if self.player.is_playing() {
             pp_icon = "assets/icons/pause.svg";
@@ -179,20 +202,21 @@ impl BumpApp {
 
         row![
             SvgButton::new(prev_handle)
-                .width(22)
-                .height(22)
+                .width(18)
+                .height(18)
                 .on_press(BumpMessage::Prev),
             SvgButton::new(pp_handle)
-                .width(30)
-                .height(30)
+                .width(33)
+                .height(33)
                 .on_press(BumpMessage::Play(None)),
             SvgButton::new(next_handle)
-                .width(22)
-                .height(22)
+                .width(18)
+                .height(18)
                 .on_press(BumpMessage::Next),
         ]
         .height(70)
-        .spacing(5)
+        .align_items(Alignment::Center)
+        .spacing(20)
         .into()
     }
 }

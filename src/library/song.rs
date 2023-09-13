@@ -46,3 +46,14 @@ impl Song {
         &self.length
     }
 }
+
+impl Default for Song {
+    fn default() -> Self {
+        Self {
+            path: Default::default(),
+            name: Default::default(),
+            artist: Default::default(),
+            length: Default::default(),
+        }
+    }
+}
