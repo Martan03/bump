@@ -1,6 +1,17 @@
-<svg viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg">
-    <line x1="2.5" y1="1" x2="2.5" y2="9"
-          stroke="#ddd" stroke-width="2" stroke-linecap="round"/>
-    <line x1="7.5" y1="1" x2="7.5" y2="9"
-          stroke="#ddd" stroke-width="2" stroke-linecap="round"/>
+<?xml version="1.0" standalone="no"?>
+<svg viewBox="0 0 10 10"
+     xmlns="http://www.w3.org/2000/svg">
+    <defs>
+        <mask id="pause">
+            <circle r="4.8" cx="5" cy="5" fill="white" />
+            <g>
+                <line x1="3.7" y1="3.25" x2="3.7" y2="6.75"
+                    stroke="black" stroke-width="1.5" stroke-linecap="round"/>
+                <line x1="6.3" y1="3.25" x2="6.3" y2="6.75"
+                    stroke="black" stroke-width="1.5" stroke-linecap="round"/>
+            </g>
+        </mask>
+    </defs>
+    
+    <circle r="5" cx="5" cy="5" fill="#eee" mask="url(#pause)" />
 </svg>

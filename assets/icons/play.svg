@@ -1,9 +1,20 @@
-<svg viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg">
-    <line x1="2" y1="1" x2="2" y2="9"
-          stroke="#ddd" stroke-width="1" stroke-linecap="round"/>
-    <line x1="2" y1="9" x2="8" y2="5"
-          stroke="#ddd" stroke-width="1" stroke-linecap="round"/>
-    <line x1="8" y1="5" x2="2" y2="1"
-          stroke="#ddd" stroke-width="1" stroke-linecap="round"/>
-    <polygon points="2,1 2,9 8,5" fill="#ddd" />
+<?xml version="1.0" standalone="no"?>
+<svg viewBox="0 0 10 10"
+     xmlns="http://www.w3.org/2000/svg">
+    <defs>
+        <mask id="triangle">
+            <circle r="4.8" cx="5" cy="5" fill="white" />
+            <g>
+                <line x1="3.9" y1="3" x2="3.9" y2="7"
+                    stroke="black" stroke-width="1" stroke-linecap="round"/>
+                <line x1="3.9" y1="7" x2="6.7" y2="5"
+                    stroke="black" stroke-width="1" stroke-linecap="round"/>
+                <line x1="6.7" y1="5" x2="3.9" y2="3"
+                    stroke="black" stroke-width="1" stroke-linecap="round"/>
+                <polygon points="3.9,3 3.9,7 6.7,5" fill="black" />
+            </g>
+        </mask>
+    </defs>
+    
+    <circle r="5" cx="5" cy="5" fill="#eee" mask="url(#triangle)" />
 </svg>

@@ -1,18 +1,17 @@
-use iced::{Color, Element, Length, Rectangle};
+use iced::Length;
 use iced_core::event::Status;
-use iced_core::layout::{self, Limits, Node};
+use iced_core::layout::{Limits, Node};
 use iced_core::mouse::{self, Cursor};
 use iced_core::renderer::Style;
 use iced_core::svg::{self, Handle};
-use iced_core::widget::Tree;
+use iced_core::widget::{tree, Tree};
 use iced_core::{
-    touch, Clipboard, Event, Layout, Padding, Pixels, Shell,
+    touch, Clipboard, Color, Element, Event, Layout, Padding, Pixels,
+    Rectangle, Shell, Widget,
 };
 
-pub struct SvgButton<Message, Renderer>
+pub struct SvgButton<Message>
 where
-    Renderer: svg::Renderer,
-    Renderer::Theme: StyleSheet,
     Message: Clone,
 {
     width: Length,
@@ -22,13 +21,10 @@ where
     padding: Padding,
     svg: Handle,
     on_press: Option<Message>,
-    style: <Renderer::Theme as StyleSheet>::Style,
 }
 
-impl<Message, Renderer> SvgButton<Message, Renderer>
+impl<Message> SvgButton<Message>
 where
-    Renderer: svg::Renderer,
-    Renderer::Theme: StyleSheet,
     Message: Clone,
 {
     pub fn new(svg: Handle) -> Self {
@@ -40,7 +36,6 @@ where
             padding: Padding::ZERO,
             svg,
             on_press: None,
-            style: Default::default(),
         }
     }
 
@@ -74,33 +69,30 @@ where
         self
     }
 
-    /// Sets the [`Style`] of the [`SvgButton`].
-    pub fn style(mut self, style: <Renderer::Theme as StyleSheet>::Style) -> Self {
-        self.style = style;
-        self
-    }
-
     pub fn on_press(mut self, message: Message) -> Self {
         self.on_press = Some(message);
         self
     }
 }
 
-impl<Message, Renderer> SvgButton<Message, Renderer>
+impl<Message, Renderer> Widget<Message, Renderer> for SvgButton<Message>
 where
     Renderer: svg::Renderer,
-    Renderer::Theme: StyleSheet,
     Message: Clone,
 {
-    fn get_width(&self) -> Length {
+    fn state(&self) -> tree::State {
+        tree::State::new(State::default())
+    }
+
+    fn width(&self) -> Length {
         self.width
     }
 
-    fn get_height(&self) -> Length {
+    fn height(&self) -> Length {
         self.height
     }
 
-    fn layout(&self, _renderer: &Renderer, limits: &Limits) -> layout::Node {
+    fn layout(&self, _renderer: &Renderer, limits: &Limits) -> Node {
         let lim = limits
             .max_width(self.max_width)
             .width(self.width)
@@ -114,10 +106,10 @@ where
         event: Event,
         layout: Layout<'_>,
         cursor: Cursor,
-        renderer: &Renderer,
-        clipboard: &mut dyn Clipboard,
+        _renderer: &Renderer,
+        _clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,
-        viewport: &Rectangle,
+        _viewport: &Rectangle,
     ) -> Status {
         match event {
             Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
@@ -147,9 +139,7 @@ where
                         let bounds = layout.bounds();
 
                         if cursor.is_over(bounds) {
-                            if let Some(msg) = &self.on_press {
-                                shell.publish(msg.clone());
-                            }
+                            shell.publish(on_press);
                         }
 
                         return Status::Captured;
@@ -195,20 +185,15 @@ where
     }
 }
 
-impl<'a, Message, Renderer> From<SvgButton<Message, Renderer>>
+impl<'a, Message, Renderer> From<SvgButton<Message>>
     for Element<'a, Message, Renderer>
 where
-    Message: Clone + 'a,
     Renderer: svg::Renderer + 'a,
-    Renderer::Theme: StyleSheet,
+    Message: Clone + 'a,
 {
-    fn from(button: SvgButton<Message, Renderer>) -> Self {
+    fn from(button: SvgButton<Message>) -> Self {
         Self::new(button)
     }
-}
-
-pub trait StyleSheet {
-    type Style: Default;
 }
 
 /// The local state of a [`SvgButton`].

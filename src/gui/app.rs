@@ -1,11 +1,11 @@
 use std::cell::Cell;
 
-use iced::widget::{button, column, row, scrollable, svg, text, Button};
+use iced::widget::{button, column, row, scrollable, svg, text};
 use iced::{
     executor, Alignment, Application, Command, Element, Renderer,
     Subscription, Theme,
 };
-use iced_core::{window, Event, Length};
+use iced_core::{window, Event};
 use tokio::sync::mpsc::{self, UnboundedReceiver, UnboundedSender};
 
 use crate::config::config::Config;
@@ -25,8 +25,8 @@ pub struct BumpApp {
 #[derive(Debug, Clone, Copy)]
 pub enum BumpMessage {
     Update,
-    Increment,
-    Decrement,
+    Next,
+    Prev,
     Play(Option<bool>),
     PlaySong(usize),
     SongEnd,
@@ -62,10 +62,10 @@ impl Application for BumpApp {
     fn update(&mut self, message: Self::Message) -> Command<Self::Message> {
         match message {
             BumpMessage::Update => _ = self.library.find(&mut self.config),
-            BumpMessage::Increment => {
+            BumpMessage::Next => {
                 _ = self.player.next(&self.library);
             }
-            BumpMessage::Decrement => {
+            BumpMessage::Prev => {
                 _ = self.player.prev(&self.library);
             }
             BumpMessage::Play(play) => {
@@ -89,16 +89,8 @@ impl Application for BumpApp {
 
     fn view(&self) -> Element<'_, Self::Message, Renderer<Self::Theme>> {
         let active = self.player.get_current();
-        let handle = svg::Handle::from_path(format!(
-            "{}/{}",
-            env!("CARGO_MANIFEST_DIR"),
-            "assets/icons/play.svg"
-        ));
+
         column![
-            SvgButton::new(handle)
-                .width(Length::from(32))
-                .height(Length::from(32))
-                .on_press(BumpMessage::Play(None)),
             button("Update library").on_press(BumpMessage::Update),
             text(active),
             self.vector_display(),
@@ -167,33 +159,40 @@ impl BumpApp {
         if self.player.is_playing() {
             pp_icon = "assets/icons/pause.svg";
         }
-
-        row![
-            self.svg_button("assets/icons/prev.svg", BumpMessage::Decrement),
-            self.svg_button(pp_icon, BumpMessage::Play(None)),
-            self.svg_button("assets/icons/next.svg", BumpMessage::Increment),
-        ]
-        .spacing(3)
-        .into()
-    }
-
-    fn svg_button(
-        &self,
-        path: &str,
-        msg: BumpMessage,
-    ) -> Element<'static, BumpMessage> {
-        let handle = svg::Handle::from_path(format!(
+        let pp_handle = svg::Handle::from_path(format!(
             "{}/{}",
             env!("CARGO_MANIFEST_DIR"),
-            path
+            pp_icon
         ));
 
-        let svg = svg(handle).width(32).height(32);
-        Button::new(svg)
-            .width(32)
-            .height(32)
-            .padding(5)
-            .on_press(msg)
-            .into()
+        let prev_handle = svg::Handle::from_path(format!(
+            "{}/{}",
+            env!("CARGO_MANIFEST_DIR"),
+            "assets/icons/prev.svg"
+        ));
+
+        let next_handle = svg::Handle::from_path(format!(
+            "{}/{}",
+            env!("CARGO_MANIFEST_DIR"),
+            "assets/icons/next.svg"
+        ));
+
+        row![
+            SvgButton::new(prev_handle)
+                .width(22)
+                .height(22)
+                .on_press(BumpMessage::Prev),
+            SvgButton::new(pp_handle)
+                .width(30)
+                .height(30)
+                .on_press(BumpMessage::Play(None)),
+            SvgButton::new(next_handle)
+                .width(22)
+                .height(22)
+                .on_press(BumpMessage::Next),
+        ]
+        .height(70)
+        .spacing(5)
+        .into()
     }
 }
