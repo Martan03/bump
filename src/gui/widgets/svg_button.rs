@@ -1,68 +1,170 @@
 use iced::{Color, Element, Length, Rectangle};
+use iced_core::event::Status;
 use iced_core::layout::{self, Limits, Node};
-use iced_core::mouse::Cursor;
+use iced_core::mouse::{self, Cursor};
 use iced_core::renderer::Style;
-use iced_core::svg::{Handle, self};
+use iced_core::svg::{self, Handle};
 use iced_core::widget::Tree;
-use iced_core::{Layout, Widget};
+use iced_core::{
+    touch, Clipboard, Event, Layout, Padding, Pixels, Shell,
+};
 
-use crate::gui::app::BumpMessage;
-
-pub struct SvgButton {
+pub struct SvgButton<Message, Renderer>
+where
+    Renderer: svg::Renderer,
+    Renderer::Theme: StyleSheet,
+    Message: Clone,
+{
     width: Length,
+    max_width: f32,
     height: Length,
-    padding: u16,
+    max_height: f32,
+    padding: Padding,
     svg: Handle,
-    on_press: Option<BumpMessage>,
+    on_press: Option<Message>,
+    style: <Renderer::Theme as StyleSheet>::Style,
 }
 
-impl SvgButton {
+impl<Message, Renderer> SvgButton<Message, Renderer>
+where
+    Renderer: svg::Renderer,
+    Renderer::Theme: StyleSheet,
+    Message: Clone,
+{
     pub fn new(svg: Handle) -> Self {
         Self {
             width: Length::Fill,
+            max_width: f32::INFINITY,
             height: Length::Fill,
-            padding: 0,
+            max_height: f32::INFINITY,
+            padding: Padding::ZERO,
             svg,
             on_press: None,
+            style: Default::default(),
         }
     }
 
-    pub fn width(mut self, width: Length) -> Self {
-        self.width = width;
+    /// Sets the width of the [`SvgButton`].
+    pub fn width(mut self, width: impl Into<Length>) -> Self {
+        self.width = width.into();
         self
     }
 
-    pub fn height(mut self, height: Length) -> Self {
-        self.height = height;
+    /// Sets the maximum width of the [`SvgButton`].
+    pub fn max_width(mut self, max_width: impl Into<Pixels>) -> Self {
+        self.max_width = max_width.into().0;
         self
     }
 
-    pub fn padding(mut self, padding: u16) -> Self {
-        self.padding = padding;
+    /// Sets the height of the [`SvgButton`].
+    pub fn height(mut self, height: impl Into<Length>) -> Self {
+        self.height = height.into();
         self
     }
 
-    pub fn on_press(mut self, message: BumpMessage) -> Self {
+    /// Sets the maximum height of the [`SvgButton`].
+    pub fn max_height(mut self, max_height: impl Into<Pixels>) -> Self {
+        self.max_height = max_height.into().0;
+        self
+    }
+
+    /// Sets the [`Padding`] of the [`SvgButton`].
+    pub fn padding<P: Into<Padding>>(mut self, padding: P) -> Self {
+        self.padding = padding.into();
+        self
+    }
+
+    /// Sets the [`Style`] of the [`SvgButton`].
+    pub fn style(mut self, style: <Renderer::Theme as StyleSheet>::Style) -> Self {
+        self.style = style;
+        self
+    }
+
+    pub fn on_press(mut self, message: Message) -> Self {
         self.on_press = Some(message);
         self
     }
 }
 
-impl<Message, Renderer> Widget<Message, Renderer> for SvgButton
+impl<Message, Renderer> SvgButton<Message, Renderer>
 where
     Renderer: svg::Renderer,
+    Renderer::Theme: StyleSheet,
+    Message: Clone,
 {
-    fn width(&self) -> Length {
-        Length::Shrink
+    fn get_width(&self) -> Length {
+        self.width
     }
 
-    fn height(&self) -> Length {
-        Length::Shrink
+    fn get_height(&self) -> Length {
+        self.height
     }
 
     fn layout(&self, _renderer: &Renderer, limits: &Limits) -> layout::Node {
-        let lim = limits.width(self.width).height(self.height);
+        let lim = limits
+            .max_width(self.max_width)
+            .width(self.width)
+            .height(self.height);
         Node::new(lim.fill())
+    }
+
+    fn on_event(
+        &mut self,
+        state: &mut Tree,
+        event: Event,
+        layout: Layout<'_>,
+        cursor: Cursor,
+        renderer: &Renderer,
+        clipboard: &mut dyn Clipboard,
+        shell: &mut Shell<'_, Message>,
+        viewport: &Rectangle,
+    ) -> Status {
+        match event {
+            Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
+            | Event::Touch(touch::Event::FingerPressed { .. }) => {
+                if self.on_press.is_some() {
+                    let bounds = layout.bounds();
+
+                    if cursor.is_over(bounds) {
+                        let state = state.state.downcast_mut::<State>();
+
+                        state.is_pressed = true;
+
+                        return Status::Captured;
+                    }
+                }
+            }
+            Event::Mouse(mouse::Event::ButtonReleased(
+                mouse::Button::Left,
+            ))
+            | Event::Touch(touch::Event::FingerLifted { .. }) => {
+                if let Some(on_press) = self.on_press.clone() {
+                    let state = state.state.downcast_mut::<State>();
+
+                    if state.is_pressed {
+                        state.is_pressed = false;
+
+                        let bounds = layout.bounds();
+
+                        if cursor.is_over(bounds) {
+                            if let Some(msg) = &self.on_press {
+                                shell.publish(msg.clone());
+                            }
+                        }
+
+                        return Status::Captured;
+                    }
+                }
+            }
+            Event::Touch(touch::Event::FingerLost { .. }) => {
+                let state = state.state.downcast_mut::<State>();
+
+                state.is_pressed = false;
+            }
+            _ => {}
+        }
+
+        Status::Ignored
     }
 
     fn draw(
@@ -76,12 +178,12 @@ where
         _viewport: &Rectangle,
     ) {
         let bounds = layout.bounds();
-        
+
         let svg_bounds = Rectangle {
-            x: bounds.x,
-            y: bounds.y,
-            width: bounds.width,
-            height: bounds.height,
+            x: bounds.x + self.padding.left,
+            y: bounds.y + self.padding.right,
+            width: bounds.width - self.padding.left - self.padding.right,
+            height: bounds.height - self.padding.left - self.padding.right,
         };
 
         let color = if cursor.is_over(bounds) {
@@ -93,11 +195,24 @@ where
     }
 }
 
-impl<'a, Message, Renderer> From<SvgButton> for Element<'a, Message, Renderer>
+impl<'a, Message, Renderer> From<SvgButton<Message, Renderer>>
+    for Element<'a, Message, Renderer>
 where
-    Renderer: svg::Renderer,
+    Message: Clone + 'a,
+    Renderer: svg::Renderer + 'a,
+    Renderer::Theme: StyleSheet,
 {
-    fn from(svg_button: SvgButton) -> Self {
-        Self::new(svg_button)
+    fn from(button: SvgButton<Message, Renderer>) -> Self {
+        Self::new(button)
     }
+}
+
+pub trait StyleSheet {
+    type Style: Default;
+}
+
+/// The local state of a [`SvgButton`].
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+struct State {
+    is_pressed: bool,
 }
