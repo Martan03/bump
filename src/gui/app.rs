@@ -1,4 +1,6 @@
 use std::cell::Cell;
+use std::thread;
+use std::time::{Duration, Instant};
 
 use iced::widget::{
     button, column, container, row, scrollable, slider, svg, text,
@@ -38,6 +40,7 @@ pub enum BumpMessage {
     SongEnd,
     Volume(f32),
     Mute(Option<bool>),
+    Tick,
     Close,
 }
 
@@ -85,7 +88,7 @@ impl Application for BumpApp {
                 _ = self.player.play_at(&self.library, id as i128, true);
             }
             BumpMessage::SeekTo(secs) => {
-                println!("{}", secs);
+                _ = self.player.seek_to(Duration::from_secs_f32(secs));
             }
             BumpMessage::SongEnd => {
                 _ = self.player.next(&self.library);
@@ -95,6 +98,7 @@ impl Application for BumpApp {
                 let mute = mute.unwrap_or(!self.player.get_mute());
                 _ = self.player.set_mute(mute);
             }
+            BumpMessage::Tick => {}
             BumpMessage::Close => {
                 _ = self.config.save();
                 _ = self.library.save();
@@ -141,6 +145,18 @@ impl Application for BumpApp {
                 }
                 _ => None,
             }),
+            iced::subscription::unfold(
+                "69 tick".to_owned(),
+                Instant::now(),
+                |t| async move {
+                    let delta = Instant::now() - t;
+                    let tick = Duration::from_secs(1);
+                    if delta < tick {
+                        thread::sleep(tick - delta);
+                    }
+                    (BumpMessage::Tick, t + tick)
+                },
+            ),
         ])
     }
 }
@@ -156,11 +172,19 @@ impl BumpApp {
                     .iter()
                     .map(|s| {
                         c += 1;
-                        button(text(format!(
-                            "{} - {}",
-                            s.get_name(),
-                            s.get_artist()
-                        )))
+                        let total_secs = s.get_length().as_secs();
+                        let mins = total_secs / 60;
+                        let secs = mins % 60;
+                        let time = if total_secs > 0 {
+                            format!("{:02}:{:02}", mins, secs)
+                        } else {
+                            "--:--".to_owned()
+                        };
+                        button(row![
+                            text(s.get_name()).width(Length::FillPortion(1)),
+                            text(s.get_artist()).width(Length::FillPortion(1)),
+                            text(time).width(50),
+                        ])
                         .width(iced::Length::Fill)
                         .on_press(BumpMessage::PlaySong(c - 1))
                         .into()
@@ -177,11 +201,9 @@ impl BumpApp {
         let (time, len) = self.player.get_timestamp();
 
         container(column![
-            slider(
-                0.0..=len.as_secs_f32(),
-                time.as_secs_f32(),
-                |v| { BumpMessage::SeekTo(v) }
-            )
+            slider(0.0..=len.as_secs_f32(), time.as_secs_f32(), |v| {
+                BumpMessage::SeekTo(v)
+            })
             .height(4)
             .step(0.01),
             row![
