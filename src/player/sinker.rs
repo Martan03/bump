@@ -1,4 +1,4 @@
-use std::fs::File;
+use std::{fs::File, time::Duration};
 
 use eyre::{Report, Result};
 use raplay::{
@@ -59,5 +59,13 @@ impl Sinker {
     pub fn set_volume(&mut self, volume: f32) -> Result<()> {
         self.sink.volume(volume)?;
         Ok(())
+    }
+
+    /// Gets timestamp of currently playing song
+    pub fn get_timestamp(&self) -> Result<(Duration, Duration)> {
+        match self.sink.get_timestamp() {
+            Ok((t, l)) => Ok((t, l)),
+            Err(e) => Err(e.into()),
+        }
     }
 }

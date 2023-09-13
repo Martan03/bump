@@ -4,8 +4,7 @@ use iced::widget::{
     button, column, container, row, scrollable, slider, svg, text,
 };
 use iced::{
-    executor, Alignment, Application, Command, Element, Renderer,
-    Subscription,
+    executor, Alignment, Application, Command, Element, Renderer, Subscription,
 };
 use iced_core::alignment::{Horizontal, Vertical};
 use iced_core::{window, Event, Length};
@@ -13,9 +12,10 @@ use tokio::sync::mpsc::{self, UnboundedReceiver, UnboundedSender};
 
 use crate::config::config::Config;
 use crate::library::library::Library;
+use crate::library::song::Song;
 use crate::player::player::Player;
 
-use super::theme::{Button, Theme, Container, Text};
+use super::theme::{Button, Container, Text, Theme};
 use super::widgets::svg_button::SvgButton;
 
 pub struct BumpApp {
@@ -173,31 +173,36 @@ impl BumpApp {
     }
 
     fn bottom_bar(&self) -> Element<'_, BumpMessage, Renderer<Theme>> {
-        container(
-            column![
-                slider(0.0..=1., self.player.get_volume(), |v| {
-                    BumpMessage::SeekTo(v)
-                })
-                .height(4)
-                .step(0.01),
-                row![
-                    container(self.title_bar(),).width(Length::FillPortion(1)),
-                    self.play_menu(),
-                    container(self.volume_menu(),).width(Length::FillPortion(1)),
-                ]
-                .height(Length::Fill)
-                .padding(5)
-                .align_items(Alignment::Center)
+        let song = self.player.get_current_song(&self.library);
+        let (time, len) = self.player.get_timestamp();
+
+        container(column![
+            slider(
+                0.0..=len.as_secs_f32(),
+                time.as_secs_f32(),
+                |v| { BumpMessage::SeekTo(v) }
+            )
+            .height(4)
+            .step(0.01),
+            row![
+                container(self.title_bar(song),).width(Length::FillPortion(1)),
+                self.play_menu(),
+                container(self.volume_menu(),).width(Length::FillPortion(1)),
             ]
-        )
+            .height(Length::Fill)
+            .padding(5)
+            .align_items(Alignment::Center)
+        ])
         .align_y(Vertical::Center)
         .height(60)
         .style(Container::Dark)
         .into()
     }
 
-    fn title_bar(&self) -> Element<'_, BumpMessage, Renderer<Theme>> {
-        let song = self.player.get_current_song(&self.library);
+    fn title_bar(
+        &self,
+        song: Song,
+    ) -> Element<'_, BumpMessage, Renderer<Theme>> {
         column![
             text(song.get_name()).size(16).style(Text::Light),
             text(song.get_artist()).size(14).style(Text::Dark),

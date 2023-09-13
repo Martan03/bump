@@ -2,12 +2,12 @@ use iced::Length;
 use iced_core::event::Status;
 use iced_core::layout::{Limits, Node};
 use iced_core::mouse::{self, Cursor};
-use iced_core::renderer::{Style, Quad};
+use iced_core::renderer::{Quad, Style};
 use iced_core::svg::{self, Handle};
 use iced_core::widget::{tree, Tree};
 use iced_core::{
-    touch, Clipboard, Color, Element, Event, Layout, Padding, Pixels,
-    Rectangle, Shell, Widget, BorderRadius, Background,
+    touch, Background, BorderRadius, Clipboard, Color, Element, Event, Layout,
+    Padding, Pixels, Rectangle, Shell, Widget,
 };
 
 pub struct SvgButton<Message, Renderer>
@@ -81,7 +81,8 @@ where
     }
 }
 
-impl<Message, Renderer> Widget<Message, Renderer> for SvgButton<Message, Renderer>
+impl<Message, Renderer> Widget<Message, Renderer>
+    for SvgButton<Message, Renderer>
 where
     Renderer: svg::Renderer,
     Renderer::Theme: StyleSheet,

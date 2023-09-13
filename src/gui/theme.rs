@@ -17,8 +17,7 @@ const BG_DARK: Color = Color::from_rgb(15. / 255., 15. / 255., 15. / 255.);
 
 /// Foreground color
 const FG: Color = Color::from_rgb(221. / 255., 221. / 255., 221. / 255.);
-const FG_LIGHT: Color =
-    Color::from_rgb(255. / 255., 255. / 255., 255. / 255.);
+const FG_LIGHT: Color = Color::from_rgb(255. / 255., 255. / 255., 255. / 255.);
 const FG_DARK: Color = Color::from_rgb(200. / 255., 200. / 255., 200. / 255.);
 
 const PRIM: Color = Color::from_rgb(58. / 255., 203. / 255., 175. / 255.);
@@ -296,7 +295,7 @@ impl slider::StyleSheet for Theme {
                 color: Color::TRANSPARENT,
                 border_width: 0.,
                 border_color: BG_LIGHT,
-            }
+            },
         }
     }
 
@@ -453,7 +452,7 @@ impl svg_button::StyleSheet for Theme {
             border_thickness: 0.,
             color: None,
         };
-        
+
         match style {
             _ => transparent,
         }
@@ -466,7 +465,7 @@ impl svg_button::StyleSheet for Theme {
             _ => svg_button::Appearance {
                 color: Some(PRIM),
                 ..active
-            }
+            },
         }
     }
 
@@ -477,7 +476,7 @@ impl svg_button::StyleSheet for Theme {
             _ => svg_button::Appearance {
                 color: Some(PRIM),
                 ..active
-            }
+            },
         }
     }
 }

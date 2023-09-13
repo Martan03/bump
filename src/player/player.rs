@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use eyre::Result;
 use raplay::sink::CallbackInfo;
 use tokio::sync::mpsc::UnboundedSender;
@@ -146,6 +148,16 @@ impl Player {
                 Ok(())
             }
             Err(e) => Err(e),
+        }
+    }
+
+    /// Gets currently playing song timestamp
+    pub fn get_timestamp(&self) -> (Duration, Duration) {
+        match self.sinker.get_timestamp() {
+            Ok((t, l)) => (t, l),
+            Err(_) => {
+                (Duration::from_secs_f32(0.), Duration::from_secs_f32(0.))
+            }
         }
     }
 }
