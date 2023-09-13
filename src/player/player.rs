@@ -160,4 +160,9 @@ impl Player {
             }
         }
     }
+
+    /// Seeks to given position
+    pub fn seek_to(&mut self, time: Duration) -> Result<()> {
+        self.sinker.seek_to(time)
+    }
 }

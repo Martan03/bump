@@ -68,4 +68,10 @@ impl Sinker {
             Err(e) => Err(e.into()),
         }
     }
+
+    /// Seeks to given position
+    pub fn seek_to(&mut self, time: Duration) -> Result<()> {
+        self.sink.seek_to(time)?;
+        Ok(())
+    }
 }
