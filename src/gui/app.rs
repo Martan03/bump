@@ -5,7 +5,7 @@ use iced::widget::{
 };
 use iced::{
     executor, Alignment, Application, Command, Element, Padding, Renderer,
-    Subscription, Theme,
+    Subscription,
 };
 use iced_core::alignment::Horizontal;
 use iced_core::{window, Event, Length};
@@ -15,6 +15,7 @@ use crate::config::config::Config;
 use crate::library::library::Library;
 use crate::player::player::Player;
 
+use super::theme::{Button, Theme};
 use super::widgets::svg_button::SvgButton;
 
 pub struct BumpApp {
@@ -23,6 +24,7 @@ pub struct BumpApp {
     config: Config,
     _sender: UnboundedSender<BumpMessage>,
     receiver: Cell<Option<UnboundedReceiver<BumpMessage>>>,
+    theme: Theme,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -55,6 +57,7 @@ impl Application for BumpApp {
                 config,
                 _sender: sender,
                 receiver: Cell::new(Some(receiver)),
+                theme: Theme::default(),
             },
             Command::none(),
         )
@@ -97,11 +100,13 @@ impl Application for BumpApp {
         Command::none()
     }
 
-    fn view(&self) -> Element<'_, Self::Message, Renderer<Self::Theme>> {
+    fn view(&self) -> Element<'_, BumpMessage, Renderer<Theme>> {
         let active = self.player.get_current();
 
         column![
-            button("Update library").on_press(BumpMessage::Update),
+            button("Update library")
+                .style(Button::Primary)
+                .on_press(BumpMessage::Update),
             text(format!("{}/{}", active, self.library.count())),
             container(self.vector_display(),).height(Length::FillPortion(1)),
             self.bottom_bar(),
@@ -113,7 +118,7 @@ impl Application for BumpApp {
     }
 
     fn theme(&self) -> Self::Theme {
-        Theme::Dark
+        self.theme.clone()
     }
 
     fn subscription(&self) -> Subscription<Self::Message> {
@@ -138,7 +143,7 @@ impl Application for BumpApp {
 }
 
 impl BumpApp {
-    fn vector_display(&self) -> Element<BumpMessage> {
+    fn vector_display(&self) -> Element<'_, BumpMessage, Renderer<Theme>> {
         let songs = self.library.get_songs();
         let mut c = 0;
 
@@ -164,7 +169,7 @@ impl BumpApp {
         .into()
     }
 
-    fn bottom_bar(&self) -> Element<BumpMessage> {
+    fn bottom_bar(&self) -> Element<'_, BumpMessage, Renderer<Theme>> {
         row![
             container(self.title_bar(),).width(Length::FillPortion(1)),
             self.play_menu(),
@@ -176,7 +181,7 @@ impl BumpApp {
         .into()
     }
 
-    fn title_bar(&self) -> Element<BumpMessage> {
+    fn title_bar(&self) -> Element<'_, BumpMessage, Renderer<Theme>> {
         let song = self.player.get_current_song(&self.library);
         column![
             text(song.get_name()).size(16),
@@ -185,7 +190,7 @@ impl BumpApp {
         .into()
     }
 
-    fn play_menu(&self) -> Element<BumpMessage> {
+    fn play_menu(&self) -> Element<'_, BumpMessage, Renderer<Theme>> {
         let mut pp_icon = "assets/icons/play.svg";
         if self.player.is_playing() {
             pp_icon = "assets/icons/pause.svg";
@@ -227,7 +232,7 @@ impl BumpApp {
         .into()
     }
 
-    fn volume_menu(&self) -> Element<BumpMessage> {
+    fn volume_menu(&self) -> Element<'_, BumpMessage, Renderer<Theme>> {
         let mut icon = "assets/icons/volume.svg";
         if self.player.get_mute() {
             icon = "assets/icons/volume_muted.svg";
