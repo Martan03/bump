@@ -20,6 +20,7 @@ pub struct Player {
     sinker: Sinker,
     state: PlayState,
     current: usize,
+    volume: f32,
 }
 
 impl Player {
@@ -36,6 +37,7 @@ impl Player {
             sinker,
             state: PlayState::NotPlaying,
             current: 0,
+            volume: 1.,
         }
     }
 
@@ -107,8 +109,22 @@ impl Player {
 
     pub fn get_current_song(&self, library: &Library) -> Song {
         if self.state == PlayState::NotPlaying {
-            return Song::default()
+            return Song::default();
         }
         library.get_song(self.current)
+    }
+
+    pub fn get_volume(&self) -> f32 {
+        self.volume
+    }
+
+    pub fn set_volume(&mut self, volume: f32) -> Result<()> {
+        match self.sinker.set_volume(volume) {
+            Ok(_) => {
+                self.volume = volume;
+                Ok(())
+            },
+            Err(e) => Err(e),
+        }
     }
 }

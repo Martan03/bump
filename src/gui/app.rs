@@ -1,12 +1,13 @@
 use std::cell::Cell;
 
 use iced::widget::{
-    button, column, container, row, scrollable, svg, text, Space,
+    button, column, container, row, scrollable, slider, svg, text,
 };
 use iced::{
     executor, Alignment, Application, Command, Element, Renderer,
-    Subscription, Theme,
+    Subscription, Theme, Padding
 };
+use iced_core::alignment::Horizontal;
 use iced_core::{window, Event, Length};
 use tokio::sync::mpsc::{self, UnboundedReceiver, UnboundedSender};
 
@@ -32,6 +33,7 @@ pub enum BumpMessage {
     Play(Option<bool>),
     PlaySong(usize),
     SongEnd,
+    Volume(f32),
     Close,
 }
 
@@ -80,6 +82,9 @@ impl Application for BumpApp {
             BumpMessage::SongEnd => {
                 _ = self.player.next(&self.library);
             }
+            BumpMessage::Volume(vol) => {
+                _ = self.player.set_volume(vol)
+            }
             BumpMessage::Close => {
                 _ = self.config.save();
                 _ = self.library.save();
@@ -95,11 +100,14 @@ impl Application for BumpApp {
         column![
             button("Update library").on_press(BumpMessage::Update),
             text(active),
+            container(
+                self.vector_display(),
+            )
+            .height(Length::FillPortion(1)),
             self.bottom_bar(),
-            self.vector_display(),
         ]
         .spacing(3)
-        .padding(20)
+        .padding(10)
         .align_items(Alignment::Center)
         .into()
     }
@@ -158,13 +166,13 @@ impl BumpApp {
 
     fn bottom_bar(&self) -> Element<BumpMessage> {
         row![
-            container(
-                self.title_bar(),
-            ).width(Length::FillPortion(1)),
+            container(self.title_bar(),).width(Length::FillPortion(1)),
             self.play_menu(),
-            Space::new(Length::FillPortion(1), Length::Shrink),
+            container(self.volume_menu(),).width(Length::FillPortion(1)),
         ]
+        .height(60)
         .align_items(Alignment::Center)
+        .padding(Padding::from([10, 0, 0, 0]))
         .into()
     }
 
@@ -214,9 +222,22 @@ impl BumpApp {
                 .height(18)
                 .on_press(BumpMessage::Next),
         ]
-        .height(70)
         .align_items(Alignment::Center)
         .spacing(20)
+        .into()
+    }
+
+    fn volume_menu(&self) -> Element<BumpMessage> {
+        container(row![
+            text(format!("{:.0}", self.player.get_volume() * 100.0)),
+            slider(0.0..=1., self.player.get_volume(), |v| {
+                BumpMessage::Volume(v)
+            })
+            .step(0.01)
+            .width(100),
+        ])
+        .width(Length::Fill)
+        .align_x(Horizontal::Right)
         .into()
     }
 }
