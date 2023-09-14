@@ -3,7 +3,7 @@ use std::thread;
 use std::time::{Duration, Instant};
 
 use iced::widget::{
-    button, column, container, row, scrollable, slider, svg, text,
+    button, column, container, row, slider, svg, text,
 };
 use iced::{
     executor, Alignment, Application, Command, Element, Renderer, Subscription,
@@ -14,7 +14,6 @@ use tokio::sync::mpsc::{self, UnboundedReceiver, UnboundedSender};
 
 use crate::config::config::Config;
 use crate::library::library::Library;
-use crate::library::song::Song;
 use crate::player::player::Player;
 
 use super::gui::Gui;
@@ -22,13 +21,13 @@ use super::theme::{Button, Container, Text, Theme};
 use super::widgets::svg_button::SvgButton;
 
 pub struct BumpApp {
-    player: Player,
-    library: Library,
-    config: Config,
-    gui: Gui,
+    pub(super) player: Player,
+    pub(super) library: Library,
+    pub(super) config: Config,
+    pub(super) gui: Gui,
     _sender: UnboundedSender<Msg>,
-    receiver: Cell<Option<UnboundedReceiver<Msg>>>,
-    theme: Theme,
+    pub(super) receiver: Cell<Option<UnboundedReceiver<Msg>>>,
+    pub(super) theme: Theme,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -96,7 +95,7 @@ impl Application for BumpApp {
                     .on_press(Msg::Update),
             ]
             .spacing(3),
-            container(self.vector_display(),).height(Length::FillPortion(1)),
+            container(self.songs_list()).height(Length::FillPortion(1)),
             self.bottom_bar(),
         ]
         .align_items(Alignment::Center)
@@ -152,7 +151,7 @@ impl BumpApp {
         let library = Library::load(&config);
 
         BumpApp {
-            player: Player::new(sender.clone()),
+            player: Player::new(sender.clone(), &library),
             library,
             config,
             gui,
@@ -162,65 +161,7 @@ impl BumpApp {
         }
     }
 
-    fn vector_display(&self) -> Element<'_, Msg, Renderer<Theme>> {
-        let songs = self.library.get_songs();
-        let cur = self.player.get_current();
-        let mut c = 0;
-
-        scrollable(
-            column(
-                songs
-                    .iter()
-                    .map(|s| {
-                        let style = match cur {
-                            Some(value) if value.to_owned() == c => Text::Prim,
-                            _ => Text::Default,
-                        };
-                        c += 1;
-                        button(
-                            row![
-                                column![
-                                    text(s.get_name()).size(15).style(style),
-                                    text(s.get_artist())
-                                        .size(11)
-                                        .style(Text::Dark),
-                                ]
-                                .width(Length::FillPortion(11)),
-                                column![
-                                    text(s.get_album()).size(15).style(style),
-                                    text(s.get_year_str())
-                                        .size(11)
-                                        .style(Text::Dark),
-                                ]
-                                .width(Length::FillPortion(11)),
-                                column![
-                                    text(s.get_length_str())
-                                        .size(15)
-                                        .style(style),
-                                    text(s.get_genre())
-                                        .size(11)
-                                        .style(Text::Dark),
-                                ]
-                                .width(Length::FillPortion(1)),
-                            ]
-                            .spacing(3),
-                        )
-                        .height(45)
-                        .width(iced::Length::Fill)
-                        .style(Button::Item)
-                        .on_press(Msg::Plr(PlayerMsg::PlaySong(c - 1)))
-                        .into()
-                    })
-                    .collect(),
-            )
-            .padding([0, 15, 0, 5])
-            .spacing(3),
-        )
-        .into()
-    }
-
     fn bottom_bar(&self) -> Element<'_, Msg, Renderer<Theme>> {
-        let song = self.player.get_current_song(&self.library);
         let (time, len) = self.player.get_timestamp();
 
         container(column![
@@ -230,7 +171,7 @@ impl BumpApp {
             .height(4)
             .step(0.01),
             row![
-                container(self.title_bar(song),).width(Length::FillPortion(1)),
+                container(self.title_bar(),).width(Length::FillPortion(1)),
                 self.play_menu(),
                 container(self.volume_menu(),).width(Length::FillPortion(1)),
             ]
@@ -244,7 +185,8 @@ impl BumpApp {
         .into()
     }
 
-    fn title_bar(&self, song: Song) -> Element<'_, Msg, Renderer<Theme>> {
+    fn title_bar(&self) -> Element<'_, Msg, Renderer<Theme>> {
+        let song = self.player.get_current_song(&self.library);
         column![
             text(song.get_name()).size(16).style(Text::Light),
             text(song.get_artist()).size(14).style(Text::Dark),

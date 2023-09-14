@@ -106,7 +106,7 @@ impl Default for Song {
     fn default() -> Self {
         Self {
             path: Default::default(),
-            name: Default::default(),
+            name: "Not playing".to_owned(),
             artist: Default::default(),
             album: Default::default(),
             year: Default::default(),

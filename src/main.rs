@@ -13,6 +13,7 @@ mod config {
 }
 mod gui {
     pub mod app;
+    pub mod elements;
     pub mod gui;
     pub mod theme;
     pub mod widgets {

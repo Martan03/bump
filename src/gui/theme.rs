@@ -10,18 +10,32 @@ use iced_core::{Background, BorderRadius, Color, Vector};
 
 use super::widgets::svg_button;
 
+macro_rules! hex_to_color {
+    ($x:literal) => {
+        Color::from_rgb(
+            (($x & 0xFF0000) >> 16) as f32 / 255.,
+            (($x & 0xFF00) >> 8) as f32 / 255.,
+            ($x & 0xFF) as f32 / 255.,
+        )
+    };
+}
+
 /// Background colors
-const BG: Color = Color::from_rgb(27. / 255., 27. / 255., 27. / 255.);
-const BG_LIGHT: Color = Color::from_rgb(37. / 255., 37. / 255., 37. / 255.);
-const BG_DARK: Color = Color::from_rgb(15. / 255., 15. / 255., 15. / 255.);
+const BG: Color = hex_to_color!(0x1b1b1b);
+const BG_LIGHT: Color = hex_to_color!(0x252525);
+const BG_DARK: Color = hex_to_color!(0x121212);
 
 /// Foreground color
-const FG: Color = Color::from_rgb(221. / 255., 221. / 255., 221. / 255.);
-const FG_LIGHT: Color = Color::from_rgb(255. / 255., 255. / 255., 255. / 255.);
-const FG_DARK: Color = Color::from_rgb(200. / 255., 200. / 255., 200. / 255.);
+const FG: Color = hex_to_color!(0xdddddd);
+const FG_LIGHT: Color = hex_to_color!(0xffffff);
+const FG_DARK: Color = hex_to_color!(0xc8c8c8);
+const FG_DARKER: Color = hex_to_color!(0x737373);
 
-const PRIM: Color = Color::from_rgb(58. / 255., 203. / 255., 175. / 255.);
-const PRIM_DARK: Color = Color::from_rgb(43. / 255., 181. / 255., 153. / 255.);
+// Primary color
+const PRIM: Color = hex_to_color!(0x3acbaf);
+const PRIM_DARK: Color = hex_to_color!(0x2bb599);
+
+const OUTLINE: Color = hex_to_color!(0x333333);
 
 #[derive(Default, Clone)]
 pub struct Theme {}
@@ -124,6 +138,7 @@ pub enum Container {
     #[default]
     Default,
     Dark,
+    Separate,
 }
 
 impl container::StyleSheet for Theme {
@@ -133,6 +148,10 @@ impl container::StyleSheet for Theme {
         match style {
             Container::Dark => container::Appearance {
                 background: Some(Background::Color(BG_DARK)),
+                ..container::Appearance::default()
+            },
+            Container::Separate => container::Appearance {
+                background: Some(Background::Color(OUTLINE)),
                 ..container::Appearance::default()
             },
             _ => container::Appearance::default(),
@@ -362,8 +381,9 @@ pub enum Text {
     #[default]
     Default,
     Normal,
-    Dark,
     Light,
+    Dark,
+    Darker,
     Prim,
 }
 
@@ -376,6 +396,7 @@ impl text::StyleSheet for Theme {
                 Text::Light => Some(FG_LIGHT),
                 Text::Normal => Some(FG),
                 Text::Dark => Some(FG_DARK),
+                Text::Darker => Some(FG_DARKER),
                 Text::Prim => Some(PRIM),
                 _ => None,
             },

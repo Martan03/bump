@@ -30,7 +30,7 @@ pub struct Player {
 
 impl Player {
     /// Constructs new Player
-    pub fn new(sender: UnboundedSender<Msg>) -> Self {
+    pub fn new(sender: UnboundedSender<Msg>, library: &Library) -> Self {
         let mut sinker = Sinker::new();
         _ = sinker.song_end(move |info| match info {
             CallbackInfo::SourceEnded => {
@@ -41,10 +41,10 @@ impl Player {
         Player {
             sinker,
             state: PlayState::Stopped,
-            current: 0,
+            current: usize::MAX,
             volume: 1.,
             mute: false,
-            playlist: Vec::new(),
+            playlist: (0..library.count()).collect(),
         }
     }
 
@@ -100,7 +100,7 @@ impl Player {
         self.state == PlayState::Playing
     }
 
-    pub fn is_stopped(&self) -> bool {
+    pub fn _is_stopped(&self) -> bool {
         self.state == PlayState::Stopped
     }
 
@@ -131,11 +131,14 @@ impl Player {
         }
     }
 
+    /// Gets currently playing song
     pub fn get_current_song(&self, library: &Library) -> Song {
-        if self.state == PlayState::Stopped {
-            return Song::default();
+        match self.playlist.get(self.current) {
+            Some(index) if self.state != PlayState::Stopped => {
+                library.get_song(index.to_owned())
+            }
+            _ => Song::default(),
         }
-        library.get_song(self.playlist[self.current])
     }
 
     /// Gets current volume of the playback
