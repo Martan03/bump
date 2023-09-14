@@ -42,29 +42,34 @@ pub enum Button {
     #[default]
     Default,
     Primary,
+    Item,
 }
 
 impl button::StyleSheet for Theme {
     type Style = Button;
 
     fn active(&self, style: &Self::Style) -> button::Appearance {
+        let default = button::Appearance {
+            shadow_offset: Vector::ZERO,
+            background: None,
+            border_radius: BorderRadius::from(0.),
+            border_width: 0.,
+            border_color: Color::TRANSPARENT,
+            text_color: FG,
+        };
+
         match style {
             Button::Primary => button::Appearance {
-                shadow_offset: Vector::ZERO,
                 background: Some(Background::Color(PRIM)),
                 border_radius: BorderRadius::from(6.),
-                border_width: 0.,
-                border_color: Color::TRANSPARENT,
                 text_color: Color::BLACK,
+                ..default
             },
-            _ => button::Appearance {
-                shadow_offset: Vector::ZERO,
-                background: None,
-                border_radius: BorderRadius::from(0.),
-                border_width: 0.,
-                border_color: Color::TRANSPARENT,
+            Button::Item => button::Appearance {
                 text_color: FG,
+                ..default
             },
+            _ => default,
         }
     }
 
@@ -72,6 +77,11 @@ impl button::StyleSheet for Theme {
         match style {
             Button::Primary => button::Appearance {
                 background: Some(Background::Color(PRIM_DARK)),
+                ..self.active(style)
+            },
+            Button::Item => button::Appearance {
+                background: Some(Background::Color(BG_LIGHT)),
+                border_radius: BorderRadius::from(6.),
                 ..self.active(style)
             },
             _ => button::Appearance {
@@ -354,6 +364,7 @@ pub enum Text {
     Normal,
     Dark,
     Light,
+    Prim,
 }
 
 impl text::StyleSheet for Theme {
@@ -365,6 +376,7 @@ impl text::StyleSheet for Theme {
                 Text::Light => Some(FG_LIGHT),
                 Text::Normal => Some(FG),
                 Text::Dark => Some(FG_DARK),
+                Text::Prim => Some(PRIM),
                 _ => None,
             },
         }

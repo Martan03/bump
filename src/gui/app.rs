@@ -26,22 +26,27 @@ pub struct BumpApp {
     library: Library,
     config: Config,
     gui: Gui,
-    _sender: UnboundedSender<BumpMessage>,
-    receiver: Cell<Option<UnboundedReceiver<BumpMessage>>>,
+    _sender: UnboundedSender<Msg>,
+    receiver: Cell<Option<UnboundedReceiver<Msg>>>,
     theme: Theme,
 }
 
 #[derive(Debug, Clone, Copy)]
-pub enum BumpMessage {
-    Update,
-    Next,
-    Prev,
+pub enum PlayerMsg {
     Play(Option<bool>),
     PlaySong(usize),
+    Next,
+    Prev,
     SeekTo(f32),
     SongEnd,
     Volume(f32),
     Mute(Option<bool>),
+}
+
+#[derive(Debug, Clone, Copy)]
+pub enum Msg {
+    Plr(PlayerMsg),
+    Update,
     Tick,
     Move(i32, i32),
     Size(u32, u32),
@@ -52,7 +57,7 @@ impl Application for BumpApp {
     type Executor = executor::Default;
     type Flags = (Config, Gui);
     type Theme = Theme;
-    type Message = BumpMessage;
+    type Message = Msg;
 
     fn new(flags: Self::Flags) -> (Self, Command<Self::Message>) {
         (BumpApp::new(flags.0, flags.1), Command::none())
@@ -64,35 +69,12 @@ impl Application for BumpApp {
 
     fn update(&mut self, message: Self::Message) -> Command<Self::Message> {
         match message {
-            BumpMessage::Update => _ = self.library.find(&mut self.config),
-            BumpMessage::Next => {
-                _ = self.player.next(&self.library);
-            }
-            BumpMessage::Prev => {
-                _ = self.player.prev(&self.library);
-            }
-            BumpMessage::Play(play) => {
-                let playing = self.player.is_playing();
-                _ = self.player.play(play.unwrap_or(!playing));
-            }
-            BumpMessage::PlaySong(id) => {
-                _ = self.player.play_at(&self.library, id as i128, true);
-            }
-            BumpMessage::SeekTo(secs) => {
-                _ = self.player.seek_to(Duration::from_secs_f32(secs));
-            }
-            BumpMessage::SongEnd => {
-                _ = self.player.next(&self.library);
-            }
-            BumpMessage::Volume(vol) => _ = self.player.set_volume(vol),
-            BumpMessage::Mute(mute) => {
-                let mute = mute.unwrap_or(!self.player.get_mute());
-                _ = self.player.set_mute(mute);
-            }
-            BumpMessage::Tick => {}
-            BumpMessage::Move(x, y) => self.gui.set_pos(x, y),
-            BumpMessage::Size(w, h) => self.gui.set_size(w, h),
-            BumpMessage::Close => {
+            Msg::Plr(msg) => self.player.handle_msg(msg, &self.library),
+            Msg::Update => _ = self.library.find(&mut self.config),
+            Msg::Tick => {}
+            Msg::Move(x, y) => self.gui.set_pos(x, y),
+            Msg::Size(w, h) => self.gui.set_size(w, h),
+            Msg::Close => {
                 _ = self.config.save();
                 _ = self.library.save(&self.config);
                 _ = self.gui.save(&self.config);
@@ -102,18 +84,17 @@ impl Application for BumpApp {
         Command::none()
     }
 
-    fn view(&self) -> Element<'_, BumpMessage, Renderer<Theme>> {
+    fn view(&self) -> Element<'_, Msg, Renderer<Theme>> {
         let active = self.player.get_current();
 
         column![
             button("Update library")
                 .style(Button::Primary)
-                .on_press(BumpMessage::Update),
+                .on_press(Msg::Update),
             text(format!("{}/{}", active, self.library.count())),
             container(self.vector_display(),).height(Length::FillPortion(1)),
             self.bottom_bar(),
         ]
-        .spacing(3)
         .align_items(Alignment::Center)
         .into()
     }
@@ -135,13 +116,13 @@ impl Application for BumpApp {
             ),
             iced::subscription::events_with(|event, _| match event {
                 Event::Window(window::Event::CloseRequested) => {
-                    Some(BumpMessage::Close)
+                    Some(Msg::Close)
                 }
                 Event::Window(window::Event::Moved { x, y }) => {
-                    Some(BumpMessage::Move(x, y))
+                    Some(Msg::Move(x, y))
                 }
                 Event::Window(window::Event::Resized { width, height }) => {
-                    Some(BumpMessage::Size(width, height))
+                    Some(Msg::Size(width, height))
                 }
                 _ => None,
             }),
@@ -154,7 +135,7 @@ impl Application for BumpApp {
                     if delta < tick {
                         thread::sleep(tick - delta);
                     }
-                    (BumpMessage::Tick, t + tick)
+                    (Msg::Tick, t + tick)
                 },
             ),
         ])
@@ -163,7 +144,7 @@ impl Application for BumpApp {
 
 impl BumpApp {
     fn new(config: Config, gui: Gui) -> Self {
-        let (sender, receiver) = mpsc::unbounded_channel::<BumpMessage>();
+        let (sender, receiver) = mpsc::unbounded_channel::<Msg>();
         let library = Library::load(&config);
 
         BumpApp {
@@ -177,8 +158,10 @@ impl BumpApp {
         }
     }
 
-    fn vector_display(&self) -> Element<'_, BumpMessage, Renderer<Theme>> {
+    fn vector_display(&self) -> Element<'_, Msg, Renderer<Theme>> {
         let songs = self.library.get_songs();
+        let cur = self.player.get_current();
+        let stopped = self.player.is_stopped();
         let mut c = 0;
 
         scrollable(
@@ -186,38 +169,55 @@ impl BumpApp {
                 songs
                     .iter()
                     .map(|s| {
-                        c += 1;
-                        let total_secs = s.get_length().as_secs();
-                        let mins = total_secs / 60;
-                        let secs = mins % 60;
-                        let time = if total_secs > 0 {
-                            format!("{:02}:{:02}", mins, secs)
+                        let style = if c == cur && !stopped {
+                            Text::Prim
                         } else {
-                            "--:--".to_owned()
+                            Text::Default
                         };
-                        button(row![
-                            text(s.get_name()).width(Length::FillPortion(1)),
-                            text(s.get_artist()).width(Length::FillPortion(1)),
-                            text(time).width(50),
-                        ])
+                        c += 1;
+                        button(
+                            row![
+                                column![
+                                    text(s.get_name()).size(15).style(style),
+                                    text(s.get_artist())
+                                        .size(11)
+                                        .style(Text::Dark),
+                                ]
+                                .width(Length::FillPortion(11)),
+                                column![
+                                    text(s.get_album()).size(15).style(style),
+                                    text(s.get_year_str()).size(11).style(Text::Dark),
+                                ]
+                                .width(Length::FillPortion(11)),
+                                column![
+                                    text(s.get_length_str()).size(15).style(style),
+                                    text(s.get_genre()).size(11).style(Text::Dark),
+                                ]
+                                .width(Length::FillPortion(1)),
+                            ]
+                            .spacing(3)
+                        )
+                        .height(45)
                         .width(iced::Length::Fill)
-                        .on_press(BumpMessage::PlaySong(c - 1))
+                        .style(Button::Item)
+                        .on_press(Msg::Plr(PlayerMsg::PlaySong(c - 1)))
                         .into()
                     })
                     .collect(),
             )
+            .padding([0, 15, 0, 5])
             .spacing(3),
         )
         .into()
     }
 
-    fn bottom_bar(&self) -> Element<'_, BumpMessage, Renderer<Theme>> {
+    fn bottom_bar(&self) -> Element<'_, Msg, Renderer<Theme>> {
         let song = self.player.get_current_song(&self.library);
         let (time, len) = self.player.get_timestamp();
 
         container(column![
             slider(0.0..=len.as_secs_f32(), time.as_secs_f32(), |v| {
-                BumpMessage::SeekTo(v)
+                Msg::Plr(PlayerMsg::SeekTo(v))
             })
             .height(4)
             .step(0.01),
@@ -236,10 +236,7 @@ impl BumpApp {
         .into()
     }
 
-    fn title_bar(
-        &self,
-        song: Song,
-    ) -> Element<'_, BumpMessage, Renderer<Theme>> {
+    fn title_bar(&self, song: Song) -> Element<'_, Msg, Renderer<Theme>> {
         column![
             text(song.get_name()).size(16).style(Text::Light),
             text(song.get_artist()).size(14).style(Text::Dark),
@@ -247,7 +244,7 @@ impl BumpApp {
         .into()
     }
 
-    fn play_menu(&self) -> Element<'_, BumpMessage, Renderer<Theme>> {
+    fn play_menu(&self) -> Element<'_, Msg, Renderer<Theme>> {
         let mut pp_icon = "assets/icons/play.svg";
         if self.player.is_playing() {
             pp_icon = "assets/icons/pause.svg";
@@ -274,22 +271,22 @@ impl BumpApp {
             SvgButton::new(prev_handle)
                 .width(16)
                 .height(16)
-                .on_press(BumpMessage::Prev),
+                .on_press(Msg::Plr(PlayerMsg::Prev)),
             SvgButton::new(pp_handle)
                 .width(30)
                 .height(30)
-                .on_press(BumpMessage::Play(None)),
+                .on_press(Msg::Plr(PlayerMsg::Play(None))),
             SvgButton::new(next_handle)
                 .width(16)
                 .height(16)
-                .on_press(BumpMessage::Next),
+                .on_press(Msg::Plr(PlayerMsg::Next)),
         ]
         .align_items(Alignment::Center)
         .spacing(20)
         .into()
     }
 
-    fn volume_menu(&self) -> Element<'_, BumpMessage, Renderer<Theme>> {
+    fn volume_menu(&self) -> Element<'_, Msg, Renderer<Theme>> {
         let mut icon = "assets/icons/volume_100.svg";
         if self.player.get_mute() {
             icon = "assets/icons/volume_muted.svg";
@@ -309,12 +306,12 @@ impl BumpApp {
                 SvgButton::new(handle)
                     .width(20)
                     .height(20)
-                    .on_press(BumpMessage::Mute(None)),
+                    .on_press(Msg::Plr(PlayerMsg::Mute(None))),
                 text(format!("{:.0}", self.player.get_volume() * 100.0))
                     .width(28)
                     .style(Text::Normal),
                 slider(0.0..=1., self.player.get_volume(), |v| {
-                    BumpMessage::Volume(v)
+                    Msg::Plr(PlayerMsg::Volume(v))
                 })
                 .step(0.01)
                 .width(100),

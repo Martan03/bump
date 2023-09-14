@@ -4,9 +4,9 @@ use config::config::Config;
 use gui::app::BumpApp;
 use gui::gui::Gui;
 use iced::window;
+use iced::window::PlatformSpecific;
 use iced::Application;
 use iced::Settings;
-use iced::window::PlatformSpecific;
 
 mod config {
     pub mod config;
@@ -62,6 +62,7 @@ fn make_settings() -> Settings<(Config, Gui)> {
         },
         id: Some(id.to_owned()),
         exit_on_close_request: false,
+        antialiasing: true,
         flags: (config, gui),
         ..Default::default()
     }

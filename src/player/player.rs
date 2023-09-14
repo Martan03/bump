@@ -5,7 +5,7 @@ use raplay::sink::CallbackInfo;
 use tokio::sync::mpsc::UnboundedSender;
 
 use crate::{
-    gui::app::BumpMessage,
+    gui::app::{Msg, PlayerMsg},
     library::{library::Library, song::Song},
 };
 
@@ -13,7 +13,7 @@ use super::sinker::Sinker;
 
 #[derive(PartialEq)]
 pub enum PlayState {
-    NotPlaying,
+    Stopped,
     Playing,
     Paused,
 }
@@ -28,17 +28,17 @@ pub struct Player {
 
 impl Player {
     /// Constructs new Player
-    pub fn new(sender: UnboundedSender<BumpMessage>) -> Self {
+    pub fn new(sender: UnboundedSender<Msg>) -> Self {
         let mut sinker = Sinker::new();
         _ = sinker.song_end(move |info| match info {
             CallbackInfo::SourceEnded => {
-                _ = sender.send(BumpMessage::SongEnd);
+                _ = sender.send(Msg::Plr(PlayerMsg::SongEnd));
             }
             _ => todo!(),
         });
         Player {
             sinker,
-            state: PlayState::NotPlaying,
+            state: PlayState::Stopped,
             current: 0,
             volume: 1.,
             mute: false,
@@ -88,6 +88,10 @@ impl Player {
         self.state == PlayState::Playing
     }
 
+    pub fn is_stopped(&self) -> bool {
+        self.state == PlayState::Stopped
+    }
+
     pub fn set_state(&mut self, play: bool) {
         self.state = if play {
             PlayState::Playing
@@ -112,7 +116,7 @@ impl Player {
     }
 
     pub fn get_current_song(&self, library: &Library) -> Song {
-        if self.state == PlayState::NotPlaying {
+        if self.state == PlayState::Stopped {
             return Song::default();
         }
         library.get_song(self.current)
@@ -164,5 +168,27 @@ impl Player {
     /// Seeks to given position
     pub fn seek_to(&mut self, time: Duration) -> Result<()> {
         self.sinker.seek_to(time)
+    }
+
+    /// Handles player messages
+    pub fn handle_msg(&mut self, msg: PlayerMsg, library: &Library) {
+        match msg {
+            PlayerMsg::Play(play) => {
+                _ = self.play(play.unwrap_or(!self.is_playing()));
+            }
+            PlayerMsg::PlaySong(id) => {
+                _ = self.play_at(library, id as i128, true)
+            }
+            PlayerMsg::Next => _ = self.next(library),
+            PlayerMsg::Prev => _ = self.prev(library),
+            PlayerMsg::SeekTo(secs) => {
+                _ = self.seek_to(Duration::from_secs_f32(secs));
+            }
+            PlayerMsg::SongEnd => _ = self.next(library),
+            PlayerMsg::Volume(vol) => _ = self.set_volume(vol),
+            PlayerMsg::Mute(mute) => {
+                _ = self.set_mute(mute.unwrap_or(!self.get_mute()))
+            }
+        }
     }
 }
