@@ -55,10 +55,7 @@ impl Application for BumpApp {
     type Message = BumpMessage;
 
     fn new(flags: Self::Flags) -> (Self, Command<Self::Message>) {
-        (
-            BumpApp::new(flags.0, flags.1),
-            Command::none(),
-        )
+        (BumpApp::new(flags.0, flags.1), Command::none())
     }
 
     fn title(&self) -> String {
@@ -293,9 +290,13 @@ impl BumpApp {
     }
 
     fn volume_menu(&self) -> Element<'_, BumpMessage, Renderer<Theme>> {
-        let mut icon = "assets/icons/volume.svg";
+        let mut icon = "assets/icons/volume_100.svg";
         if self.player.get_mute() {
             icon = "assets/icons/volume_muted.svg";
+        } else if self.player.get_volume() < 0.33 {
+            icon = "assets/icons/volume_33.svg";
+        } else if self.player.get_volume() < 0.66 {
+            icon = "assets/icons/volume_66.svg";
         }
         let handle = svg::Handle::from_path(format!(
             "{}/{}",
@@ -306,8 +307,8 @@ impl BumpApp {
         container(
             row![
                 SvgButton::new(handle)
-                    .width(18)
-                    .height(18)
+                    .width(20)
+                    .height(20)
                     .on_press(BumpMessage::Mute(None)),
                 text(format!("{:.0}", self.player.get_volume() * 100.0))
                     .width(28)

@@ -1,24 +1,11 @@
-<svg viewBox="0 0 11 11" xmlns="http://www.w3.org/2000/svg">
-    <line x1="1" y1="4.5" x2="1" y2="6.5"
-          stroke="#ddd" stroke-width="1" stroke-linecap="round"/>
-    <line x1="1" y1="4.5" x2="3" y2="4.5"
-          stroke="#ddd" stroke-width="1" stroke-linecap="round"/>
-    <line x1="1" y1="6.5" x2="3" y2="6.5"
-          stroke="#ddd" stroke-width="1" stroke-linecap="round"/>
-
-    <line x1="6" y1="1.5" x2="6" y2="9.5"
-          stroke="#ddd" stroke-width="1" stroke-linecap="round"/>
-    <line x1="6" y1="9.5" x2="1" y2="5.5"
-          stroke="#ddd" stroke-width="1" stroke-linecap="round"/>
-    <line x1="1" y1="5.5" x2="6" y2="1.5"
-          stroke="#ddd" stroke-width="1" stroke-linecap="round"/>
-    <polygon points="6,9.5 6,1.5 1,5.5" fill="#ddd" />
-    
-    <line x1="8" y1="7.5" x2="8" y2="3.5"
-          stroke="#ddd" stroke-width="1" stroke-linecap="round"/>
-    <line x1="10" y1="9.5" x2="10" y2="1.5"
-          stroke="#ddd" stroke-width="1" stroke-linecap="round"/>
-
-    <line x1="1" y1="10" x2="10" y2="1"
-          stroke="#d00" stroke-width="1.5" stroke-linecap="round" />
+<svg viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg">
+    <path d="M 6 5, 6 3 C 6 2, 6 1, 5 2 L 3.75 3.25
+            C 3.75 3.25, 3.25 3.75, 1.5 3.75 C 1.5 3.75, 1 3.75, 1 5
+            C 1 5, 1 6.25, 1.5 6.25 C 1.5 6.25, 3.25 6.25, 3.75 6.75
+            L 5 8 C 5 8, 6 9, 6 8 L 6 7, 6 5"
+        stroke-width="0.75" stroke="#ddd" fill="none" />
+    <line x1="9.25" y1="6" x2="7.25" y2="4"
+        stroke="#ddd" stroke-width="0.75" stroke-linecap="round" />
+    <line x1="9.25" y1="4" x2="7.25" y2="6"
+        stroke="#ddd" stroke-width="0.75" stroke-linecap="round" />
 </svg>

@@ -3,9 +3,10 @@ use std::env;
 use config::config::Config;
 use gui::app::BumpApp;
 use gui::gui::Gui;
-use iced::Settings;
 use iced::window;
 use iced::Application;
+use iced::Settings;
+use iced::window::PlatformSpecific;
 
 mod config {
     pub mod config;
@@ -32,24 +33,36 @@ fn main() -> Result<(), iced::Error> {
     // until it is fixed
     env::set_var("WINIT_UNIX_BACKEND", "x11");
 
+    BumpApp::run(make_settings())
+}
+
+/// Makes window settings, loads saved settings
+fn make_settings() -> Settings<(Config, Gui)> {
     let config = Config::load();
     let gui = Gui::load(&config);
-    BumpApp::run(Settings {
+
+    let icon = window::icon::from_rgba(
+        include_bytes!("../assets/raw_img/icon_64.data")
+            .to_owned()
+            .into(),
+        64,
+        64,
+    );
+    let id = "bump";
+
+    Settings {
         window: window::Settings {
-            icon: window::icon::from_rgba(
-                include_bytes!("../assets/raw_img/icon_64.data")
-                    .to_owned()
-                    .into(),
-                64,
-                64,
-            )
-            .ok(),
+            icon: icon.ok(),
             size: gui.get_size(),
             position: gui.get_pos(),
+            platform_specific: PlatformSpecific {
+                application_id: id.to_owned(),
+            },
             ..Default::default()
         },
+        id: Some(id.to_owned()),
         exit_on_close_request: false,
         flags: (config, gui),
         ..Default::default()
-    })
+    }
 }
