@@ -41,6 +41,7 @@ pub enum PlayerMsg {
     SongEnd,
     Volume(f32),
     Mute(Option<bool>),
+    Shuffle,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -85,13 +86,16 @@ impl Application for BumpApp {
     }
 
     fn view(&self) -> Element<'_, Msg, Renderer<Theme>> {
-        let active = self.player.get_current();
-
         column![
-            button("Update library")
-                .style(Button::Primary)
-                .on_press(Msg::Update),
-            text(format!("{}/{}", active, self.library.count())),
+            row![
+                button("Shuffle")
+                    .style(Button::Primary)
+                    .on_press(Msg::Plr(PlayerMsg::Shuffle)),
+                button("Update library")
+                    .style(Button::Primary)
+                    .on_press(Msg::Update),
+            ]
+            .spacing(3),
             container(self.vector_display(),).height(Length::FillPortion(1)),
             self.bottom_bar(),
         ]
@@ -161,7 +165,6 @@ impl BumpApp {
     fn vector_display(&self) -> Element<'_, Msg, Renderer<Theme>> {
         let songs = self.library.get_songs();
         let cur = self.player.get_current();
-        let stopped = self.player.is_stopped();
         let mut c = 0;
 
         scrollable(
@@ -169,10 +172,9 @@ impl BumpApp {
                 songs
                     .iter()
                     .map(|s| {
-                        let style = if c == cur && !stopped {
-                            Text::Prim
-                        } else {
-                            Text::Default
+                        let style = match cur {
+                            Some(value) if value.to_owned() == c => Text::Prim,
+                            _ => Text::Default,
                         };
                         c += 1;
                         button(
@@ -186,16 +188,22 @@ impl BumpApp {
                                 .width(Length::FillPortion(11)),
                                 column![
                                     text(s.get_album()).size(15).style(style),
-                                    text(s.get_year_str()).size(11).style(Text::Dark),
+                                    text(s.get_year_str())
+                                        .size(11)
+                                        .style(Text::Dark),
                                 ]
                                 .width(Length::FillPortion(11)),
                                 column![
-                                    text(s.get_length_str()).size(15).style(style),
-                                    text(s.get_genre()).size(11).style(Text::Dark),
+                                    text(s.get_length_str())
+                                        .size(15)
+                                        .style(style),
+                                    text(s.get_genre())
+                                        .size(11)
+                                        .style(Text::Dark),
                                 ]
                                 .width(Length::FillPortion(1)),
                             ]
-                            .spacing(3)
+                            .spacing(3),
                         )
                         .height(45)
                         .width(iced::Length::Fill)

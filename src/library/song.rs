@@ -24,6 +24,7 @@ pub struct Song {
 impl Song {
     pub fn load(path: &PathBuf) -> Result<Self> {
         let tag = Tag::new().read_from_path(path)?;
+
         Ok(Song {
             path: path.to_path_buf(),
             name: tag.title().unwrap_or("-").to_owned(),

@@ -9,8 +9,9 @@ edition = "2021"
 audiotags = "0.4.1"
 dirs = "5.0.1"
 eyre = "0.6.8"
-iced = { version = "0.10.0", features = ["svg"] }
+iced = { version = "0.10.0", features = ["svg", "image"] }
 iced_core = "0.10.0"
+rand = "0.8.5"
 raplay = "0.2.2"
 serde = "1.0.188"
 serde_derive = "1.0.188"

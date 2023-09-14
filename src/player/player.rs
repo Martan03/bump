@@ -1,6 +1,7 @@
 use std::time::Duration;
 
 use eyre::Result;
+use rand::seq::SliceRandom;
 use raplay::sink::CallbackInfo;
 use tokio::sync::mpsc::UnboundedSender;
 
@@ -24,6 +25,7 @@ pub struct Player {
     current: usize,
     volume: f32,
     mute: bool,
+    playlist: Vec<usize>,
 }
 
 impl Player {
@@ -42,13 +44,15 @@ impl Player {
             current: 0,
             volume: 1.,
             mute: false,
+            playlist: Vec::new(),
         }
     }
 
     /// Loads song from the library
     pub fn load(&mut self, library: &Library, play: bool) -> Result<()> {
         self.set_state(play);
-        self.sinker.load(library, self.current, play)?;
+        self.sinker
+            .load(library, self.playlist[self.current], play)?;
         Ok(())
     }
 
@@ -79,9 +83,17 @@ impl Player {
         index: i128,
         play: bool,
     ) -> Result<()> {
-        self.set_current(library, index);
+        self.set_current(index);
         self.load(library, play)?;
         Ok(())
+    }
+
+    pub fn shuffle(&mut self) {
+        let id = self.playlist[self.current];
+        let mut rng = rand::thread_rng();
+        self.playlist.shuffle(&mut rng);
+
+        self.find_current(id)
     }
 
     pub fn is_playing(&self) -> bool {
@@ -100,8 +112,8 @@ impl Player {
         }
     }
 
-    pub fn set_current(&mut self, library: &Library, index: i128) {
-        let count = library.count() - 1;
+    pub fn set_current(&mut self, index: i128) {
+        let count = self.playlist.len() - 1;
         if index < 0 {
             self.current = count;
         } else if index as usize > count {
@@ -111,15 +123,19 @@ impl Player {
         }
     }
 
-    pub fn get_current(&self) -> usize {
-        self.current
+    pub fn get_current(&self) -> Option<&usize> {
+        if self.state == PlayState::Stopped {
+            None
+        } else {
+            self.playlist.get(self.current)
+        }
     }
 
     pub fn get_current_song(&self, library: &Library) -> Song {
         if self.state == PlayState::Stopped {
             return Song::default();
         }
-        library.get_song(self.current)
+        library.get_song(self.playlist[self.current])
     }
 
     /// Gets current volume of the playback
@@ -177,7 +193,8 @@ impl Player {
                 _ = self.play(play.unwrap_or(!self.is_playing()));
             }
             PlayerMsg::PlaySong(id) => {
-                _ = self.play_at(library, id as i128, true)
+                self.create_playlist(library, id);
+                _ = self.play_at(library, self.current as i128, true)
             }
             PlayerMsg::Next => _ = self.next(library),
             PlayerMsg::Prev => _ = self.prev(library),
@@ -189,6 +206,21 @@ impl Player {
             PlayerMsg::Mute(mute) => {
                 _ = self.set_mute(mute.unwrap_or(!self.get_mute()))
             }
+            PlayerMsg::Shuffle => self.shuffle(),
+        }
+    }
+
+    fn create_playlist(&mut self, library: &Library, id: usize) {
+        self.playlist = (0..library.count()).collect();
+
+        self.find_current(id);
+    }
+
+    fn find_current(&mut self, id: usize) {
+        if let Some(index) = self.playlist.iter().position(|&x| x == id) {
+            self.current = index;
+        } else {
+            self.current = 0;
         }
     }
 }
