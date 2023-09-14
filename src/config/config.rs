@@ -13,6 +13,8 @@ pub struct Config {
     extensions: Vec<String>,
     /// Path to the library
     library_path: PathBuf,
+    /// Path to the gui state json
+    gui_path: PathBuf,
 }
 
 impl Config {
@@ -45,13 +47,18 @@ impl Config {
     }
 
     /// Gets all paths songs are saved in
-    pub fn get_paths(&mut self) -> &Vec<PathBuf> {
+    pub fn get_paths(&self) -> &Vec<PathBuf> {
         &self.paths
     }
 
     /// Gets library path
-    pub fn get_library_path(&mut self) -> &PathBuf {
+    pub fn get_library_path(&self) -> &PathBuf {
         &self.library_path
+    }
+
+    /// Gets gui path
+    pub fn get_gui_path(&self) -> &PathBuf {
+        &self.gui_path
     }
 
     /// Gets valid extensions
@@ -84,6 +91,8 @@ impl Default for Config {
     fn default() -> Self {
         let mut library_path = Config::get_config_dir();
         library_path.push("library.json");
+        let mut gui_path = Config::get_config_dir();
+        gui_path.push("gui.json");
         Config {
             paths: vec![Config::default_songs_path()],
             extensions: vec![
@@ -93,6 +102,7 @@ impl Default for Config {
                 "mp4".to_owned(),
             ],
             library_path,
+            gui_path,
         }
     }
 }

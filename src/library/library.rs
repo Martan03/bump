@@ -13,7 +13,7 @@ pub struct Library {
 
 impl Library {
     /// Loads songs from the library
-    pub fn load(config: &mut Config) -> Library {
+    pub fn load(config: &Config) -> Library {
         let path = config.get_library_path();
 
         match fs::read_to_string(path) {
@@ -26,14 +26,12 @@ impl Library {
     }
 
     /// Saves songs to the library
-    pub fn save(&self) -> Result<()> {
-        let mut dir = Config::get_config_dir();
-        fs::create_dir_all(&dir)?;
-        dir.push("library.json");
-        File::create(&dir)?;
+    pub fn save(&self, config: &Config) -> Result<()> {
+        let path = config.get_library_path();
+        File::create(&path)?;
 
         let text = serde_json::to_string::<Library>(self)?;
-        fs::write(dir, text)?;
+        fs::write(path, text)?;
 
         Ok(())
     }

@@ -17,6 +17,7 @@ use crate::library::library::Library;
 use crate::library::song::Song;
 use crate::player::player::Player;
 
+use super::gui::Gui;
 use super::theme::{Button, Container, Text, Theme};
 use super::widgets::svg_button::SvgButton;
 
@@ -24,6 +25,7 @@ pub struct BumpApp {
     player: Player,
     library: Library,
     config: Config,
+    gui: Gui,
     _sender: UnboundedSender<BumpMessage>,
     receiver: Cell<Option<UnboundedReceiver<BumpMessage>>>,
     theme: Theme,
@@ -41,28 +43,20 @@ pub enum BumpMessage {
     Volume(f32),
     Mute(Option<bool>),
     Tick,
+    Move(i32, i32),
+    Size(u32, u32),
     Close,
 }
 
 impl Application for BumpApp {
     type Executor = executor::Default;
-    type Flags = ();
+    type Flags = (Config, Gui);
     type Theme = Theme;
     type Message = BumpMessage;
 
-    fn new(_flags: Self::Flags) -> (Self, Command<Self::Message>) {
-        let (sender, receiver) = mpsc::unbounded_channel::<BumpMessage>();
-        let mut config = Config::load();
-        let library = Library::load(&mut config);
+    fn new(flags: Self::Flags) -> (Self, Command<Self::Message>) {
         (
-            BumpApp {
-                player: Player::new(sender.clone()),
-                library,
-                config,
-                _sender: sender,
-                receiver: Cell::new(Some(receiver)),
-                theme: Theme::default(),
-            },
+            BumpApp::new(flags.0, flags.1),
             Command::none(),
         )
     }
@@ -99,9 +93,12 @@ impl Application for BumpApp {
                 _ = self.player.set_mute(mute);
             }
             BumpMessage::Tick => {}
+            BumpMessage::Move(x, y) => self.gui.set_pos(x, y),
+            BumpMessage::Size(w, h) => self.gui.set_size(w, h),
             BumpMessage::Close => {
                 _ = self.config.save();
-                _ = self.library.save();
+                _ = self.library.save(&self.config);
+                _ = self.gui.save(&self.config);
                 return iced::window::close();
             }
         };
@@ -143,6 +140,12 @@ impl Application for BumpApp {
                 Event::Window(window::Event::CloseRequested) => {
                     Some(BumpMessage::Close)
                 }
+                Event::Window(window::Event::Moved { x, y }) => {
+                    Some(BumpMessage::Move(x, y))
+                }
+                Event::Window(window::Event::Resized { width, height }) => {
+                    Some(BumpMessage::Size(width, height))
+                }
                 _ => None,
             }),
             iced::subscription::unfold(
@@ -162,6 +165,21 @@ impl Application for BumpApp {
 }
 
 impl BumpApp {
+    fn new(config: Config, gui: Gui) -> Self {
+        let (sender, receiver) = mpsc::unbounded_channel::<BumpMessage>();
+        let library = Library::load(&config);
+
+        BumpApp {
+            player: Player::new(sender.clone()),
+            library,
+            config,
+            gui,
+            _sender: sender,
+            receiver: Cell::new(Some(receiver)),
+            theme: Theme::default(),
+        }
+    }
+
     fn vector_display(&self) -> Element<'_, BumpMessage, Renderer<Theme>> {
         let songs = self.library.get_songs();
         let mut c = 0;
