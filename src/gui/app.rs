@@ -2,11 +2,10 @@ use std::cell::Cell;
 use std::thread;
 use std::time::{Duration, Instant};
 
-use iced::widget::{button, column, container, row};
 use iced::{
-    executor, Alignment, Application, Command, Element, Renderer, Subscription,
+    executor, Application, Command, Element, Renderer, Subscription,
 };
-use iced_core::{window, Event, Length};
+use iced_core::{window, Event};
 use tokio::sync::mpsc::{self, UnboundedReceiver, UnboundedSender};
 
 use crate::config::config::Config;
@@ -14,7 +13,7 @@ use crate::library::library::Library;
 use crate::player::player::Player;
 
 use super::gui::Gui;
-use super::theme::{Button, Theme};
+use super::theme::Theme;
 
 pub struct BumpApp {
     pub(super) player: Player,
@@ -24,6 +23,7 @@ pub struct BumpApp {
     _sender: UnboundedSender<Msg>,
     pub(super) receiver: Cell<Option<UnboundedReceiver<Msg>>>,
     pub(super) theme: Theme,
+    pub(super) page: PageMsg,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -40,7 +40,14 @@ pub enum PlayerMsg {
 }
 
 #[derive(Debug, Clone, Copy)]
+pub enum PageMsg {
+    Library,
+    Playlist,
+}
+
+#[derive(Debug, Clone, Copy)]
 pub enum Msg {
+    Page(PageMsg),
     Plr(PlayerMsg),
     Update,
     Tick,
@@ -65,6 +72,7 @@ impl Application for BumpApp {
 
     fn update(&mut self, message: Self::Message) -> Command<Self::Message> {
         match message {
+            Msg::Page(msg) => self.page = msg,
             Msg::Plr(msg) => self.player.handle_msg(msg, &self.library),
             Msg::Update => _ = self.library.find(&mut self.config),
             Msg::Tick => {}
@@ -82,21 +90,10 @@ impl Application for BumpApp {
     }
 
     fn view(&self) -> Element<'_, Msg, Renderer<Theme>> {
-        column![
-            row![
-                button("Shuffle")
-                    .style(Button::Primary)
-                    .on_press(Msg::Plr(PlayerMsg::Shuffle)),
-                button("Update library")
-                    .style(Button::Primary)
-                    .on_press(Msg::Update),
-            ]
-            .spacing(3),
-            container(self.songs_list()).height(Length::FillPortion(1)),
-            self.player_bar(),
-        ]
-        .align_items(Alignment::Center)
-        .into()
+        match self.page {
+            PageMsg::Library => self.view_main_page(),
+            PageMsg::Playlist => todo!(),
+        }
     }
 
     /// Sets app theme
@@ -127,6 +124,7 @@ impl BumpApp {
             _sender: sender,
             receiver: Cell::new(Some(receiver)),
             theme: Theme::default(),
+            page: PageMsg::Library,
         }
     }
 

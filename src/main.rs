@@ -15,6 +15,7 @@ mod gui {
     pub mod app;
     pub mod elements;
     pub mod gui;
+    pub mod library;
     pub mod svg_data;
     pub mod theme;
     pub mod widgets {

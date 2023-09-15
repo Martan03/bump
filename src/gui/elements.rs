@@ -7,7 +7,7 @@ use iced_core::{Alignment, Length};
 
 use crate::library::song::Song;
 
-use super::app::{BumpApp, Msg, PlayerMsg};
+use super::app::{BumpApp, Msg, PlayerMsg, PageMsg};
 use super::svg_data::{pp_icon, vol_icon, NEXT, PREV};
 use super::theme::{Button, Container, Text, Theme};
 use super::widgets::svg_button::SvgButton;
@@ -15,6 +15,19 @@ use super::widgets::svg_button::SvgButton;
 type Element<'a> = iced::Element<'a, Msg, Renderer<Theme>>;
 
 impl BumpApp {
+    pub fn menu(&self) -> Element {
+        container(
+            column![
+                button("Library").on_press(Msg::Page(PageMsg::Library)),
+                button("Playlist").on_press(Msg::Page(PageMsg::Playlist)),
+            ]
+        )
+        .width(175)
+        .height(Length::Fill)
+        .style(Container::Separate)
+        .into()
+    }
+
     /// Gets songs list element
     pub fn songs_list(&self) -> Element {
         let songs = self.library.get_songs();

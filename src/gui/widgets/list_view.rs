@@ -1,11 +1,16 @@
 //! Distribute content vertically.
+#![allow(unused)]
 use iced::mouse;
 use iced_core::{
-    event, layout, overlay, renderer, svg,
+    event,
+    layout::{Limits, Node},
+    overlay, renderer, svg,
     widget::{Operation, Tree},
     Alignment, Clipboard, Element, Event, Layout, Length, Padding, Pixels,
-    Rectangle, Shell, Widget,
+    Rectangle, Shell, Vector, Widget,
 };
+
+const SCROLLBAR_WIDTH: f32 = 20.;
 
 /// A container that distributes its contents vertically.
 #[allow(missing_debug_implementations)]
@@ -17,6 +22,7 @@ pub struct ListView<'a, Message, Renderer: svg::Renderer> {
     spacing: f32,
     padding: Padding,
     align_items: Alignment,
+    state: State,
     children: Vec<Element<'a, Message, Renderer>>,
 }
 
@@ -38,6 +44,7 @@ impl<'a, Message, Renderer: svg::Renderer> ListView<'a, Message, Renderer> {
             spacing: 0.0,
             padding: Padding::ZERO,
             align_items: Alignment::Start,
+            state: State::default(),
             children,
         }
     }
@@ -126,25 +133,30 @@ where
         self.height
     }
 
-    fn layout(
-        &self,
-        renderer: &Renderer,
-        limits: &layout::Limits,
-    ) -> layout::Node {
+    fn layout(&self, renderer: &Renderer, limits: &Limits) -> Node {
         let limits = limits
             .max_width(self.max_width)
+            .max_height(self.max_height)
             .width(self.width)
             .height(self.height);
+        let size = limits.fill();
 
-        layout::flex::resolve(
-            layout::flex::Axis::Vertical,
-            renderer,
-            &limits,
-            self.padding,
-            self.spacing,
-            self.align_items,
-            &self.children,
-        )
+        let mut pos = 0.;
+
+        let children = self
+            .children
+            .iter()
+            .map(|c| {
+                let node = c
+                    .as_widget()
+                    .layout(renderer, &limits)
+                    .translate(Vector::new(0., pos));
+                pos += node.size().height;
+                node
+            })
+            .collect();
+
+        Node::with_children(size, children)
     }
 
     fn operate(
@@ -258,5 +270,25 @@ where
 {
     fn from(list_view: ListView<'a, Message, Renderer>) -> Self {
         Self::new(list_view)
+    }
+}
+
+pub struct State {
+    offset: f32,
+    pub scroll_to: Option<usize>,
+}
+
+impl State {
+    fn new() -> Self {
+        Self {
+            offset: 0.,
+            scroll_to: None,
+        }
+    }
+}
+
+impl Default for State {
+    fn default() -> Self {
+        Self::new()
     }
 }
