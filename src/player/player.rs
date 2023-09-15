@@ -77,7 +77,7 @@ impl Player {
                     } else {
                         clear_current(plr)
                     }
-                },
+                }
             },
         }
     }

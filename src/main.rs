@@ -18,6 +18,7 @@ mod gui {
     pub mod svg_data;
     pub mod theme;
     pub mod widgets {
+        pub mod list_view;
         pub mod svg_button;
     }
 }
