@@ -172,6 +172,10 @@ impl Player {
         }
     }
 
+    pub fn get_playlist(&self) -> &Vec<usize> {
+        &self.playlist
+    }
+
     pub fn get_current(&self) -> Option<&usize> {
         if self.state == PlayState::Stopped {
             None

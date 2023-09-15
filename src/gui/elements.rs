@@ -44,7 +44,7 @@ impl BumpApp {
                             _ => Text::Default,
                         };
                         c += 1;
-                        self.list_item(s, style, c)
+                        self.list_item(s, style, c - 1)
                     })
                     .collect(),
             )
@@ -54,7 +54,7 @@ impl BumpApp {
     }
 
     /// Gets button for list item data and add bottom "border"
-    fn list_item(&self, s: &Song, style: Text, c: usize) -> Element {
+    pub fn list_item(&self, s: &Song, style: Text, c: usize) -> Element {
         button(
             column![
                 Space::new(Length::Shrink, Length::FillPortion(1)),
@@ -72,7 +72,7 @@ impl BumpApp {
         .width(Length::Fill)
         .padding(0)
         .style(Button::Item)
-        .on_press(Msg::Plr(PlayerMsg::PlaySong(c - 1)))
+        .on_press(Msg::Plr(PlayerMsg::PlaySong(c)))
         .into()
     }
 

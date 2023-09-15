@@ -91,8 +91,8 @@ impl Application for BumpApp {
 
     fn view(&self) -> Element<'_, Msg, Renderer<Theme>> {
         match self.page {
-            PageMsg::Library => self.view_main_page(),
-            PageMsg::Playlist => todo!(),
+            PageMsg::Library => self.view_library(),
+            PageMsg::Playlist => self.view_playlist(),
         }
     }
 

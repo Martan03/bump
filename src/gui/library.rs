@@ -7,7 +7,7 @@ type Element<'a> = iced::Element<'a, Msg, Renderer<Theme>>;
 
 impl BumpApp {
     /// Displays main page
-    pub fn view_main_page(&self) -> Element {
+    pub fn view_library(&self) -> Element {
         column![
             row![
                 self.menu(),
