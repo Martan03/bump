@@ -15,6 +15,8 @@ pub struct Config {
     library_path: PathBuf,
     /// Path to the gui state json
     gui_path: PathBuf,
+    /// Path to the player file
+    player_path: PathBuf,
 }
 
 impl Config {
@@ -61,6 +63,11 @@ impl Config {
         &self.gui_path
     }
 
+    /// Gets player path
+    pub fn get_player_path(&self) -> &PathBuf {
+        &self.player_path
+    }
+
     /// Gets valid extensions
     pub fn get_extensions(&mut self) -> &Vec<String> {
         &self.extensions
@@ -93,6 +100,9 @@ impl Default for Config {
         library_path.push("library.json");
         let mut gui_path = Config::get_config_dir();
         gui_path.push("gui.json");
+        let mut player_path = Config::get_config_dir();
+        player_path.push("player.json");
+
         Config {
             paths: vec![Config::default_songs_path()],
             extensions: vec![
@@ -103,6 +113,7 @@ impl Default for Config {
             ],
             library_path,
             gui_path,
+            player_path,
         }
     }
 }

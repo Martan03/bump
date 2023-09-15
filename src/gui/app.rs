@@ -74,6 +74,7 @@ impl Application for BumpApp {
                 _ = self.config.save();
                 _ = self.library.save(&self.config);
                 _ = self.gui.save(&self.config);
+                _ = self.player.save(&self.config);
                 return iced::window::close();
             }
         };
@@ -98,45 +99,17 @@ impl Application for BumpApp {
         .into()
     }
 
+    /// Sets app theme
     fn theme(&self) -> Self::Theme {
         self.theme.clone()
     }
 
-    fn subscription(&self) -> Subscription<Self::Message> {
+    /// Creates app subscriptions
+    fn subscription(&self) -> Subscription<Msg> {
         Subscription::batch([
-            iced::subscription::unfold(
-                "69".to_owned(),
-                self.receiver.take(),
-                |receiver| async {
-                    let mut receiver = receiver.unwrap();
-                    let message = receiver.recv().await.unwrap();
-                    (message, Some(receiver))
-                },
-            ),
-            iced::subscription::events_with(|event, _| match event {
-                Event::Window(window::Event::CloseRequested) => {
-                    Some(Msg::Close)
-                }
-                Event::Window(window::Event::Moved { x, y }) => {
-                    Some(Msg::Move(x, y))
-                }
-                Event::Window(window::Event::Resized { width, height }) => {
-                    Some(Msg::Size(width, height))
-                }
-                _ => None,
-            }),
-            iced::subscription::unfold(
-                "69 tick".to_owned(),
-                Instant::now(),
-                |t| async move {
-                    let delta = Instant::now() - t;
-                    let tick = Duration::from_secs(1);
-                    if delta < tick {
-                        thread::sleep(tick - delta);
-                    }
-                    (Msg::Tick, t + tick)
-                },
-            ),
+            self.receiver_subscription(),
+            self.window_subscription(),
+            self.tick_subscription(Duration::from_secs(1)),
         ])
     }
 }
@@ -147,7 +120,7 @@ impl BumpApp {
         let library = Library::load(&config);
 
         BumpApp {
-            player: Player::new(sender.clone(), &library),
+            player: Player::new(sender.clone(), &library, &config),
             library,
             config,
             gui,
@@ -155,5 +128,47 @@ impl BumpApp {
             receiver: Cell::new(Some(receiver)),
             theme: Theme::default(),
         }
+    }
+
+    /// Creates receiver subscription
+    fn receiver_subscription(&self) -> Subscription<Msg> {
+        iced::subscription::unfold(
+            "bump receiver".to_owned(),
+            self.receiver.take(),
+            |receiver| async {
+                let mut receiver = receiver.unwrap();
+                let message = receiver.recv().await.unwrap();
+                (message, Some(receiver))
+            },
+        )
+    }
+
+    /// Creates window subscription (Close, move, resize)
+    fn window_subscription(&self) -> Subscription<Msg> {
+        iced::subscription::events_with(|event, _| match event {
+            Event::Window(window::Event::CloseRequested) => Some(Msg::Close),
+            Event::Window(window::Event::Moved { x, y }) => {
+                Some(Msg::Move(x, y))
+            }
+            Event::Window(window::Event::Resized { width, height }) => {
+                Some(Msg::Size(width, height))
+            }
+            _ => None,
+        })
+    }
+
+    /// creates tick subcription that's sending message every `tick`
+    fn tick_subscription(&self, tick: Duration) -> Subscription<Msg> {
+        iced::subscription::unfold(
+            "bump tick".to_owned(),
+            Instant::now(),
+            move |t| async move {
+                let delta = Instant::now() - t;
+                if delta < tick {
+                    thread::sleep(tick - delta);
+                }
+                (Msg::Tick, t + tick)
+            },
+        )
     }
 }

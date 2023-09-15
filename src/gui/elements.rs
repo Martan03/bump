@@ -117,6 +117,7 @@ impl BumpApp {
             .padding(5)
             .align_items(Alignment::Center)
         ])
+        .padding([1, 0, 0, 0])
         .align_y(Vertical::Center)
         .height(60)
         .style(Container::Dark)

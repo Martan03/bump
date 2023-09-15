@@ -33,7 +33,7 @@ impl Gui {
         let file = config.get_gui_path();
         File::create(&file)?;
 
-        let text = serde_json::to_string_pretty::<Gui>(self)?;
+        let text = serde_json::to_string::<Gui>(self)?;
         fs::write(file, text)?;
 
         Ok(())
