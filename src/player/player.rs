@@ -69,6 +69,10 @@ impl Player {
             Ok(p) => match serde_json::from_str::<Player>(&p) {
                 Err(_) => Player::default(),
                 Ok(mut plr) => {
+                    match plr.sinker.set_volume(plr.volume) {
+                        Err(_) => plr.volume = 1.0,
+                        _ => {},
+                    }
                     if let Some(id) = plr.playlist.get(plr.current) {
                         match plr.sinker.load(library, id.to_owned(), false) {
                             Ok(_) => plr,

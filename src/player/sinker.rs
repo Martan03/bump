@@ -57,7 +57,7 @@ impl Sinker {
 
     /// Sets the playback volume
     pub fn set_volume(&mut self, volume: f32) -> Result<()> {
-        self.sink.volume(volume)?;
+        self.sink.volume(volume * volume)?;
         Ok(())
     }
 
