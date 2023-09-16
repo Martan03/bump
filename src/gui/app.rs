@@ -2,10 +2,9 @@ use std::cell::Cell;
 use std::thread;
 use std::time::{Duration, Instant};
 
-use iced::{
-    executor, Application, Command, Element, Renderer, Subscription,
-};
-use iced_core::{window, Event};
+use iced::widget::{column, row};
+use iced::{executor, Application, Command, Element, Renderer, Subscription};
+use iced_core::{window, Alignment, Event, Length};
 use tokio::sync::mpsc::{self, UnboundedReceiver, UnboundedSender};
 
 use crate::config::config::Config;
@@ -90,10 +89,17 @@ impl Application for BumpApp {
     }
 
     fn view(&self) -> Element<'_, Msg, Renderer<Theme>> {
-        match self.page {
+        let page = match self.page {
             PageMsg::Library => self.view_library(),
             PageMsg::Playlist => self.view_playlist(),
-        }
+        };
+
+        column![
+            row![self.menu(), page,].height(Length::Fill).spacing(3),
+            self.player_bar(),
+        ]
+        .align_items(Alignment::Center)
+        .into()
     }
 
     /// Sets app theme

@@ -44,6 +44,9 @@ impl Player {
         config: &Config,
     ) -> Self {
         let mut plr = Player::load(config, library);
+        if plr.playlist.is_empty() && library.count() > 0 {
+            plr.playlist = (0..library.count()).collect();
+        }
         _ = plr.sinker.song_end(move |info| match info {
             CallbackInfo::SourceEnded => {
                 _ = sender.send(Msg::Plr(PlayerMsg::SongEnd));

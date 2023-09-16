@@ -1,33 +1,25 @@
-use iced::{widget::{column, row, container, scrollable, button}, Renderer};
-use iced_core::{Length, Alignment};
+use iced::{
+    widget::{button, column, container, scrollable},
+    Renderer,
+};
+use iced_core::Length;
 
-use super::{app::{BumpApp, Msg, PlayerMsg}, theme::{Theme, Text, Button}};
+use super::{
+    app::{BumpApp, Msg, PlayerMsg},
+    theme::{Button, Text, Theme},
+};
 
 type Element<'a> = iced::Element<'a, Msg, Renderer<Theme>>;
 
 impl BumpApp {
     pub fn view_playlist(&self) -> Element {
         column![
-            row![
-                self.menu(),
-                column![
-                    button("Shuffle")
-                        .style(Button::Primary)
-                        .on_press(Msg::Plr(PlayerMsg::Shuffle)),
-                    container(self.playlist_songs()).width(Length::Fill),
-                ]
-                .width(Length::Fill),
-                /*
-                button("Update library")
-                    .style(Button::Primary)
-                    .on_press(Msg::Update),
-                */
-            ]
-            .height(Length::Fill)
-            .spacing(3),
-            self.player_bar(),
+            button("Shuffle")
+                .style(Button::Primary)
+                .on_press(Msg::Plr(PlayerMsg::Shuffle)),
+            container(self.playlist_songs()).width(Length::Fill),
         ]
-        .align_items(Alignment::Center)
+        .width(Length::Fill)
         .into()
     }
 
@@ -36,7 +28,8 @@ impl BumpApp {
 
         scrollable(
             column(
-                self.player.get_playlist()
+                self.player
+                    .get_playlist()
                     .iter()
                     .map(|p| {
                         let c = p.to_owned();
@@ -45,7 +38,7 @@ impl BumpApp {
                             Some(value) if value.to_owned() == c => Text::Prim,
                             _ => Text::Default,
                         };
-                        self.list_item(&song, style, c)
+                        self.list_item(&song, style, c, true)
                     })
                     .collect(),
             )

@@ -1,13 +1,11 @@
-use iced::widget::{
-    button, column, container, row, scrollable, slider, text, Space,
-};
+use iced::widget::{button, column, container, row, slider, text, Space};
 use iced::Renderer;
 use iced_core::alignment::{Horizontal, Vertical};
 use iced_core::{Alignment, Length};
 
 use crate::library::song::Song;
 
-use super::app::{BumpApp, Msg, PlayerMsg, PageMsg};
+use super::app::{BumpApp, Msg, PageMsg, PlayerMsg};
 use super::svg_data::{pp_icon, vol_icon, NEXT, PREV};
 use super::theme::{Button, Container, Text, Theme};
 use super::widgets::svg_button::SvgButton;
@@ -16,49 +14,28 @@ type Element<'a> = iced::Element<'a, Msg, Renderer<Theme>>;
 
 impl BumpApp {
     pub fn menu(&self) -> Element {
-        container(
-            column![
-                button("Library").on_press(Msg::Page(PageMsg::Library)),
-                button("Playlist").on_press(Msg::Page(PageMsg::Playlist)),
-            ]
-        )
+        container(column![
+            button("Library").on_press(Msg::Page(PageMsg::Library)),
+            button("Playlist").on_press(Msg::Page(PageMsg::Playlist)),
+        ])
         .width(175)
         .height(Length::Fill)
         .style(Container::Separate)
         .into()
     }
 
-    /// Gets songs list element
-    pub fn songs_list(&self) -> Element {
-        let songs = self.library.get_songs();
-        let cur = self.player.get_current();
-        let mut c = 0;
-
-        scrollable(
-            column(
-                songs
-                    .iter()
-                    .map(|s| {
-                        let style = match cur {
-                            Some(value) if value.to_owned() == c => Text::Prim,
-                            _ => Text::Default,
-                        };
-                        c += 1;
-                        self.list_item(s, style, c - 1)
-                    })
-                    .collect(),
-            )
-            .padding([0, 15, 0, 5]),
-        )
-        .into()
-    }
-
     /// Gets button for list item data and add bottom "border"
-    pub fn list_item(&self, s: &Song, style: Text, c: usize) -> Element {
+    pub fn list_item(
+        &self,
+        s: &Song,
+        style: Text,
+        c: usize,
+        num: bool,
+    ) -> Element {
         button(
             column![
                 Space::new(Length::Shrink, Length::FillPortion(1)),
-                self.list_item_data(s, style),
+                self.list_item_data(s, style, c, num),
                 Space::new(Length::Shrink, Length::FillPortion(1)),
                 // Creates bottom border
                 container("")
@@ -77,15 +54,48 @@ impl BumpApp {
     }
 
     /// Gets list item data
-    fn list_item_data(&self, s: &Song, style: Text) -> Element {
-        row![
-            self.list_item_col(s.get_name(), style, s.get_artist(), 11),
-            self.list_item_col(s.get_album(), style, &s.get_year_str(), 11),
-            self.list_item_col(&s.get_length_str(), style, s.get_genre(), 1),
-        ]
-        .height(Length::Shrink)
-        .spacing(3)
-        .into()
+    fn list_item_data(
+        &self,
+        s: &Song,
+        style: Text,
+        c: usize,
+        num: bool,
+    ) -> Element {
+        let item = if num {
+            row![
+                text(c).width(Length::FillPortion(1)),
+                self.list_item_col(s.get_name(), style, s.get_artist(), 20),
+                self.list_item_col(
+                    s.get_album(),
+                    style,
+                    &s.get_year_str(),
+                    18
+                ),
+                self.list_item_col(
+                    &s.get_length_str(),
+                    style,
+                    s.get_genre(),
+                    2
+                ),
+            ]
+        } else {
+            row![
+                self.list_item_col(s.get_name(), style, s.get_artist(), 20),
+                self.list_item_col(
+                    s.get_album(),
+                    style,
+                    &s.get_year_str(),
+                    19
+                ),
+                self.list_item_col(
+                    &s.get_length_str(),
+                    style,
+                    s.get_genre(),
+                    2
+                ),
+            ]
+        };
+        item.height(Length::Shrink).spacing(3).into()
     }
 
     /// Gets column of the list item
