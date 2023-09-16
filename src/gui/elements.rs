@@ -5,7 +5,7 @@ use iced_core::{Alignment, Length};
 
 use crate::library::song::Song;
 
-use super::app::{BumpApp, Msg, PageMsg, PlayerMsg};
+use super::app::{BumpApp, Msg, Page, PlayerMsg};
 use super::svg_data::{pp_icon, vol_icon, NEXT, PREV};
 use super::theme::{Button, Container, Text, Theme};
 use super::widgets::svg_button::SvgButton;
@@ -15,8 +15,9 @@ type Element<'a> = iced::Element<'a, Msg, Renderer<Theme>>;
 impl BumpApp {
     pub fn menu(&self) -> Element {
         container(column![
-            button("Library").on_press(Msg::Page(PageMsg::Library)),
-            button("Playlist").on_press(Msg::Page(PageMsg::Playlist)),
+            button("Library").on_press(Msg::Page(Page::Library)),
+            button("Playlist").on_press(Msg::Page(Page::Playlist)),
+            button("Settings").on_press(Msg::Page(Page::Settings)),
         ])
         .width(175)
         .height(Length::Fill)
@@ -63,7 +64,7 @@ impl BumpApp {
     ) -> Element {
         let item = if num {
             row![
-                text(c).width(Length::FillPortion(1)),
+                text(c + 1).width(Length::FillPortion(1)),
                 self.list_item_col(s.get_name(), style, s.get_artist(), 20),
                 self.list_item_col(
                     s.get_album(),
@@ -95,7 +96,10 @@ impl BumpApp {
                 ),
             ]
         };
-        item.height(Length::Shrink).spacing(3).into()
+        item.height(Length::Shrink)
+            .spacing(3)
+            .align_items(Alignment::Center)
+            .into()
     }
 
     /// Gets column of the list item

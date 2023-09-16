@@ -141,11 +141,14 @@ impl Player {
     }
 
     pub fn shuffle(&mut self) {
-        let id = self.playlist[self.current];
+        let id = if let Some(i) = self.get_current() {
+            i.to_owned()
+        } else {
+            usize::MAX
+        };
         let mut rng = rand::thread_rng();
         self.playlist.shuffle(&mut rng);
-
-        self.find_current(id)
+        self.find_current(id);
     }
 
     pub fn is_playing(&self) -> bool {

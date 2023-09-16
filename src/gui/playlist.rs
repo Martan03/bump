@@ -1,5 +1,5 @@
 use iced::{
-    widget::{button, column, container, scrollable},
+    widget::{button, column, container, row, scrollable, text, Space},
     Renderer,
 };
 use iced_core::Length;
@@ -14,12 +14,18 @@ type Element<'a> = iced::Element<'a, Msg, Renderer<Theme>>;
 impl BumpApp {
     pub fn view_playlist(&self) -> Element {
         column![
-            button("Shuffle")
-                .style(Button::Primary)
-                .on_press(Msg::Plr(PlayerMsg::Shuffle)),
+            row![
+                text("Playlist").size(20).style(Text::Normal),
+                Space::new(Length::Fill, Length::Shrink),
+                button("Shuffle")
+                    .style(Button::Primary)
+                    .on_press(Msg::Plr(PlayerMsg::Shuffle)),
+            ],
             container(self.playlist_songs()).width(Length::Fill),
         ]
         .width(Length::Fill)
+        .spacing(3)
+        .padding(3)
         .into()
     }
 
@@ -42,7 +48,7 @@ impl BumpApp {
                     })
                     .collect(),
             )
-            .padding([0, 15, 0, 5]),
+            .padding([0, 10, 0, 5]),
         )
         .into()
     }

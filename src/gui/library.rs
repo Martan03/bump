@@ -20,7 +20,9 @@ impl BumpApp {
                 .height(Length::Fill)
                 .width(Length::Fill),
         ]
+        .width(Length::Fill)
         .spacing(3)
+        .padding(3)
         .into()
     }
 

@@ -22,7 +22,7 @@ pub struct BumpApp {
     _sender: UnboundedSender<Msg>,
     pub(super) receiver: Cell<Option<UnboundedReceiver<Msg>>>,
     pub(super) theme: Theme,
-    pub(super) page: PageMsg,
+    pub(super) page: Page,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -39,14 +39,15 @@ pub enum PlayerMsg {
 }
 
 #[derive(Debug, Clone, Copy)]
-pub enum PageMsg {
+pub enum Page {
     Library,
     Playlist,
+    Settings,
 }
 
 #[derive(Debug, Clone, Copy)]
 pub enum Msg {
-    Page(PageMsg),
+    Page(Page),
     Plr(PlayerMsg),
     Update,
     Tick,
@@ -90,8 +91,9 @@ impl Application for BumpApp {
 
     fn view(&self) -> Element<'_, Msg, Renderer<Theme>> {
         let page = match self.page {
-            PageMsg::Library => self.view_library(),
-            PageMsg::Playlist => self.view_playlist(),
+            Page::Library => self.view_library(),
+            Page::Playlist => self.view_playlist(),
+            Page::Settings => self.view_settings(),
         };
 
         column![
@@ -130,7 +132,7 @@ impl BumpApp {
             _sender: sender,
             receiver: Cell::new(Some(receiver)),
             theme: Theme::default(),
-            page: PageMsg::Library,
+            page: Page::Library,
         }
     }
 
