@@ -273,8 +273,8 @@ impl rule::StyleSheet for Theme {
 
     fn appearance(&self, _style: &Self::Style) -> rule::Appearance {
         rule::Appearance {
-            color: PRIM,
-            width: 10,
+            color: OUTLINE,
+            width: 2,
             radius: BorderRadius::from(6.),
             fill_mode: rule::FillMode::Full,
         }

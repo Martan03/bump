@@ -2,7 +2,7 @@ use std::cell::Cell;
 use std::thread;
 use std::time::{Duration, Instant};
 
-use iced::widget::{column, row};
+use iced::widget::{column, row, Rule};
 use iced::{executor, Application, Command, Element, Renderer, Subscription};
 use iced_core::{window, Alignment, Event, Length};
 use tokio::sync::mpsc::{self, UnboundedReceiver, UnboundedSender};
@@ -97,7 +97,9 @@ impl Application for BumpApp {
         };
 
         column![
-            row![self.menu(), page,].height(Length::Fill).spacing(3),
+            row![self.menu(), Rule::vertical(1), page,]
+                .height(Length::Fill)
+                .spacing(3),
             self.player_bar(),
         ]
         .align_items(Alignment::Center)

@@ -1,5 +1,9 @@
 use iced_core::svg::Handle;
 
+/// App icon
+pub const ICON: SvgData =
+    SvgData::new(include_bytes!("../../assets/icons/icon.svg"));
+
 /// Play song icon
 pub const PLAY: SvgData =
     SvgData::new(include_bytes!("../../assets/icons/play.svg"));

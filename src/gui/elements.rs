@@ -1,4 +1,4 @@
-use iced::widget::{button, column, container, row, slider, text, Space};
+use iced::widget::{button, column, container, row, slider, text, Space, svg};
 use iced::Renderer;
 use iced_core::alignment::{Horizontal, Vertical};
 use iced_core::{Alignment, Length};
@@ -6,22 +6,27 @@ use iced_core::{Alignment, Length};
 use crate::library::song::Song;
 
 use super::app::{BumpApp, Msg, Page, PlayerMsg};
-use super::svg_data::{pp_icon, vol_icon, NEXT, PREV};
+use super::svg_data::{pp_icon, vol_icon, NEXT, PREV, ICON};
 use super::theme::{Button, Container, Text, Theme};
 use super::widgets::svg_button::SvgButton;
 
 type Element<'a> = iced::Element<'a, Msg, Renderer<Theme>>;
 
 impl BumpApp {
+    /// Gets app menu
     pub fn menu(&self) -> Element {
-        container(column![
+        column![
+            container(
+                svg(ICON).width(50).height(50),
+            ).width(Length::Fill).align_x(Horizontal::Center),
             button("Library").on_press(Msg::Page(Page::Library)),
             button("Playlist").on_press(Msg::Page(Page::Playlist)),
+            Space::new(Length::Shrink, Length::Fill),
             button("Settings").on_press(Msg::Page(Page::Settings)),
-        ])
+        ]
         .width(175)
         .height(Length::Fill)
-        .style(Container::Separate)
+        .padding(10)
         .into()
     }
 
@@ -31,12 +36,12 @@ impl BumpApp {
         s: &Song,
         style: Text,
         c: usize,
-        num: bool,
+        num: Option<usize>,
     ) -> Element {
         button(
             column![
                 Space::new(Length::Shrink, Length::FillPortion(1)),
-                self.list_item_data(s, style, c, num),
+                self.list_item_data(s, style, num),
                 Space::new(Length::Shrink, Length::FillPortion(1)),
                 // Creates bottom border
                 container("")
@@ -59,40 +64,39 @@ impl BumpApp {
         &self,
         s: &Song,
         style: Text,
-        c: usize,
-        num: bool,
+        num: Option<usize>,
     ) -> Element {
-        let item = if num {
+        let item = if let Some(n) = num {
             row![
-                text(c + 1).width(Length::FillPortion(1)),
-                self.list_item_col(s.get_name(), style, s.get_artist(), 20),
+                text(n).width(Length::FillPortion(1)),
+                self.list_item_col(s.get_name(), style, s.get_artist(), 10),
                 self.list_item_col(
                     s.get_album(),
                     style,
                     &s.get_year_str(),
-                    18
+                    9
                 ),
                 self.list_item_col(
                     &s.get_length_str(),
                     style,
                     s.get_genre(),
-                    2
+                    1
                 ),
             ]
         } else {
             row![
-                self.list_item_col(s.get_name(), style, s.get_artist(), 20),
+                self.list_item_col(s.get_name(), style, s.get_artist(), 10),
                 self.list_item_col(
                     s.get_album(),
                     style,
                     &s.get_year_str(),
-                    19
+                    10
                 ),
                 self.list_item_col(
                     &s.get_length_str(),
                     style,
                     s.get_genre(),
-                    2
+                    1
                 ),
             ]
         };

@@ -15,7 +15,7 @@ impl BumpApp {
     /// Displays main page
     pub fn view_library(&self) -> Element {
         column![
-            text("Library").size(20).style(Text::Normal),
+            text("Library").size(25).style(Text::Light),
             container(self.library_songs())
                 .height(Length::Fill)
                 .width(Length::Fill),
@@ -29,23 +29,22 @@ impl BumpApp {
     pub fn library_songs(&self) -> Element {
         let songs = self.library.get_songs();
         let cur = self.player.get_current();
-        let mut c = 0;
 
         scrollable(
             column(
                 songs
                     .iter()
-                    .map(|s| {
+                    .enumerate()
+                    .map(|(c, s)| {
                         let style = match cur {
                             Some(value) if value.to_owned() == c => Text::Prim,
                             _ => Text::Default,
                         };
-                        c += 1;
-                        self.list_item(s, style, c - 1, false)
+                        self.list_item(s, style, c, None)
                     })
                     .collect(),
             )
-            .padding([0, 15, 0, 5]),
+            .padding([0, 15, 0, 0]),
         )
         .into()
     }

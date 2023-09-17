@@ -15,7 +15,7 @@ impl BumpApp {
     pub fn view_playlist(&self) -> Element {
         column![
             row![
-                text("Playlist").size(20).style(Text::Normal),
+                text("Playlist").size(25).style(Text::Light),
                 Space::new(Length::Fill, Length::Shrink),
                 button("Shuffle")
                     .style(Button::Primary)
@@ -37,14 +37,15 @@ impl BumpApp {
                 self.player
                     .get_playlist()
                     .iter()
-                    .map(|p| {
+                    .enumerate()
+                    .map(|(i, p)| {
                         let c = p.to_owned();
                         let song = self.library.get_song(c);
                         let style = match cur {
                             Some(value) if value.to_owned() == c => Text::Prim,
                             _ => Text::Default,
                         };
-                        self.list_item(&song, style, c, true)
+                        self.list_item(&song, style, c, Some(i))
                     })
                     .collect(),
             )
