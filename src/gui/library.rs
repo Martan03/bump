@@ -15,14 +15,13 @@ impl BumpApp {
     /// Displays main page
     pub fn view_library(&self) -> Element {
         column![
-            text("Library").size(25).style(Text::Light),
-            container(self.library_songs())
-                .height(Length::Fill)
-                .width(Length::Fill),
+            container(
+                text("Library").size(25).style(Text::Light),
+            ).padding(5),
+            self.library_songs(),
         ]
         .width(Length::Fill)
         .spacing(3)
-        .padding(3)
         .into()
     }
 
@@ -44,8 +43,10 @@ impl BumpApp {
                     })
                     .collect(),
             )
-            .padding([0, 15, 0, 0]),
+            .padding([0, 15, 0, 5]),
         )
+        .height(Length::Fill)
+        .width(Length::Fill)
         .into()
     }
 }

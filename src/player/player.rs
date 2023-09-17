@@ -146,9 +146,18 @@ impl Player {
         } else {
             usize::MAX
         };
+
+        if id != usize::MAX {
+            self.playlist.remove(self.current);
+        }
+
         let mut rng = rand::thread_rng();
         self.playlist.shuffle(&mut rng);
-        self.find_current(id);
+        
+        if id != usize::MAX {
+            self.playlist.insert(0, id);
+            self.set_current(0);
+        }
     }
 
     pub fn is_playing(&self) -> bool {
