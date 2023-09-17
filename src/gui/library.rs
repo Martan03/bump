@@ -39,7 +39,7 @@ impl BumpApp {
                             Some(value) if value.to_owned() == c => Text::Prim,
                             _ => Text::Default,
                         };
-                        self.list_item(s, style, c, None)
+                        self.list_item(s, style, c, None, true)
                     })
                     .collect(),
             )

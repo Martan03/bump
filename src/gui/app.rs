@@ -28,7 +28,7 @@ pub struct BumpApp {
 #[derive(Debug, Clone, Copy)]
 pub enum PlayerMsg {
     Play(Option<bool>),
-    PlaySong(usize),
+    PlaySong(usize, bool),
     Next,
     Prev,
     SeekTo(f32),

@@ -37,6 +37,7 @@ impl BumpApp {
         style: Text,
         c: usize,
         num: Option<usize>,
+        new: bool,
     ) -> Element {
         button(
             column![
@@ -55,7 +56,7 @@ impl BumpApp {
         .width(Length::Fill)
         .padding(0)
         .style(Button::Item)
-        .on_press(Msg::Plr(PlayerMsg::PlaySong(c)))
+        .on_press(Msg::Plr(PlayerMsg::PlaySong(c, new)))
         .into()
     }
 

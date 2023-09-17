@@ -265,8 +265,13 @@ impl Player {
                     _ = self.play(play.unwrap_or(!self.is_playing()));
                 }
             }
-            PlayerMsg::PlaySong(id) => {
-                self.create_playlist(library, id);
+            PlayerMsg::PlaySong(id, new) => {
+                if new {
+                    self.create_playlist(library, id);
+                } else {
+                    self.find_current(id)
+                }
+    
                 _ = self.play_at(library, self.current as i128, true)
             }
             PlayerMsg::Next => _ = self.next(library),
