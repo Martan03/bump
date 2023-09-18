@@ -17,6 +17,10 @@ pub struct Config {
     gui_path: PathBuf,
     /// Path to the player file
     player_path: PathBuf,
+    /// Whether it should use recursive search when finding songs
+    recursive_search: bool,
+    /// When true puts cuurrently playing song as first after shuffle
+    shuffle_current: bool,
 }
 
 impl Config {
@@ -91,6 +95,11 @@ impl Config {
             PathBuf::from(".")
         }
     }
+
+    /// Gets shuffle current
+    pub fn get_shuffle_current(&self) -> bool {
+        self.shuffle_current
+    }
 }
 
 impl Default for Config {
@@ -114,6 +123,8 @@ impl Default for Config {
             library_path,
             gui_path,
             player_path,
+            recursive_search: true,
+            shuffle_current: true,
         }
     }
 }

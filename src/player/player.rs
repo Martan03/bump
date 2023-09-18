@@ -34,6 +34,8 @@ pub struct Player {
     volume: f32,
     mute: bool,
     playlist: Vec<usize>,
+    #[serde(skip, default = "default_shuffle_current")]
+    shuffle_current: bool,
 }
 
 impl Player {
@@ -47,6 +49,7 @@ impl Player {
         if plr.playlist.is_empty() && library.count() > 0 {
             plr.playlist = (0..library.count()).collect();
         }
+        plr.shuffle_current = config.get_shuffle_current();
         _ = plr.sinker.song_end(move |info| match info {
             CallbackInfo::SourceEnded => {
                 _ = sender.send(Msg::Plr(PlayerMsg::SongEnd));
@@ -153,14 +156,14 @@ impl Player {
             usize::MAX
         };
 
-        if id != usize::MAX {
+        if id != usize::MAX && self.shuffle_current {
             self.playlist.remove(self.current);
         }
 
         let mut rng = rand::thread_rng();
         self.playlist.shuffle(&mut rng);
 
-        if id != usize::MAX {
+        if id != usize::MAX && self.shuffle_current {
             self.playlist.insert(0, id);
             self.set_current(0);
         }
@@ -318,6 +321,7 @@ impl Default for Player {
             volume: 1.,
             mute: false,
             playlist: Vec::new(),
+            shuffle_current: true,
         }
     }
 }
@@ -328,4 +332,8 @@ fn default_sinker() -> Sinker {
 
 fn default_state() -> PlayState {
     PlayState::Paused
+}
+
+fn default_shuffle_current() -> bool {
+    true
 }
