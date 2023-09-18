@@ -1,4 +1,4 @@
-use iced::widget::{button, column, container, row, slider, text, Space, svg};
+use iced::widget::{button, column, container, row, slider, svg, text, Space};
 use iced::Renderer;
 use iced_core::alignment::{Horizontal, Vertical};
 use iced_core::{Alignment, Length};
@@ -6,7 +6,7 @@ use iced_core::{Alignment, Length};
 use crate::library::song::Song;
 
 use super::app::{BumpApp, Msg, Page, PlayerMsg};
-use super::svg_data::{pp_icon, vol_icon, NEXT, PREV, ICON};
+use super::svg_data::{pp_icon, vol_icon, ICON, NEXT, PREV};
 use super::theme::{Button, Container, Text, Theme};
 use super::widgets::svg_button::SvgButton;
 
@@ -16,9 +16,9 @@ impl BumpApp {
     /// Gets app menu
     pub fn menu(&self) -> Element {
         column![
-            container(
-                svg(ICON).width(50).height(50),
-            ).width(Length::Fill).align_x(Horizontal::Center),
+            container(svg(ICON).width(50).height(50),)
+                .width(Length::Fill)
+                .align_x(Horizontal::Center),
             button("Library").on_press(Msg::Page(Page::Library)),
             button("Playlist").on_press(Msg::Page(Page::Playlist)),
             Space::new(Length::Shrink, Length::Fill),
@@ -71,12 +71,7 @@ impl BumpApp {
             row![
                 text(n).width(Length::FillPortion(1)),
                 self.list_item_col(s.get_name(), style, s.get_artist(), 10),
-                self.list_item_col(
-                    s.get_album(),
-                    style,
-                    &s.get_year_str(),
-                    9
-                ),
+                self.list_item_col(s.get_album(), style, &s.get_year_str(), 9),
                 self.list_item_col(
                     &s.get_length_str(),
                     style,

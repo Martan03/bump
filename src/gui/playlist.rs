@@ -20,7 +20,8 @@ impl BumpApp {
                 button("Shuffle")
                     .style(Button::Primary)
                     .on_press(Msg::Plr(PlayerMsg::Shuffle)),
-            ].padding(5),
+            ]
+            .padding(5),
             self.playlist_songs(),
         ]
         .width(Length::Fill)

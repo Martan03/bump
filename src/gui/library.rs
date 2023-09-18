@@ -15,9 +15,7 @@ impl BumpApp {
     /// Displays main page
     pub fn view_library(&self) -> Element {
         column![
-            container(
-                text("Library").size(25).style(Text::Light),
-            ).padding(5),
+            container(text("Library").size(25).style(Text::Light),).padding(5),
             self.library_songs(),
         ]
         .width(Length::Fill)

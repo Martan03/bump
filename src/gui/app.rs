@@ -73,7 +73,7 @@ impl Application for BumpApp {
     fn update(&mut self, message: Self::Message) -> Command<Self::Message> {
         match message {
             Msg::Page(msg) => self.page = msg,
-            Msg::Plr(msg) => self.player.handle_msg(msg, &self.library),
+            Msg::Plr(msg) => self.player.handle_msg(msg, &mut self.library),
             Msg::Update => _ = self.library.find(&mut self.config),
             Msg::Tick => {}
             Msg::Move(x, y) => self.gui.set_pos(x, y),

@@ -1,5 +1,8 @@
 use crate::config::config::Config;
-use std::fs::{self, read_dir, File};
+use std::{
+    fs::{self, read_dir, File},
+    time::Duration,
+};
 
 use super::song::Song;
 use eyre::Result;
@@ -94,6 +97,12 @@ impl Library {
             song.clone()
         } else {
             Song::default()
+        }
+    }
+
+    pub fn set_song_length(&mut self, id: usize, len: Duration) {
+        if let Some(song) = self.songs.get_mut(id) {
+            song.set_length(len);
         }
     }
 

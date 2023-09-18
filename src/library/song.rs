@@ -97,6 +97,11 @@ impl Song {
         }
     }
 
+    /// Set songs length to given length
+    pub fn set_length(&mut self, len: Duration) {
+        self.length = len;
+    }
+
     pub fn get_genre(&self) -> &str {
         &self.genre
     }

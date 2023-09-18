@@ -116,14 +116,14 @@ impl Player {
     }
 
     /// Plays next song
-    pub fn next(&mut self, library: &Library) -> Result<()> {
+    pub fn next(&mut self, library: &mut Library) -> Result<()> {
         let play = self.is_playing();
         self.play_at(library, self.current as i128 + 1, play)?;
         Ok(())
     }
 
     /// Plays previous song
-    pub fn prev(&mut self, library: &Library) -> Result<()> {
+    pub fn prev(&mut self, library: &mut Library) -> Result<()> {
         let play = self.is_playing();
         self.play_at(library, self.current as i128 - 1, play)?;
         Ok(())
@@ -131,12 +131,18 @@ impl Player {
 
     pub fn play_at(
         &mut self,
-        library: &Library,
+        library: &mut Library,
         index: i128,
         play: bool,
     ) -> Result<()> {
         self.set_current(index);
         self.load_song(library, play)?;
+        match self.sinker.get_timestamp() {
+            Ok((_, l)) => {
+                library.set_song_length(self.playlist[self.current], l)
+            }
+            Err(_) => {}
+        }
         Ok(())
     }
 
@@ -153,7 +159,7 @@ impl Player {
 
         let mut rng = rand::thread_rng();
         self.playlist.shuffle(&mut rng);
-        
+
         if id != usize::MAX {
             self.playlist.insert(0, id);
             self.set_current(0);
@@ -258,7 +264,7 @@ impl Player {
     }
 
     /// Handles player messages
-    pub fn handle_msg(&mut self, msg: PlayerMsg, library: &Library) {
+    pub fn handle_msg(&mut self, msg: PlayerMsg, library: &mut Library) {
         match msg {
             PlayerMsg::Play(play) => {
                 if self.state != PlayState::Stopped {
@@ -271,7 +277,7 @@ impl Player {
                 } else {
                     self.find_current(id)
                 }
-    
+
                 _ = self.play_at(library, self.current as i128, true)
             }
             PlayerMsg::Next => _ = self.next(library),
