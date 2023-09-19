@@ -45,51 +45,41 @@ impl Player {
         library: &Library,
         config: &Config,
     ) -> Self {
-        let mut plr = Player::load(config, library);
+        let mut plr = Player::load(config, library, sender);
         if plr.playlist.is_empty() && library.count() > 0 {
             plr.playlist = (0..library.count()).collect();
         }
-        plr.shuffle_current = config.get_shuffle_current();
-        _ = plr.sinker.song_end(move |info| match info {
-            CallbackInfo::SourceEnded => {
-                _ = sender.send(Msg::Plr(PlayerMsg::SongEnd));
-            }
-            _ => todo!(),
-        });
         plr
     }
 
     /// Loads player from the json
-    pub fn load(config: &Config, library: &Library) -> Self {
-        /// Clears current and sets state to stopped
-        fn clear_current(mut plr: Player) -> Player {
-            plr.current = usize::MAX;
-            plr.state = PlayState::Stopped;
-            plr
-        }
-
+    pub fn load(
+        config: &Config,
+        lib: &Library,
+        sender: UnboundedSender<Msg>,
+    ) -> Self {
         let path = config.get_player_path();
 
-        match fs::read_to_string(path) {
-            Err(_) => Player::default(),
-            Ok(p) => match serde_json::from_str::<Player>(&p) {
-                Err(_) => Player::default(),
-                Ok(mut plr) => {
-                    match plr.sinker.set_volume(plr.volume) {
-                        Err(_) => plr.volume = 1.0,
-                        _ => {}
-                    }
-                    if let Some(id) = plr.playlist.get(plr.current) {
-                        match plr.sinker.load(library, id.to_owned(), false) {
-                            Ok(_) => plr,
-                            Err(_) => clear_current(plr),
-                        }
-                    } else {
-                        clear_current(plr)
-                    }
-                }
+        let data = match fs::read_to_string(path) {
+            Err(_) => PlayerLoad::default(),
+            Ok(p) => match serde_json::from_str::<PlayerLoad>(&p) {
+                Err(_) => PlayerLoad::default(),
+                Ok(plr) => plr,
             },
-        }
+        };
+
+        let mut res = Self {
+            sinker: Sinker::new(),
+            state: PlayState::Paused,
+            current: data.current,
+            volume: data.volume,
+            mute: data.mute,
+            playlist: data.playlist,
+            shuffle_current: config.get_shuffle_current(),
+        };
+
+        res.init_sinker(lib, sender);
+        res
     }
 
     /// Saves player to the json
@@ -312,6 +302,34 @@ impl Player {
             self.current = usize::MAX;
         }
     }
+
+    /// Initializes player sinker
+    fn init_sinker(&mut self, lib: &Library, sender: UnboundedSender<Msg>) {
+        // Loads default song
+        if let Some(id) = self.playlist.get(self.current) {
+            if let Err(_) = self.sinker.load(lib, id.to_owned(), false) {
+                self.current = usize::MAX;
+                self.state = PlayState::Stopped;
+            }
+        }
+        // Sets volume
+        if self.mute {
+            if let Err(_) = self.sinker.set_volume(0.) {
+                self.mute = false;
+            }
+        } else {
+            if let Err(_) = self.sinker.set_volume(self.volume) {
+                self.volume = 1.;
+            }
+        }
+        // Sets on song end function
+        _ = self.sinker.song_end(move |info| match info {
+            CallbackInfo::SourceEnded => {
+                _ = sender.send(Msg::Plr(PlayerMsg::SongEnd));
+            }
+            _ => todo!(),
+        });
+    }
 }
 
 impl Default for Player {
@@ -326,6 +344,42 @@ impl Default for Player {
             shuffle_current: true,
         }
     }
+}
+
+#[derive(Deserialize)]
+struct PlayerLoad {
+    /// Index of the currently playing song
+    current: usize,
+    /// Volume of the playback
+    volume: f32,
+    /// When true playback is muted
+    mute: bool,
+    /// Current playlist
+    playlist: Vec<usize>,
+}
+
+impl Default for PlayerLoad {
+    /// Default values for PlayerLoad
+    fn default() -> Self {
+        Self {
+            current: usize::MAX,
+            volume: 1.,
+            mute: false,
+            playlist: Vec::new(),
+        }
+    }
+}
+
+#[derive(Serialize)]
+struct PlayerSave {
+    /// Index of the currently playing song
+    current: usize,
+    /// Volume of the playback
+    volume: f32,
+    /// When true playback is muted
+    mute: bool,
+    /// Current playlist
+    playlist: Vec<usize>,
 }
 
 fn default_sinker() -> Sinker {
