@@ -166,6 +166,8 @@ impl Player {
         if id != usize::MAX && self.shuffle_current {
             self.playlist.insert(0, id);
             self.set_current(0);
+        } else {
+            self.find_current(id);
         }
     }
 
