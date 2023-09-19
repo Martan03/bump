@@ -68,7 +68,6 @@ fn make_settings() -> Settings<(Config, Gui)> {
         },
         id: Some(id.to_owned()),
         exit_on_close_request: false,
-        antialiasing: true,
         flags: (config, gui),
         ..Default::default()
     }

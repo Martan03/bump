@@ -156,7 +156,7 @@ impl Player {
             usize::MAX
         };
 
-        if id != usize::MAX && self.shuffle_current {
+        if id != usize::MAX && !self.shuffle_current {
             self.playlist.remove(self.current);
         }
 

@@ -8,14 +8,21 @@ use crate::config::config::Config;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Gui {
+    /// Window width
     width: u32,
+    /// Window height
     height: u32,
+    /// Window position on x coordinate
     pos_x: i32,
+    /// Window position on y coordinate
     pos_y: i32,
+    /// Stores whether Gui variables changed
+    #[serde(skip, default)]
+    changed: bool,
 }
 
 impl Gui {
-    /// Loads GUI from the json file
+    /// Loads Gui from the json file
     pub fn load(config: &Config) -> Self {
         let path = config.get_gui_path();
 
@@ -30,6 +37,11 @@ impl Gui {
 
     /// Saves gui state to json file
     pub fn save(&self, config: &Config) -> Result<()> {
+        // If Gui haven't change, don't save
+        if !self.changed {
+            return Ok(());
+        }
+
         let file = config.get_gui_path();
         File::create(&file)?;
 
@@ -46,6 +58,7 @@ impl Gui {
 
     /// Sets window size to given value
     pub fn set_size(&mut self, width: u32, height: u32) {
+        self.changed = true;
         self.width = width;
         self.height = height;
     }
@@ -61,18 +74,21 @@ impl Gui {
 
     /// Sets window position
     pub fn set_pos(&mut self, pos_x: i32, pos_y: i32) {
+        self.changed = true;
         self.pos_x = pos_x;
         self.pos_y = pos_y;
     }
 }
 
 impl Default for Gui {
+    /// Sets default values for Gui
     fn default() -> Self {
         Gui {
             width: 1280,
             height: 720,
             pos_x: i32::MAX,
             pos_y: i32::MAX,
+            changed: false,
         }
     }
 }

@@ -19,12 +19,15 @@ pub struct Config {
     player_path: PathBuf,
     /// Whether it should use recursive search when finding songs
     recursive_search: bool,
-    /// When true puts cuurrently playing song as first after shuffle
+    /// When true shuffles currently playing song as well
     shuffle_current: bool,
+    /// True when anything in config changed, else false
+    #[serde(skip, default)]
+    changed: bool,
 }
 
 impl Config {
-    /// Loads config from config
+    /// Loads config from config file
     pub fn load() -> Self {
         let mut path = Config::get_config_dir();
         path.push("config.json");
@@ -40,6 +43,11 @@ impl Config {
 
     /// Saves config to the config directory
     pub fn save(&self) -> Result<()> {
+        // When nothing changed, don't save
+        if !self.changed {
+            return Ok(());
+        }
+
         let mut dir = Config::get_config_dir();
         fs::create_dir_all(&dir)?;
 
@@ -51,6 +59,10 @@ impl Config {
 
         Ok(())
     }
+
+    ///==================
+    /// Getters & Setters
+    ///==================
 
     /// Gets all paths songs are saved in
     pub fn get_paths(&self) -> &Vec<PathBuf> {
@@ -77,15 +89,6 @@ impl Config {
         &self.extensions
     }
 
-    /// Gets default songs path
-    pub fn default_songs_path() -> PathBuf {
-        if let Some(dir) = dirs::audio_dir() {
-            dir
-        } else {
-            PathBuf::from(".")
-        }
-    }
-
     /// Gets config dir path
     pub fn get_config_dir() -> PathBuf {
         if let Some(mut dir) = dirs::config_dir() {
@@ -105,31 +108,75 @@ impl Config {
     pub fn get_recursive_search(&self) -> bool {
         self.recursive_search
     }
+
+    ///======================
+    /// Default config values
+    ///======================
+
+    /// Gets default songs path
+    fn get_default_song_paths() -> Vec<PathBuf> {
+        if let Some(dir) = dirs::audio_dir() {
+            vec![dir]
+        } else {
+            vec![PathBuf::from(".")]
+        }
+    }
+
+    /// Gets default path to library
+    fn get_default_library_path() -> PathBuf {
+        Config::get_config_dir().join("library.json")
+    }
+
+    /// Gets default path to gui state file
+    fn get_default_gui_path() -> PathBuf {
+        Config::get_config_dir().join("gui.json")
+    }
+
+    /// Gets default path to player state file
+    fn get_default_player_path() -> PathBuf {
+        Config::get_config_dir().join("player.json")
+    }
+
+    /// Gets default extensions list
+    fn get_default_extensions() -> Vec<String> {
+        vec![
+            "mp3".to_owned(),
+            "flac".to_owned(),
+            "m4a".to_owned(),
+            "mp4".to_owned(),
+        ]
+    }
+
+    /// Gets default recursive search
+    fn get_default_recursive_search() -> bool {
+        true
+    }
+
+    /// Gets default shuffle current
+    fn get_default_shuffle_current() -> bool {
+        false
+    }
 }
 
 impl Default for Config {
     /// Sets default values for Config
     fn default() -> Self {
         let mut library_path = Config::get_config_dir();
+        let mut gui_path = library_path.clone();
+        let mut player_path = library_path.clone();
         library_path.push("library.json");
-        let mut gui_path = Config::get_config_dir();
         gui_path.push("gui.json");
-        let mut player_path = Config::get_config_dir();
         player_path.push("player.json");
 
         Config {
-            paths: vec![Config::default_songs_path()],
-            extensions: vec![
-                "mp3".to_owned(),
-                "flac".to_owned(),
-                "m4a".to_owned(),
-                "mp4".to_owned(),
-            ],
-            library_path,
-            gui_path,
-            player_path,
-            recursive_search: true,
-            shuffle_current: true,
+            paths: Config::get_default_song_paths(),
+            extensions: Config::get_default_extensions(),
+            library_path: Config::get_default_library_path(),
+            gui_path: Config::get_default_gui_path(),
+            player_path: Config::get_default_player_path(),
+            recursive_search: Config::get_default_recursive_search(),
+            shuffle_current: Config::get_default_shuffle_current(),
+            changed: false,
         }
     }
 }

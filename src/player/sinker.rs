@@ -16,7 +16,7 @@ pub struct Sinker {
 }
 
 impl Sinker {
-    /// Constructs new Sinker
+    /// Creates new sinker
     pub fn new() -> Self {
         Sinker {
             sink: Sink::default(),

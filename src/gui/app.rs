@@ -122,6 +122,7 @@ impl Application for BumpApp {
 }
 
 impl BumpApp {
+    /// Creates new BumpApp
     fn new(config: Config, gui: Gui) -> Self {
         let (sender, receiver) = mpsc::unbounded_channel::<Msg>();
         let library = Library::load(&config);
@@ -137,6 +138,10 @@ impl BumpApp {
             page: Page::Library,
         }
     }
+
+    ///==============
+    /// Subscriptions
+    ///==============
 
     /// Creates receiver subscription
     fn receiver_subscription(&self) -> Subscription<Msg> {
