@@ -100,6 +100,11 @@ impl Config {
     pub fn get_shuffle_current(&self) -> bool {
         self.shuffle_current
     }
+
+    /// Gets whether songs finder should use recursive search
+    pub fn get_recursive_search(&self) -> bool {
+        self.recursive_search
+    }
 }
 
 impl Default for Config {

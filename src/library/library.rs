@@ -56,7 +56,7 @@ impl Library {
                 let f = f.expect("Failed to read file");
                 let path = f.path();
 
-                if path.is_dir() {
+                if path.is_dir() && config.get_recursive_search() {
                     paths.push(path.clone());
                 }
 
