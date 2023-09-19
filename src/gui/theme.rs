@@ -1,5 +1,7 @@
 #![allow(unused)]
 
+use std::backtrace;
+
 use iced::{
     application,
     overlay::menu,
@@ -474,6 +476,7 @@ impl toggler::StyleSheet for Theme {
 pub enum SvgButton {
     #[default]
     Transparent,
+    Circle(f32),
 }
 
 impl svg_button::StyleSheet for Theme {
@@ -489,6 +492,12 @@ impl svg_button::StyleSheet for Theme {
         };
 
         match style {
+            SvgButton::Circle(size) => svg_button::Appearance {
+                background: Background::Color(FG),
+                border_radius: BorderRadius::from(size / 2.),
+                color: Some(BG_DARK),
+                ..transparent
+            },
             _ => transparent,
         }
     }
@@ -497,6 +506,10 @@ impl svg_button::StyleSheet for Theme {
         let active = self.active(style);
 
         match style {
+            SvgButton::Circle(size) => svg_button::Appearance {
+                background: Background::Color(PRIM),
+                ..active
+            },
             _ => svg_button::Appearance {
                 color: Some(PRIM),
                 ..active
@@ -508,6 +521,10 @@ impl svg_button::StyleSheet for Theme {
         let active = self.active(style);
 
         match style {
+            SvgButton::Circle(size) => svg_button::Appearance {
+                background: Background::Color(PRIM),
+                ..active
+            },
             _ => svg_button::Appearance {
                 color: Some(PRIM),
                 ..active

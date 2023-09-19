@@ -309,7 +309,7 @@ impl Player {
         if let Some(index) = self.playlist.iter().position(|&x| x == id) {
             self.current = index;
         } else {
-            self.current = 0;
+            self.current = usize::MAX;
         }
     }
 }

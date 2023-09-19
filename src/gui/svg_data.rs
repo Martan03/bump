@@ -31,9 +31,9 @@ pub const MUTE: SvgData =
 /// Gets play or pause icon based on play bool
 pub fn pp_icon(play: bool) -> Handle {
     if play {
-        PLAY.into()
-    } else {
         PAUSE.into()
+    } else {
+        PLAY.into()
     }
 }
 

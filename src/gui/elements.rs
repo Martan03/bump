@@ -7,7 +7,7 @@ use crate::library::song::Song;
 
 use super::app::{BumpApp, Msg, Page, PlayerMsg};
 use super::svg_data::{pp_icon, vol_icon, ICON, NEXT, PREV};
-use super::theme::{Button, Container, Text, Theme};
+use super::theme::{Button, Container, SvgButton as SvgTheme, Text, Theme};
 use super::widgets::svg_button::SvgButton;
 
 type Element<'a> = iced::Element<'a, Msg, Renderer<Theme>>;
@@ -171,6 +171,8 @@ impl BumpApp {
             SvgButton::new(pp_icon(self.player.is_playing()))
                 .width(30)
                 .height(30)
+                .padding(8)
+                .style(SvgTheme::Circle(30.))
                 .on_press(Msg::Plr(PlayerMsg::Play(None))),
             SvgButton::new(NEXT.into())
                 .width(16)

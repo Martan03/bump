@@ -75,6 +75,14 @@ where
         self
     }
 
+    pub fn style(
+        mut self,
+        style: <Renderer::Theme as StyleSheet>::Style,
+    ) -> Self {
+        self.style = style;
+        self
+    }
+
     pub fn on_press(mut self, message: Message) -> Self {
         self.on_press = Some(message);
         self
