@@ -26,6 +26,8 @@ pub struct Config {
     fade: Duration,
     /// When true automatically starts playing last played song after start
     autoplay: bool,
+    /// When true loads new songs on app start
+    start_load: bool,
     /// True when anything in config changed, else false
     #[serde(skip, default)]
     changed: bool,
@@ -119,8 +121,14 @@ impl Config {
         self.fade
     }
 
+    /// Gets whether song should start playing on start
     pub fn get_autoplay(&self) -> bool {
         self.autoplay
+    }
+
+    /// Gets whether songs should load on start
+    pub fn get_start_load(&self) -> bool {
+        self.start_load
     }
 
     ///>===================================================================<///
@@ -180,6 +188,10 @@ impl Config {
     fn get_default_autoplay() -> bool {
         false
     }
+
+    fn get_default_start_load() -> bool {
+        true
+    }
 }
 
 /// Implements default for Config
@@ -202,6 +214,7 @@ impl Default for Config {
             shuffle_current: Config::get_default_shuffle_current(),
             fade: Config::get_default_fade(),
             autoplay: Config::get_default_autoplay(),
+            start_load: Config::get_default_start_load(),
             changed: true,
         }
     }

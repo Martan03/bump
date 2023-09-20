@@ -3,3 +3,4 @@
 - Basic design
 - Some options in Config file
 - Playlist + shuffle
+- Optimized list view (definitelly not from BonnyAD9)

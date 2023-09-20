@@ -53,7 +53,11 @@ impl Library {
             };
 
             for f in dir {
-                let f = f.expect("Failed to read file");
+                let f = if let Ok(file) = f {
+                    file
+                } else {
+                    continue;
+                };
                 let path = f.path();
 
                 if path.is_dir() && config.get_recursive_search() {

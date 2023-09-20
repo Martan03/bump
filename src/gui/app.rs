@@ -134,7 +134,7 @@ impl BumpApp {
         let (sender, receiver) = mpsc::unbounded_channel::<Msg>();
         let library = Library::load(&config);
 
-        BumpApp {
+        let mut app = Self {
             player: Player::new(sender.clone(), &library, &config),
             library,
             config,
@@ -143,7 +143,12 @@ impl BumpApp {
             receiver: Cell::new(Some(receiver)),
             theme: Theme::default(),
             page: Page::Library,
+        };
+
+        if app.config.get_start_load() {
+            app.library.find(&mut app.config);
         }
+        app
     }
 
     ///>===================================================================<///
