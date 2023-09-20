@@ -24,17 +24,20 @@ pub enum PlayState {
     Paused,
 }
 
-#[derive(Serialize, Deserialize)]
 pub struct Player {
-    #[serde(skip, default = "default_sinker")]
+    /// Wrapper around sink that plays audio
     sinker: Sinker,
-    #[serde(skip, default = "default_state")]
+    /// State of the player
     state: PlayState,
+    /// Index of the currently playing song
     current: usize,
+    /// Volume of the playback
     volume: f32,
+    /// When true playback is muted
     mute: bool,
+    /// Current playlist
     playlist: Vec<usize>,
-    #[serde(skip, default = "default_shuffle_current")]
+    /// True when shuffle should shuffle currently playing song
     shuffle_current: bool,
 }
 
@@ -84,10 +87,17 @@ impl Player {
 
     /// Saves player to the json
     pub fn save(&self, config: &Config) -> Result<()> {
+        let data = PlayerSave {
+            current: self.current,
+            volume: self.volume,
+            mute: self.mute,
+            playlist: &self.playlist,
+        };
+
         let path = config.get_player_path();
         File::create(&path)?;
 
-        let text = serde_json::to_string::<Player>(self)?;
+        let text = serde_json::to_string::<PlayerSave>(&data)?;
         fs::write(path, text)?;
 
         Ok(())
@@ -346,6 +356,9 @@ impl Default for Player {
     }
 }
 
+///==========================================
+/// Structs for saving and loading the player
+///==========================================
 #[derive(Deserialize)]
 struct PlayerLoad {
     /// Index of the currently playing song
@@ -371,7 +384,7 @@ impl Default for PlayerLoad {
 }
 
 #[derive(Serialize)]
-struct PlayerSave {
+struct PlayerSave<'a> {
     /// Index of the currently playing song
     current: usize,
     /// Volume of the playback
@@ -379,17 +392,5 @@ struct PlayerSave {
     /// When true playback is muted
     mute: bool,
     /// Current playlist
-    playlist: Vec<usize>,
-}
-
-fn default_sinker() -> Sinker {
-    Sinker::new()
-}
-
-fn default_state() -> PlayState {
-    PlayState::Paused
-}
-
-fn default_shuffle_current() -> bool {
-    true
+    playlist: &'a Vec<usize>,
 }
