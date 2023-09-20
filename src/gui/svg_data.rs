@@ -28,6 +28,12 @@ pub const VOL_33: SvgData =
 pub const MUTE: SvgData =
     SvgData::new(include_bytes!("../../assets/icons/volume_muted.svg"));
 
+/// Scrollbar icons
+pub const SCROLL_UP: SvgData =
+    SvgData::new(include_bytes!("../../assets/icons/scroll_up.svg"));
+pub const SCROLL_DOWN: SvgData =
+    SvgData::new(include_bytes!("../../assets/icons/scroll_down.svg"));
+
 /// Gets play or pause icon based on play bool
 pub fn pp_icon(play: bool) -> Handle {
     if play {

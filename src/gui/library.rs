@@ -1,5 +1,5 @@
 use iced::{
-    widget::{column, container, scrollable, text},
+    widget::{column, container, text},
     Renderer,
 };
 use iced_core::Length;
@@ -7,6 +7,7 @@ use iced_core::Length;
 use super::{
     app::{BumpApp, Msg},
     theme::{Text, Theme},
+    widgets::list_view::WrapBox,
 };
 
 type Element<'a> = iced::Element<'a, Msg, Renderer<Theme>>;
@@ -27,24 +28,24 @@ impl BumpApp {
         let songs = self.library.get_songs();
         let cur = self.player.get_current();
 
-        scrollable(
-            column(
-                songs
-                    .iter()
-                    .enumerate()
-                    .map(|(c, s)| {
-                        let style = match cur {
-                            Some(value) if value.to_owned() == c => Text::Prim,
-                            _ => Text::Default,
-                        };
-                        self.list_item(s, style, c, None, true)
-                    })
-                    .collect(),
-            )
-            .padding([0, 15, 0, 5]),
+        WrapBox::with_childern(
+            songs
+                .iter()
+                .enumerate()
+                .map(|(c, s)| {
+                    let style = match cur {
+                        Some(value) if value.to_owned() == c => Text::Prim,
+                        _ => Text::Default,
+                    };
+                    self.list_item(s, style, c, None, true)
+                })
+                .collect(),
+            self.gui.get_wb_state(0),
         )
-        .height(Length::Fill)
-        .width(Length::Fill)
+        .item_height(45)
+        .scrollbar_button_height(15)
+        .scrollbar_width(15)
+        .padding([0, 5, 0, 5])
         .into()
     }
 }

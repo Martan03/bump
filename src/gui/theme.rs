@@ -12,7 +12,7 @@ use iced::{
 };
 use iced_core::{Background, BorderRadius, Color, Vector};
 
-use super::widgets::svg_button;
+use super::widgets::{svg_button, list_view};
 
 macro_rules! hex_to_color {
     ($x:literal) => {
@@ -529,6 +529,145 @@ impl svg_button::StyleSheet for Theme {
                 color: Some(PRIM),
                 ..active
             },
+        }
+    }
+}
+
+#[derive(Default, Clone)]
+pub enum WrapBox {
+    #[default]
+    Bright,
+    Dark,
+}
+
+impl list_view::StyleSheet for Theme {
+    type Style = WrapBox;
+
+    fn background(
+        &self,
+        style: &Self::Style,
+        _pos: list_view::MousePos,
+    ) -> list_view::SquareStyle {
+        let base = list_view::SquareStyle {
+            background: Background::Color(BG_DARK),
+            border: Color::TRANSPARENT,
+            border_thickness: 0.,
+            border_radius: 0.0.into(),
+        };
+
+        match style {
+            WrapBox::Bright => list_view::SquareStyle {
+                background: Background::Color(Color::TRANSPARENT),
+                ..base
+            },
+            _ => base,
+        }
+    }
+
+    fn button_style(
+        &self,
+        _style: &Self::Style,
+        pos: list_view::MousePos,
+        pressed: bool,
+        is_start: bool,
+        relative_scroll: f32,
+    ) -> list_view::ButtonStyle {
+        let square = list_view::SquareStyle {
+            background: Background::Color(Color::TRANSPARENT),
+            border: Color::TRANSPARENT,
+            border_thickness: 0.0.into(),
+            border_radius: 6.0.into(),
+        };
+
+        if is_start && relative_scroll == 0.
+            || !is_start && relative_scroll == 1.
+        {
+            // inactive
+            list_view::ButtonStyle {
+                square: list_view::SquareStyle {
+                    border_thickness: 0.,
+                    ..square
+                },
+                foreground: BG_LIGHT,
+            }
+        } else {
+            // active
+
+            let foreground = if pressed {
+                PRIM_DARK
+            } else if pos == list_view::MousePos::DirectlyOver {
+                PRIM
+            } else {
+                BG_LIGHT
+            };
+
+            list_view::ButtonStyle { square, foreground }
+        }
+    }
+
+    fn thumb_style(
+        &self,
+        style: &Self::Style,
+        pos: list_view::MousePos,
+        pressed: bool,
+        _relative_scroll: f32,
+    ) -> list_view::SquareStyle {
+        let mut square = list_view::SquareStyle {
+            background: Background::Color(BG_LIGHT),
+            border: Color::TRANSPARENT,
+            border_thickness: 0.,
+            border_radius: 6.0.into(),
+        };
+
+        square = match style {
+            WrapBox::Bright => list_view::SquareStyle {
+                background: Background::Color(BG_LIGHT),
+                ..square
+            },
+            _ => square,
+        };
+
+        if pressed {
+            list_view::SquareStyle {
+                background: Background::Color(OUTLINE),
+                ..square
+            }
+        } else if pos == list_view::MousePos::DirectlyOver {
+            list_view::SquareStyle {
+                background: Background::Color(OUTLINE),
+                ..square
+            }
+        } else {
+            square
+        }
+    }
+
+    fn trough_style(
+        &self,
+        _style: &Self::Style,
+        _pos: list_view::MousePos,
+        is_start: bool,
+        _relative_scroll: f32,
+    ) -> list_view::SquareStyle {
+        list_view::SquareStyle {
+            background: Background::Color(Color::TRANSPARENT),
+            border: OUTLINE,
+            border_thickness: 0.0,
+            border_radius: if is_start {
+                [6.0, 6.0, 0., 0.].into()
+            } else {
+                [0., 0., 6.0, 6.0].into()
+            },
+        }
+    }
+}
+
+impl list_view::LayoutStyleSheet<()> for Theme {
+    fn layout(&self, _style: &()) -> list_view::LayoutStyle {
+        list_view::LayoutStyle {
+            padding: Some([0, 0, 0, 20].into()),
+            spacing: (None, Some(1.)),
+            ..list_view::LayoutStyle::default()
         }
     }
 }
