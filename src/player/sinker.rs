@@ -74,4 +74,10 @@ impl Sinker {
         self.sink.seek_to(time)?;
         Ok(())
     }
+
+    /// Sets fade length
+    pub fn set_fade(&mut self, fade: Duration) -> Result<()> {
+        self.sink.set_fade_len(fade)?;
+        Ok(())
+    }
 }

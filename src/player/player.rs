@@ -103,14 +103,6 @@ impl Player {
         Ok(())
     }
 
-    /// Loads song from the library
-    pub fn load_song(&mut self, library: &Library, play: bool) -> Result<()> {
-        self.set_state(play);
-        self.sinker
-            .load(library, self.playlist[self.current], play)?;
-        Ok(())
-    }
-
     /// Sets playing state based on the given bool
     pub fn play(&mut self, play: bool) -> Result<()> {
         self.set_state(play);
@@ -119,146 +111,50 @@ impl Player {
     }
 
     /// Plays next song
-    pub fn next(&mut self, library: &mut Library) -> Result<()> {
-        let play = self.is_playing();
-        self.play_at(library, self.current as i128 + 1, play)?;
+    pub fn next(&mut self, lib: &mut Library) -> Result<()> {
+        self.play_at(lib, self.current as i128 + 1, self.is_playing())?;
         Ok(())
     }
 
     /// Plays previous song
-    pub fn prev(&mut self, library: &mut Library) -> Result<()> {
-        let play = self.is_playing();
-        self.play_at(library, self.current as i128 - 1, play)?;
+    pub fn prev(&mut self, lib: &mut Library) -> Result<()> {
+        self.play_at(lib, self.current as i128 - 1, self.is_playing())?;
         Ok(())
     }
 
+    /// Plays song on given index
     pub fn play_at(
         &mut self,
-        library: &mut Library,
+        lib: &mut Library,
         index: i128,
         play: bool,
     ) -> Result<()> {
+        self.load_song(lib, play)?;
         self.set_current(index);
-        self.load_song(library, play)?;
-        match self.sinker.get_timestamp() {
-            Ok((_, l)) => {
-                library.set_song_length(self.playlist[self.current], l)
-            }
-            Err(_) => {}
+        if let Ok((_, l)) = self.sinker.get_timestamp() {
+            lib.set_song_length(self.playlist[self.current], l);
         }
         Ok(())
     }
 
+    /// Loads song from the library
+    fn load_song(&mut self, lib: &Library, play: bool) -> Result<()> {
+        self.set_state(play);
+        self.sinker.load(lib, self.playlist[self.current], play)?;
+        Ok(())
+    }
+
+    /// Shuffles current playlist
     pub fn shuffle(&mut self) {
-        let id = if let Some(i) = self.get_current() {
-            i.to_owned()
-        } else {
-            usize::MAX
-        };
-
-        if id != usize::MAX && !self.shuffle_current {
-            self.playlist.remove(self.current);
-        }
-
-        let mut rng = rand::thread_rng();
-        self.playlist.shuffle(&mut rng);
-
-        if id != usize::MAX && self.shuffle_current {
-            self.playlist.insert(0, id);
-            self.set_current(0);
-        } else {
-            self.find_current(id);
-        }
-    }
-
-    pub fn is_playing(&self) -> bool {
-        self.state == PlayState::Playing
-    }
-
-    pub fn _is_stopped(&self) -> bool {
-        self.state == PlayState::Stopped
-    }
-
-    pub fn set_state(&mut self, play: bool) {
-        self.state = if play {
-            PlayState::Playing
-        } else {
-            PlayState::Paused
-        }
-    }
-
-    pub fn set_current(&mut self, index: i128) {
-        let count = self.playlist.len() - 1;
-        if index < 0 {
-            self.current = count;
-        } else if index as usize > count {
-            self.current = 0;
-        } else {
-            self.current = index as usize;
-        }
-    }
-
-    pub fn get_playlist(&self) -> &Vec<usize> {
-        &self.playlist
-    }
-
-    pub fn get_current(&self) -> Option<&usize> {
-        if self.state == PlayState::Stopped {
-            None
-        } else {
-            self.playlist.get(self.current)
-        }
-    }
-
-    /// Gets currently playing song
-    pub fn get_current_song(&self, library: &Library) -> Song {
-        match self.playlist.get(self.current) {
-            Some(index) if self.state != PlayState::Stopped => {
-                library.get_song(index.to_owned())
-            }
-            _ => Song::default(),
-        }
-    }
-
-    /// Gets current volume of the playback
-    pub fn get_volume(&self) -> f32 {
-        self.volume
-    }
-
-    /// Sets playback volume
-    pub fn set_volume(&mut self, volume: f32) -> Result<()> {
-        match self.sinker.set_volume(volume) {
-            Ok(_) => {
-                self.volume = volume;
-                Ok(())
-            }
-            Err(e) => Err(e),
-        }
-    }
-
-    /// Gets whether playback is muted
-    pub fn get_mute(&self) -> bool {
-        self.mute
-    }
-
-    /// Sets mute
-    pub fn set_mute(&mut self, mute: bool) -> Result<()> {
-        let volume = if mute { 0. } else { self.volume };
-        match self.sinker.set_volume(volume) {
-            Ok(_) => {
-                self.mute = mute;
-                Ok(())
-            }
-            Err(e) => Err(e),
-        }
-    }
-
-    /// Gets currently playing song timestamp
-    pub fn get_timestamp(&self) -> (Duration, Duration) {
-        match self.sinker.get_timestamp() {
-            Ok((t, l)) => (t, l),
-            Err(_) => {
-                (Duration::from_secs_f32(0.), Duration::from_secs_f32(0.))
+        if let Some(id) = self.get_current() {
+            let mut rng = rand::thread_rng();
+            if self.shuffle_current {
+                self.playlist.shuffle(&mut rng);
+                self.find_current(id);
+            } else {
+                self.playlist.swap(self.current, 0);
+                self.playlist[1..].shuffle(&mut rng);
+                self.set_current(0);
             }
         }
     }
@@ -299,12 +195,111 @@ impl Player {
         }
     }
 
+    ///==================
+    /// Getters & Setters                                                   
+    ///==================
+
+    /// Checks if playback is playing
+    pub fn is_playing(&self) -> bool {
+        self.state == PlayState::Playing
+    }
+
+    /// Checks if playback is stopped
+    pub fn _is_stopped(&self) -> bool {
+        self.state == PlayState::Stopped
+    }
+
+    /// Sets state based on boolean
+    pub fn set_state(&mut self, play: bool) {
+        self.state = if play {
+            PlayState::Playing
+        } else {
+            PlayState::Paused
+        }
+    }
+
+    /// Gets current as option, returns None when playback stopped
+    pub fn get_current(&self) -> Option<usize> {
+        if self.state == PlayState::Stopped {
+            None
+        } else {
+            self.playlist.get(self.current).map(|c| *c)
+        }
+    }
+
+    /// Sets current with overflow check
+    pub fn set_current(&mut self, index: i128) {
+        let count = self.playlist.len() - 1;
+        if index < 0 {
+            self.current = count;
+        } else if index as usize > count {
+            self.current = 0;
+        } else {
+            self.current = index as usize;
+        }
+    }
+
+    /// Gets currently playing song
+    pub fn get_current_song(&self, lib: &Library) -> Song {
+        match self.playlist.get(self.current) {
+            Some(index) if self.state != PlayState::Stopped => {
+                lib.get_song(index.to_owned())
+            }
+            _ => Song::default(),
+        }
+    }
+
+    /// Gets playlist
+    pub fn get_playlist(&self) -> &Vec<usize> {
+        &self.playlist
+    }
+
+    /// Gets current volume of the playback
+    pub fn get_volume(&self) -> f32 {
+        self.volume
+    }
+
+    /// Sets playback volume
+    pub fn set_volume(&mut self, volume: f32) -> Result<()> {
+        self.sinker.set_volume(volume)?;
+        self.volume = volume;
+        Ok(())
+    }
+
+    /// Gets whether playback is muted
+    pub fn get_mute(&self) -> bool {
+        self.mute
+    }
+
+    /// Sets mute
+    pub fn set_mute(&mut self, mute: bool) -> Result<()> {
+        let volume = if mute { 0. } else { self.volume };
+        self.sinker.set_volume(volume)?;
+        self.mute = mute;
+        Ok(())
+    }
+
+    /// Gets currently playing song timestamp
+    pub fn get_timestamp(&self) -> (Duration, Duration) {
+        match self.sinker.get_timestamp() {
+            Ok((t, l)) => (t, l),
+            Err(_) => {
+                (Duration::from_secs_f32(0.), Duration::from_secs_f32(0.))
+            }
+        }
+    }
+
+    ///==================
+    /// Private functions
+    ///==================
+
+    /// Creates playlist from library
     fn create_playlist(&mut self, library: &Library, id: usize) {
         self.playlist = (0..library.count()).collect();
-
         self.find_current(id);
     }
 
+    /// Finds current
     fn find_current(&mut self, id: usize) {
         if let Some(index) = self.playlist.iter().position(|&x| x == id) {
             self.current = index;
