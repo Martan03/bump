@@ -81,7 +81,7 @@ impl Player {
             shuffle_current: config.get_shuffle_current(),
         };
 
-        res.init_sinker(lib, sender);
+        res.init_sinker(lib, config, sender);
         res
     }
 
@@ -309,7 +309,12 @@ impl Player {
     }
 
     /// Initializes player sinker
-    fn init_sinker(&mut self, lib: &Library, sender: UnboundedSender<Msg>) {
+    fn init_sinker(
+        &mut self,
+        lib: &Library,
+        conf: &Config,
+        sender: UnboundedSender<Msg>,
+    ) {
         // Loads default song
         if let Some(id) = self.playlist.get(self.current) {
             if let Err(_) = self.sinker.load(lib, id.to_owned(), false) {
@@ -327,6 +332,8 @@ impl Player {
                 self.volume = 1.;
             }
         }
+        // Sets fade length
+        _ = self.sinker.set_fade(conf.get_fade());
         // Sets on song end function
         _ = self.sinker.song_end(move |info| match info {
             CallbackInfo::SourceEnded => {

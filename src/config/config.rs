@@ -3,6 +3,7 @@ use serde_derive::{Deserialize, Serialize};
 use std::{
     fs::{self, File},
     path::PathBuf,
+    time::Duration,
 };
 
 #[derive(Serialize, Deserialize)]
@@ -21,6 +22,8 @@ pub struct Config {
     recursive_search: bool,
     /// When true shuffles currently playing song as well
     shuffle_current: bool,
+    /// Fade length of the playback when pausing    
+    fade: Duration,
     /// True when anything in config changed, else false
     #[serde(skip, default)]
     changed: bool,
@@ -109,6 +112,11 @@ impl Config {
         self.recursive_search
     }
 
+    /// Gets fade length
+    pub fn get_fade(&self) -> Duration {
+        self.fade
+    }
+
     ///======================
     /// Default config values
     ///======================
@@ -156,6 +164,11 @@ impl Config {
     fn get_default_shuffle_current() -> bool {
         false
     }
+
+    /// Gets default fade length
+    fn get_default_fade() -> Duration {
+        Duration::from_millis(150)
+    }
 }
 
 impl Default for Config {
@@ -176,6 +189,7 @@ impl Default for Config {
             player_path: Config::get_default_player_path(),
             recursive_search: Config::get_default_recursive_search(),
             shuffle_current: Config::get_default_shuffle_current(),
+            fade: Config::get_default_fade(),
             changed: false,
         }
     }
