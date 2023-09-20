@@ -24,6 +24,8 @@ pub struct Config {
     shuffle_current: bool,
     /// Fade length of the playback when pausing    
     fade: Duration,
+    /// When true automatically starts playing last played song after start
+    autoplay: bool,
     /// True when anything in config changed, else false
     #[serde(skip, default)]
     changed: bool,
@@ -63,9 +65,9 @@ impl Config {
         Ok(())
     }
 
-    ///==================
-    /// Getters & Setters
-    ///==================
+    ///>===================================================================<///
+    ///                          Getters & Setters                          ///
+    ///>===================================================================<///
 
     /// Gets all paths songs are saved in
     pub fn get_paths(&self) -> &Vec<PathBuf> {
@@ -117,9 +119,13 @@ impl Config {
         self.fade
     }
 
-    ///======================
-    /// Default config values
-    ///======================
+    pub fn get_autoplay(&self) -> bool {
+        self.autoplay
+    }
+
+    ///>===================================================================<///
+    ///                        Default Config values                        ///
+    ///>===================================================================<///
 
     /// Gets default songs path
     fn get_default_song_paths() -> Vec<PathBuf> {
@@ -169,10 +175,15 @@ impl Config {
     fn get_default_fade() -> Duration {
         Duration::from_millis(150)
     }
+
+    /// Gets default autoplay value
+    fn get_default_autoplay() -> bool {
+        false
+    }
 }
 
+/// Implements default for Config
 impl Default for Config {
-    /// Sets default values for Config
     fn default() -> Self {
         let mut library_path = Config::get_config_dir();
         let mut gui_path = library_path.clone();
@@ -190,7 +201,8 @@ impl Default for Config {
             recursive_search: Config::get_default_recursive_search(),
             shuffle_current: Config::get_default_shuffle_current(),
             fade: Config::get_default_fade(),
-            changed: false,
+            autoplay: Config::get_default_autoplay(),
+            changed: true,
         }
     }
 }

@@ -25,6 +25,7 @@ pub struct BumpApp {
     pub(super) page: Page,
 }
 
+/// Messages to player
 #[derive(Debug, Clone, Copy)]
 pub enum PlayerMsg {
     Play(Option<bool>),
@@ -38,6 +39,7 @@ pub enum PlayerMsg {
     Shuffle,
 }
 
+/// All pages enum
 #[derive(Debug, Clone, Copy)]
 pub enum Page {
     Library,
@@ -45,6 +47,7 @@ pub enum Page {
     Settings,
 }
 
+/// Bump app messages
 #[derive(Debug, Clone, Copy)]
 pub enum Msg {
     Page(Page),
@@ -62,14 +65,17 @@ impl Application for BumpApp {
     type Theme = Theme;
     type Message = Msg;
 
+    /// Creates new Application
     fn new(flags: Self::Flags) -> (Self, Command<Self::Message>) {
         (BumpApp::new(flags.0, flags.1), Command::none())
     }
 
+    /// Sets the title of the app
     fn title(&self) -> String {
         String::from("BUMP")
     }
 
+    /// Handles app updates (messages)
     fn update(&mut self, message: Self::Message) -> Command<Self::Message> {
         match message {
             Msg::Page(msg) => self.page = msg,
@@ -89,6 +95,7 @@ impl Application for BumpApp {
         Command::none()
     }
 
+    /// Renders the view
     fn view(&self) -> Element<'_, Msg, Renderer<Theme>> {
         let page = match self.page {
             Page::Library => self.view_library(),
@@ -139,9 +146,9 @@ impl BumpApp {
         }
     }
 
-    ///==============
-    /// Subscriptions
-    ///==============
+    ///>===================================================================<///
+    ///                            Subscriptions                            ///
+    ///>===================================================================<///
 
     /// Creates receiver subscription
     fn receiver_subscription(&self) -> Subscription<Msg> {

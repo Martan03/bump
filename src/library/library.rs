@@ -112,8 +112,8 @@ impl Library {
     }
 }
 
+/// Implements default for Library
 impl Default for Library {
-    /// Creates default Library
     fn default() -> Self {
         Library { songs: Vec::new() }
     }

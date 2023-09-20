@@ -36,6 +36,10 @@ impl Song {
         })
     }
 
+    ///>===================================================================<///
+    ///                          Getters & Setters                          ///
+    ///>===================================================================<///
+
     /// Gets song path
     pub fn get_path(&self) -> &PathBuf {
         &self.path
@@ -102,11 +106,13 @@ impl Song {
         self.length = len;
     }
 
+    /// Gets genre
     pub fn get_genre(&self) -> &str {
         &self.genre
     }
 }
 
+/// Implements default for Song
 impl Default for Song {
     fn default() -> Self {
         Self {

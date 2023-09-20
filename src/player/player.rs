@@ -17,6 +17,7 @@ use crate::{
 
 use super::sinker::Sinker;
 
+/// State of the Player
 #[derive(Debug, PartialEq)]
 pub enum PlayState {
     Stopped,
@@ -71,9 +72,14 @@ impl Player {
             },
         };
 
+        let state = if config.get_autoplay() {
+            PlayState::Playing
+        } else {
+            PlayState::Paused
+        };
         let mut res = Self {
             sinker: Sinker::new(),
-            state: PlayState::Paused,
+            state,
             current: data.current,
             volume: data.volume,
             mute: data.mute,
@@ -195,9 +201,9 @@ impl Player {
         }
     }
 
-    ///==================
-    /// Getters & Setters                                                   
-    ///==================
+    ///>===================================================================<///
+    ///                          Getters & Setters                          ///
+    ///>===================================================================<///
 
     /// Checks if playback is playing
     pub fn is_playing(&self) -> bool {
@@ -289,9 +295,9 @@ impl Player {
         }
     }
 
-    ///==================
-    /// Private functions
-    ///==================
+    ///>===================================================================<///
+    ///                          Private functions                          ///
+    ///>===================================================================<///
 
     /// Creates playlist from library
     fn create_playlist(&mut self, library: &Library, id: usize) {
@@ -316,11 +322,9 @@ impl Player {
         sender: UnboundedSender<Msg>,
     ) {
         // Loads default song
-        if let Some(id) = self.playlist.get(self.current) {
-            if let Err(_) = self.sinker.load(lib, id.to_owned(), false) {
-                self.current = usize::MAX;
-                self.state = PlayState::Stopped;
-            }
+        if let Err(_) = self.load_song(lib, conf.get_autoplay()) {
+            self.current = usize::MAX;
+            self.state = PlayState::Stopped;
         }
         // Sets volume
         if self.mute {
@@ -358,9 +362,9 @@ impl Default for Player {
     }
 }
 
-///==========================================
-/// Structs for saving and loading the player
-///==========================================
+///>=======================================================================<///
+///                Structs for saving and loading the player                ///
+///>=======================================================================<///
 #[derive(Deserialize)]
 struct PlayerLoad {
     /// Index of the currently playing song

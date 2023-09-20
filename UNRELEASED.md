@@ -1,0 +1,5 @@
+- Make it play songs :)
+- Songs loading
+- Basic design
+- Some options in Config file
+- Playlist + shuffle

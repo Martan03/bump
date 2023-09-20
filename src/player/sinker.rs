@@ -47,6 +47,7 @@ impl Sinker {
         Ok(())
     }
 
+    /// Calls function on song end
     pub fn song_end<F>(&mut self, f: F) -> Result<()>
     where
         F: Send + 'static + Fn(CallbackInfo),

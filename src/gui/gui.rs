@@ -51,6 +51,10 @@ impl Gui {
         Ok(())
     }
 
+    ///>===================================================================<///
+    ///                          Getters & Setters                          ///
+    ///>===================================================================<///
+
     /// Gets window size
     pub fn get_size(&self) -> (u32, u32) {
         (self.width, self.height)
@@ -80,8 +84,8 @@ impl Gui {
     }
 }
 
+/// Implements default for GUI
 impl Default for Gui {
-    /// Sets default values for Gui
     fn default() -> Self {
         Gui {
             width: 1280,
