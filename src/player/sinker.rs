@@ -18,7 +18,7 @@ pub struct Sinker {
 impl Sinker {
     /// Creates new sinker
     pub fn new() -> Self {
-        Sinker {
+        Self {
             sink: Sink::default(),
             symph: SymphOptions::default(),
         }
@@ -80,5 +80,10 @@ impl Sinker {
     pub fn set_fade(&mut self, fade: Duration) -> Result<()> {
         self.sink.set_fade_len(fade)?;
         Ok(())
+    }
+
+    /// Sets gapless to given value
+    pub fn set_gapless(&mut self, enable: bool) {
+        self.symph.format.enable_gapless = enable;
     }
 }

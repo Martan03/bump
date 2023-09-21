@@ -28,6 +28,8 @@ pub struct Config {
     autoplay: bool,
     /// When true loads new songs on app start
     start_load: bool,
+    /// When true plays songs without the gaps in between
+    gapless: bool,
     /// True when anything in config changed, else false
     #[serde(skip, default)]
     changed: bool,
@@ -131,6 +133,11 @@ impl Config {
         self.start_load
     }
 
+    /// Gets whether gapless is enabled
+    pub fn get_gapless(&self) -> bool {
+        self.gapless
+    }
+
     ///>===================================================================<///
     ///                        Default Config values                        ///
     ///>===================================================================<///
@@ -192,6 +199,10 @@ impl Config {
     fn get_default_start_load() -> bool {
         true
     }
+
+    fn get_default_gapless() -> bool {
+        false
+    }
 }
 
 /// Implements default for Config
@@ -215,6 +226,7 @@ impl Default for Config {
             fade: Config::get_default_fade(),
             autoplay: Config::get_default_autoplay(),
             start_load: Config::get_default_start_load(),
+            gapless: Config::get_default_gapless(),
             changed: true,
         }
     }

@@ -340,6 +340,8 @@ impl Player {
         }
         // Sets fade length
         _ = self.sinker.set_fade(conf.get_fade());
+        // Sets gapless playing
+        _ = self.sinker.set_gapless(conf.get_gapless());
         // Sets on song end function
         _ = self.sinker.song_end(move |info| match info {
             CallbackInfo::SourceEnded => {

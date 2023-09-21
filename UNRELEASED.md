@@ -1,8 +1,8 @@
 - Make it play songs :)
-- Songs loading (option to load on start)
+- Async songs loading (option to load on start)
 - Basic design
 - Some options in Config file
-    - Fade play/pause
+    - Fade play/pause, gapless
     - Start playing on start
     - Load library on start
     - ...
