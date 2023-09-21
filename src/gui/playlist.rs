@@ -6,7 +6,8 @@ use iced_core::Length;
 
 use super::{
     app::{BumpApp, Msg, PlayerMsg},
-    theme::{Button, Text, Theme}, widgets::list_view::WrapBox,
+    theme::{Button, Text, Theme},
+    widgets::list_view::WrapBox,
 };
 
 type Element<'a> = iced::Element<'a, Msg, Renderer<Theme>>;
@@ -22,10 +23,11 @@ impl BumpApp {
                     .on_press(Msg::Plr(PlayerMsg::Shuffle)),
             ]
             .padding(5),
+            self.list_header(true),
             self.playlist_songs(),
         ]
         .width(Length::Fill)
-        .spacing(3)
+        .spacing(1)
         .into()
     }
 
@@ -47,7 +49,7 @@ impl BumpApp {
                     self.list_item(&song, style, c, Some(i + 1), false)
                 })
                 .collect(),
-            self.gui.get_wb_state(1)
+            self.gui.get_wb_state(1),
         )
         .item_height(45)
         .scrollbar_button_height(15)

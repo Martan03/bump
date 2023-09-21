@@ -118,13 +118,19 @@ impl Player {
 
     /// Plays next song
     pub fn next(&mut self, lib: &mut Library) -> Result<()> {
-        self.play_at(lib, self.current as i128 + 1, self.is_playing())?;
+        self.play_at(lib, self.current + 1, self.is_playing())?;
         Ok(())
     }
 
     /// Plays previous song
     pub fn prev(&mut self, lib: &mut Library) -> Result<()> {
-        self.play_at(lib, self.current as i128 - 1, self.is_playing())?;
+        self.play_at(
+            lib,
+            self.current
+                .checked_sub(1)
+                .unwrap_or(self.playlist.len() - 1),
+            self.is_playing(),
+        )?;
         Ok(())
     }
 
@@ -132,11 +138,11 @@ impl Player {
     pub fn play_at(
         &mut self,
         lib: &mut Library,
-        index: i128,
+        index: usize,
         play: bool,
     ) -> Result<()> {
-        self.load_song(lib, play)?;
         self.set_current(index);
+        self.load_song(lib, play)?;
         if let Ok((_, l)) = self.sinker.get_timestamp() {
             lib.set_song_length(self.playlist[self.current], l);
         }
@@ -187,10 +193,14 @@ impl Player {
                     self.find_current(id)
                 }
 
-                _ = self.play_at(library, self.current as i128, true)
+                _ = self.play_at(library, self.current, true)
             }
-            PlayerMsg::Next => _ = self.next(library),
-            PlayerMsg::Prev => _ = self.prev(library),
+            PlayerMsg::Next if self.playlist.len() > 0 => {
+                _ = self.next(library)
+            }
+            PlayerMsg::Prev if self.playlist.len() > 0 => {
+                _ = self.prev(library)
+            }
             PlayerMsg::SeekTo(secs) => {
                 _ = self.seek_to(Duration::from_secs_f32(secs));
             }
@@ -200,6 +210,7 @@ impl Player {
                 _ = self.set_mute(mute.unwrap_or(!self.get_mute()))
             }
             PlayerMsg::Shuffle => self.shuffle(),
+            _ => {}
         }
     }
 
@@ -236,14 +247,11 @@ impl Player {
     }
 
     /// Sets current with overflow check
-    pub fn set_current(&mut self, index: i128) {
-        let count = self.playlist.len() - 1;
-        if index < 0 {
-            self.current = count;
-        } else if index as usize > count {
+    pub fn set_current(&mut self, index: usize) {
+        if index >= self.playlist.len() {
             self.current = 0;
         } else {
-            self.current = index as usize;
+            self.current = index;
         }
     }
 

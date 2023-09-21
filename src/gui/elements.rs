@@ -1,4 +1,4 @@
-use iced::widget::{button, column, container, row, slider, svg, text, Space};
+use iced::widget::{button, column, container, row, slider, svg, text, Space, Rule};
 use iced::Renderer;
 use iced_core::alignment::{Horizontal, Vertical};
 use iced_core::{Alignment, Length};
@@ -7,7 +7,7 @@ use crate::library::song::Song;
 
 use super::app::{BumpApp, Msg, Page, PlayerMsg};
 use super::svg_data::{pp_icon, vol_icon, ICON, NEXT, PREV};
-use super::theme::{Button, Container, SvgButton as SvgTheme, Text, Theme};
+use super::theme::{Button, Container, SvgButton as SvgTheme, Text, Theme, self};
 use super::widgets::svg_button::SvgButton;
 
 type Element<'a> = iced::Element<'a, Msg, Renderer<Theme>>;
@@ -30,6 +30,51 @@ impl BumpApp {
         .into()
     }
 
+    pub fn list_header(&self, numbered: bool) -> Element {
+        let item = if numbered {
+            row![
+                text("#")
+                    .width(Length::FillPortion(1))
+                    .style(Text::Darker)
+                    .size(15),
+                text("Title / Artist")
+                    .width(Length::FillPortion(10))
+                    .size(15)
+                    .style(Text::Darker),
+                text("Album / Year")
+                    .width(Length::FillPortion(9))
+                    .size(15)
+                    .style(Text::Darker),
+                text("Length / Genre")
+                    .width(Length::FillPortion(1))
+                    .size(15)
+                    .style(Text::Darker),
+            ]
+        } else {
+            row![
+                text("Title / Artist")
+                    .width(Length::FillPortion(10))
+                    .size(15)
+                    .style(Text::Darker),
+                text("Album / Year")
+                    .width(Length::FillPortion(10))
+                    .size(15)
+                    .style(Text::Darker),
+                text("Length / Genre")
+                    .width(Length::FillPortion(1))
+                    .size(15)
+                    .style(Text::Darker),
+            ]
+        };
+        column![
+            item.height(20)
+                .padding([0, 25, 0, 10])
+                .spacing(3)
+                .align_items(Alignment::Center),
+            Rule::horizontal(2)
+        ].into()
+    }
+
     /// Gets button for list item data and add bottom "border"
     pub fn list_item(
         &self,
@@ -45,10 +90,7 @@ impl BumpApp {
                 self.list_item_data(s, style, num),
                 Space::new(Length::Shrink, Length::FillPortion(1)),
                 // Creates bottom border
-                container("")
-                    .width(Length::Fill)
-                    .height(1)
-                    .style(Container::Separate),
+                Rule::horizontal(1).style(theme::Rule::Separate(1)),
             ]
             .padding([0, 6, 0, 6]),
         )
@@ -69,7 +111,7 @@ impl BumpApp {
     ) -> Element {
         let item = if let Some(n) = num {
             row![
-                text(n).width(Length::FillPortion(1)),
+                text(n).width(Length::FillPortion(1)).style(Text::Darker),
                 self.list_item_col(s.get_name(), style, s.get_artist(), 10),
                 self.list_item_col(s.get_album(), style, &s.get_year_str(), 9),
                 self.list_item_col(

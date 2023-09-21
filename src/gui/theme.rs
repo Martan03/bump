@@ -40,6 +40,7 @@ const PRIM: Color = hex_to_color!(0x3acbaf);
 const PRIM_DARK: Color = hex_to_color!(0x2bb599);
 
 const OUTLINE: Color = hex_to_color!(0x333333);
+const OUTLINE_DARK: Color = hex_to_color!(0x2b2b2b);
 
 #[derive(Default, Clone)]
 pub struct Theme {}
@@ -270,15 +271,30 @@ impl radio::StyleSheet for Theme {
     }
 }
 
-impl rule::StyleSheet for Theme {
-    type Style = ();
+#[derive(Copy, Clone, Default, Debug)]
+pub enum Rule {
+    #[default]
+    Default,
+    Separate(u16),
+}
 
-    fn appearance(&self, _style: &Self::Style) -> rule::Appearance {
-        rule::Appearance {
+impl rule::StyleSheet for Theme {
+    type Style = Rule;
+
+    fn appearance(&self, style: &Self::Style) -> rule::Appearance {
+        let default = rule::Appearance {
             color: OUTLINE,
             width: 2,
             radius: BorderRadius::from(6.),
             fill_mode: rule::FillMode::Full,
+        };
+
+        match style {
+            Rule::Separate(width) => rule::Appearance {
+                width: *width,
+                ..default
+            },
+            _ => default
         }
     }
 }
@@ -598,7 +614,7 @@ impl list_view::StyleSheet for Theme {
             } else if pos == list_view::MousePos::DirectlyOver {
                 PRIM
             } else {
-                BG_LIGHT
+                OUTLINE_DARK
             };
 
             list_view::ButtonStyle { square, foreground }
@@ -613,7 +629,7 @@ impl list_view::StyleSheet for Theme {
         _relative_scroll: f32,
     ) -> list_view::SquareStyle {
         let mut square = list_view::SquareStyle {
-            background: Background::Color(BG_LIGHT),
+            background: Background::Color(OUTLINE_DARK),
             border: Color::TRANSPARENT,
             border_thickness: 0.,
             border_radius: 6.0.into(),
@@ -621,7 +637,7 @@ impl list_view::StyleSheet for Theme {
 
         square = match style {
             WrapBox::Bright => list_view::SquareStyle {
-                background: Background::Color(BG_LIGHT),
+                background: Background::Color(OUTLINE_DARK),
                 ..square
             },
             _ => square,

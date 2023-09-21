@@ -17,10 +17,11 @@ impl BumpApp {
     pub fn view_library(&self) -> Element {
         column![
             container(text("Library").size(25).style(Text::Light),).padding(5),
+            self.list_header(false),
             self.library_songs(),
         ]
         .width(Length::Fill)
-        .spacing(3)
+        .spacing(1)
         .into()
     }
 
