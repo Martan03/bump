@@ -1,6 +1,10 @@
 - Make it play songs :)
-- Songs loading
+- Songs loading (option to load on start)
 - Basic design
 - Some options in Config file
+    - Fade play/pause
+    - Start playing on start
+    - Load library on start
+    - ...
 - Playlist + shuffle
 - Optimized list view (definitelly not from BonnyAD9)

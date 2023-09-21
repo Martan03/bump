@@ -146,7 +146,9 @@ impl Player {
     /// Loads song from the library
     fn load_song(&mut self, lib: &Library, play: bool) -> Result<()> {
         self.set_state(play);
-        self.sinker.load(lib, self.playlist[self.current], play)?;
+        if self.current != usize::MAX {
+            self.sinker.load(lib, self.playlist[self.current], play)?;
+        }
         Ok(())
     }
 
@@ -201,9 +203,9 @@ impl Player {
         }
     }
 
-    ///>===================================================================<///
-    ///                          Getters & Setters                          ///
-    ///>===================================================================<///
+    //>=====================================================================<//
+    //                           Getters & Setters                           //
+    //>=====================================================================<//
 
     /// Checks if playback is playing
     pub fn is_playing(&self) -> bool {
@@ -295,9 +297,9 @@ impl Player {
         }
     }
 
-    ///>===================================================================<///
-    ///                          Private functions                          ///
-    ///>===================================================================<///
+    //>=====================================================================<//
+    //                           Private functions                           //
+    //>=====================================================================<//
 
     /// Creates playlist from library
     fn create_playlist(&mut self, library: &Library, id: usize) {
@@ -362,9 +364,9 @@ impl Default for Player {
     }
 }
 
-///>=======================================================================<///
-///                Structs for saving and loading the player                ///
-///>=======================================================================<///
+//>=========================================================================<//
+//                 Structs for saving and loading the player                 //
+//>=========================================================================<//
 #[derive(Deserialize)]
 struct PlayerLoad {
     /// Index of the currently playing song

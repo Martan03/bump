@@ -12,7 +12,7 @@ use iced::{
 };
 use iced_core::{Background, BorderRadius, Color, Vector};
 
-use super::widgets::{svg_button, list_view};
+use super::widgets::{list_view, svg_button};
 
 macro_rules! hex_to_color {
     ($x:literal) => {

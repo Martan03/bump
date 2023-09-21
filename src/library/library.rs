@@ -1,17 +1,24 @@
-use crate::config::config::Config;
+use crate::{
+    config::config::Config,
+    gui::app::{LibMsg, Msg},
+};
 use std::{
     fs::{self, read_dir, File},
+    thread::{self, JoinHandle},
     time::Duration,
 };
 
 use super::song::Song;
 use eyre::Result;
 use serde_derive::{Deserialize, Serialize};
+use tokio::sync::mpsc::UnboundedSender;
 
 #[derive(Serialize, Deserialize)]
 pub struct Library {
     /// All songs in library
     songs: Vec<Song>,
+    #[serde(skip)]
+    load_process: Option<JoinHandle<Library>>,
 }
 
 impl Library {
@@ -40,7 +47,7 @@ impl Library {
     }
 
     /// Finds songs from song directories
-    pub fn find(&mut self, config: &mut Config) {
+    pub fn find(&mut self, config: &Config) {
         let mut paths = config.get_paths().clone();
         let mut i = 0;
 
@@ -114,11 +121,50 @@ impl Library {
     pub fn count(&self) -> usize {
         self.songs.len()
     }
+
+    /// Starts finding new songs
+    pub fn start_find(&mut self, conf: &Config, sender: UnboundedSender<Msg>) {
+        let mut lib = self.clone();
+        let config = conf.clone();
+        let load = thread::spawn(move || {
+            lib.find(&config);
+
+            _ = sender.send(Msg::Lib(LibMsg::LoadEnded));
+
+            lib
+        });
+        self.load_process = Some(load);
+    }
+
+    /// Ends finding new songs
+    pub fn end_find(&mut self) {
+        if let Some(process) = self.load_process.take() {
+            self.songs = process.join().unwrap().songs;
+        }
+    }
+
+    pub fn handle_msg(&mut self, msg: LibMsg) {
+        match msg {
+            LibMsg::LoadEnded => self.end_find(),
+        }
+    }
 }
 
 /// Implements default for Library
 impl Default for Library {
     fn default() -> Self {
-        Library { songs: Vec::new() }
+        Library {
+            songs: Vec::new(),
+            load_process: None,
+        }
+    }
+}
+
+impl Clone for Library {
+    fn clone(&self) -> Self {
+        Self {
+            songs: self.songs.clone(),
+            load_process: None,
+        }
     }
 }

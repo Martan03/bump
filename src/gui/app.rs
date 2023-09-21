@@ -19,7 +19,7 @@ pub struct BumpApp {
     pub(super) library: Library,
     pub(super) config: Config,
     pub(super) gui: Gui,
-    _sender: UnboundedSender<Msg>,
+    pub(super) sender: UnboundedSender<Msg>,
     pub(super) receiver: Cell<Option<UnboundedReceiver<Msg>>>,
     pub(super) theme: Theme,
     pub(super) page: Page,
@@ -47,11 +47,18 @@ pub enum Page {
     Settings,
 }
 
+/// Library messages
+#[derive(Debug, Clone, Copy)]
+pub enum LibMsg {
+    LoadEnded,
+}
+
 /// Bump app messages
 #[derive(Debug, Clone, Copy)]
 pub enum Msg {
     Page(Page),
     Plr(PlayerMsg),
+    Lib(LibMsg),
     Update,
     Tick,
     Move(i32, i32),
@@ -80,7 +87,12 @@ impl Application for BumpApp {
         match message {
             Msg::Page(msg) => self.page = msg,
             Msg::Plr(msg) => self.player.handle_msg(msg, &mut self.library),
-            Msg::Update => _ = self.library.find(&mut self.config),
+            Msg::Lib(msg) => self.library.handle_msg(msg),
+            Msg::Update => {
+                _ = self
+                    .library
+                    .start_find(&mut self.config, self.sender.clone())
+            }
             Msg::Tick => {}
             Msg::Move(x, y) => self.gui.set_pos(x, y),
             Msg::Size(w, h) => self.gui.set_size(w, h),
@@ -139,14 +151,14 @@ impl BumpApp {
             library,
             config,
             gui,
-            _sender: sender,
+            sender: sender,
             receiver: Cell::new(Some(receiver)),
             theme: Theme::default(),
             page: Page::Library,
         };
 
         if app.config.get_start_load() {
-            app.library.find(&mut app.config);
+            app.library.start_find(&mut app.config, app.sender.clone());
         }
         app
     }

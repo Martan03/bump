@@ -6,7 +6,7 @@ use std::{
     time::Duration,
 };
 
-#[derive(Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct Config {
     /// Paths where songs are saved
     paths: Vec<PathBuf>,
@@ -22,7 +22,7 @@ pub struct Config {
     recursive_search: bool,
     /// When true shuffles currently playing song as well
     shuffle_current: bool,
-    /// Fade length of the playback when pausing    
+    /// Fade length of the playback when pausing
     fade: Duration,
     /// When true automatically starts playing last played song after start
     autoplay: bool,
@@ -92,7 +92,7 @@ impl Config {
     }
 
     /// Gets valid extensions
-    pub fn get_extensions(&mut self) -> &Vec<String> {
+    pub fn get_extensions(&self) -> &Vec<String> {
         &self.extensions
     }
 
