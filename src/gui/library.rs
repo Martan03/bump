@@ -28,7 +28,7 @@ impl BumpApp {
         let songs = self.library.get_songs();
         let cur = self.player.get_current();
 
-        WrapBox::with_childern(
+        WrapBox::with_children(
             songs
                 .iter()
                 .enumerate()

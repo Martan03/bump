@@ -1,12 +1,12 @@
 use iced::{
-    widget::{button, column, row, scrollable, text, Space},
+    widget::{button, column, row, text, Space},
     Renderer,
 };
 use iced_core::Length;
 
 use super::{
     app::{BumpApp, Msg, PlayerMsg},
-    theme::{Button, Text, Theme},
+    theme::{Button, Text, Theme}, widgets::list_view::WrapBox,
 };
 
 type Element<'a> = iced::Element<'a, Msg, Renderer<Theme>>;
@@ -32,27 +32,27 @@ impl BumpApp {
     fn playlist_songs(&self) -> Element {
         let cur = self.player.get_current();
 
-        scrollable(
-            column(
-                self.player
-                    .get_playlist()
-                    .iter()
-                    .enumerate()
-                    .map(|(i, p)| {
-                        let c = p.to_owned();
-                        let song = self.library.get_song(c);
-                        let style = match cur {
-                            Some(value) if value.to_owned() == c => Text::Prim,
-                            _ => Text::Default,
-                        };
-                        self.list_item(&song, style, c, Some(i + 1), false)
-                    })
-                    .collect(),
-            )
-            .padding([0, 15, 0, 5]),
+        WrapBox::with_children(
+            self.player
+                .get_playlist()
+                .iter()
+                .enumerate()
+                .map(|(i, p)| {
+                    let c = p.to_owned();
+                    let song = self.library.get_song(c);
+                    let style = match cur {
+                        Some(value) if value.to_owned() == c => Text::Prim,
+                        _ => Text::Default,
+                    };
+                    self.list_item(&song, style, c, Some(i + 1), false)
+                })
+                .collect(),
+            self.gui.get_wb_state(1)
         )
-        .width(Length::Fill)
-        .height(Length::Fill)
+        .item_height(45)
+        .scrollbar_button_height(15)
+        .scrollbar_width(15)
+        .padding([0, 5, 0, 5])
         .into()
     }
 }
