@@ -1,7 +1,8 @@
 use audiotags::Tag;
 use eyre::Result;
+use raplay::source::{Symph, Source};
 use serde_derive::{Deserialize, Serialize};
-use std::{path::PathBuf, time::Duration};
+use std::{path::PathBuf, time::Duration, fs::File};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Song {
@@ -27,7 +28,7 @@ impl Song {
     pub fn load(path: &PathBuf) -> Result<Self> {
         let tag = Tag::new().read_from_path(path)?;
 
-        Ok(Song {
+        let mut song = Self {
             path: path.to_path_buf(),
             name: tag.title().unwrap_or("-").to_owned(),
             artist: tag.artist().unwrap_or("-").to_owned(),
@@ -36,7 +37,10 @@ impl Song {
             length: Duration::from_secs_f64(tag.duration().unwrap_or(0.0)),
             genre: tag.genre().unwrap_or("-").to_owned(),
             deleted: false,
-        })
+        };
+        _ = song.set_length_symph();
+
+        Ok(song)
     }
 
     //>=====================================================================<//
@@ -104,9 +108,15 @@ impl Song {
         }
     }
 
-    /// Set songs length to given length
-    pub fn set_length(&mut self, len: Duration) {
-        self.length = len;
+    /// Sets song length using symph
+    fn set_length_symph(&mut self) -> Result<()> {
+        let file = File::open(&self.path)?;
+        let symph = Symph::try_new(file, &Default::default())?;
+        match symph.get_time() {
+            Some((_, t)) => self.length = t,
+            _ => {},
+        }
+        Ok(())
     }
 
     /// Gets genre

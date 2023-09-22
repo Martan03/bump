@@ -5,7 +5,6 @@ use crate::{
 use std::{
     fs::{self, read_dir, File},
     thread::{self, JoinHandle},
-    time::Duration,
 };
 
 use super::song::Song;
@@ -115,12 +114,6 @@ impl Library {
             song.clone()
         } else {
             Song::default()
-        }
-    }
-
-    pub fn set_song_length(&mut self, id: usize, len: Duration) {
-        if let Some(song) = self.songs.get_mut(id) {
-            song.set_length(len);
         }
     }
 

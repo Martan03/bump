@@ -122,12 +122,12 @@ impl Player {
     }
 
     /// Plays next song
-    pub fn next(&mut self, lib: &mut Library) {
+    pub fn next(&mut self, lib: &Library) {
         self.play_at(lib, self.current + 1, self.is_playing());
     }
 
     /// Plays previous song
-    pub fn prev(&mut self, lib: &mut Library) {
+    pub fn prev(&mut self, lib: &Library) {
         self.play_at(
             lib,
             self.current
@@ -138,16 +138,13 @@ impl Player {
     }
 
     /// Plays song on given index
-    pub fn play_at(&mut self, lib: &mut Library, index: usize, play: bool) {
+    pub fn play_at(&mut self, lib: &Library, index: usize, play: bool) {
         self.set_current(index);
         self.load_song(lib, play);
-        if let Ok((_, l)) = self.sinker.get_timestamp() {
-            lib.set_song_length(self.playlist[self.current], l);
-        }
     }
 
     /// Loads song from the library
-    fn load_song(&mut self, lib: &mut Library, play: bool) {
+    fn load_song(&mut self, lib: &Library, play: bool) {
         if self.current != usize::MAX {
             match self.try_load_song(lib, play) {
                 Ok(_) => self.set_state(play),
