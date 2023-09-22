@@ -1,4 +1,6 @@
-use iced::widget::{button, column, container, row, slider, svg, text, Space, Rule};
+use iced::widget::{
+    button, column, container, row, slider, svg, text, Rule, Space,
+};
 use iced::Renderer;
 use iced_core::alignment::{Horizontal, Vertical};
 use iced_core::{Alignment, Length};
@@ -7,7 +9,9 @@ use crate::library::song::Song;
 
 use super::app::{BumpApp, Msg, Page, PlayerMsg};
 use super::svg_data::{pp_icon, vol_icon, ICON, NEXT, PREV};
-use super::theme::{Button, Container, SvgButton as SvgTheme, Text, Theme, self};
+use super::theme::{
+    self, Button, Container, SvgButton as SvgTheme, Text, Theme,
+};
 use super::widgets::svg_button::SvgButton;
 
 type Element<'a> = iced::Element<'a, Msg, Renderer<Theme>>;
@@ -72,7 +76,8 @@ impl BumpApp {
                 .spacing(3)
                 .align_items(Alignment::Center),
             Rule::horizontal(2)
-        ].into()
+        ]
+        .into()
     }
 
     /// Gets button for list item data and add bottom "border"

@@ -4,6 +4,7 @@ use std::{
 };
 
 use eyre::Result;
+use log::{error, info};
 use rand::seq::SliceRandom;
 use raplay::sink::CallbackInfo;
 use serde_derive::{Deserialize, Serialize};
@@ -110,28 +111,28 @@ impl Player {
     }
 
     /// Sets playing state based on the given bool
-    pub fn play(&mut self, play: bool) -> Result<()> {
+    pub fn play(&mut self, play: bool) {
         self.set_state(play);
-        self.sinker.play(play)?;
-        Ok(())
+        match self.sinker.play(play) {
+            Ok(_) => self.set_state(play),
+            Err(e) => error!("Failed to play/pause: {e}"),
+        }
     }
 
     /// Plays next song
-    pub fn next(&mut self, lib: &mut Library) -> Result<()> {
-        self.play_at(lib, self.current + 1, self.is_playing())?;
-        Ok(())
+    pub fn next(&mut self, lib: &mut Library) {
+        self.play_at(lib, self.current + 1, self.is_playing());
     }
 
     /// Plays previous song
-    pub fn prev(&mut self, lib: &mut Library) -> Result<()> {
+    pub fn prev(&mut self, lib: &mut Library) {
         self.play_at(
             lib,
             self.current
                 .checked_sub(1)
                 .unwrap_or(self.playlist.len() - 1),
             self.is_playing(),
-        )?;
-        Ok(())
+        );
     }
 
     /// Plays song on given index
@@ -140,18 +141,30 @@ impl Player {
         lib: &mut Library,
         index: usize,
         play: bool,
-    ) -> Result<()> {
+    ) {
         self.set_current(index);
-        self.load_song(lib, play)?;
+        self.load_song(lib, play);
         if let Ok((_, l)) = self.sinker.get_timestamp() {
             lib.set_song_length(self.playlist[self.current], l);
         }
-        Ok(())
     }
 
     /// Loads song from the library
-    fn load_song(&mut self, lib: &Library, play: bool) -> Result<()> {
-        self.set_state(play);
+    fn load_song(&mut self, lib: &mut Library, play: bool) {
+        if self.current != usize::MAX {
+            match self.try_load_song(lib, play) {
+                Ok(_) => self.set_state(play),
+                Err(e) => {
+                    error!("Failed to load the song: {e}");
+                    self.next(lib);
+                    info!("Skipped to next song");
+                },
+            }
+        }
+    }
+
+    /// Tries to load a song from the library
+    fn try_load_song(&mut self, lib: &Library, play: bool) -> Result<()> {
         if self.current != usize::MAX {
             self.sinker.load(lib, self.playlist[self.current], play)?;
         }
@@ -183,7 +196,7 @@ impl Player {
         match msg {
             PlayerMsg::Play(play) => {
                 if self.state != PlayState::Stopped {
-                    _ = self.play(play.unwrap_or(!self.is_playing()));
+                    self.play(play.unwrap_or(!self.is_playing()));
                 }
             }
             PlayerMsg::PlaySong(id, new) => {
@@ -276,10 +289,11 @@ impl Player {
     }
 
     /// Sets playback volume
-    pub fn set_volume(&mut self, volume: f32) -> Result<()> {
-        self.sinker.set_volume(volume)?;
-        self.volume = volume;
-        Ok(())
+    pub fn set_volume(&mut self, volume: f32){
+        match self.sinker.set_volume(volume) {
+            Ok(_) => self.volume = volume,
+            Err(e) => error!("Failed to set volume: {e}"),
+        }
     }
 
     /// Gets whether playback is muted
@@ -288,18 +302,19 @@ impl Player {
     }
 
     /// Sets mute
-    pub fn set_mute(&mut self, mute: bool) -> Result<()> {
+    pub fn set_mute(&mut self, mute: bool) {
         let volume = if mute { 0. } else { self.volume };
-        self.sinker.set_volume(volume)?;
-        self.mute = mute;
-        Ok(())
+        match self.sinker.set_volume(volume) {
+            Ok(_) => self.mute = mute,
+            Err(e) => error!("Failed to set mute: {e}"),
+        }
     }
 
     /// Gets currently playing song timestamp
     pub fn get_timestamp(&self) -> (Duration, Duration) {
         match self.sinker.get_timestamp() {
-            Ok((t, l)) => (t, l),
-            Err(_) => {
+            Ok((t, l)) if self.state != PlayState::Stopped => (t, l),
+            _ => {
                 (Duration::from_secs_f32(0.), Duration::from_secs_f32(0.))
             }
         }
@@ -332,7 +347,7 @@ impl Player {
         sender: UnboundedSender<Msg>,
     ) {
         // Loads default song
-        if let Err(_) = self.load_song(lib, conf.get_autoplay()) {
+        if let Err(_) = self.try_load_song(lib, conf.get_autoplay()) {
             self.current = usize::MAX;
             self.state = PlayState::Stopped;
         }

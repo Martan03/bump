@@ -39,7 +39,26 @@ fn main() -> Result<(), iced::Error> {
     // until it is fixed
     env::set_var("WINIT_UNIX_BACKEND", "x11");
 
+    if let Err(_) = init_logger() {
+        eprintln!("Failed to start logger");
+    }
+
     BumpApp::run(make_settings())
+}
+
+/// Inits logger
+fn init_logger() -> eyre::Result<()> {
+    if let Ok(logger) = flexi_logger::Logger::try_with_str("warn") {
+        logger
+            .log_to_file(
+                flexi_logger::FileSpec::default()
+                    .directory(Config::get_config_dir().join("log")),
+            )
+            .start()?;
+        Ok(())
+    } else {
+        Ok(())
+    }
 }
 
 /// Makes window settings, loads saved settings

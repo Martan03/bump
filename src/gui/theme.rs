@@ -294,7 +294,7 @@ impl rule::StyleSheet for Theme {
                 width: *width,
                 ..default
             },
-            _ => default
+            _ => default,
         }
     }
 }

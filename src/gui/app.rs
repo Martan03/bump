@@ -5,6 +5,7 @@ use std::time::{Duration, Instant};
 use iced::widget::{column, row, Rule};
 use iced::{executor, Application, Command, Element, Renderer, Subscription};
 use iced_core::{window, Alignment, Event, Length};
+use log::error;
 use tokio::sync::mpsc::{self, UnboundedReceiver, UnboundedSender};
 
 use crate::config::config::Config;
@@ -97,10 +98,7 @@ impl Application for BumpApp {
             Msg::Move(x, y) => self.gui.set_pos(x, y),
             Msg::Size(w, h) => self.gui.set_size(w, h),
             Msg::Close => {
-                _ = self.config.save();
-                _ = self.library.save(&self.config);
-                _ = self.gui.save(&self.config);
-                _ = self.player.save(&self.config);
+                self.save_all();
                 return iced::window::close();
             }
         };
@@ -161,6 +159,22 @@ impl BumpApp {
             app.library.start_find(&mut app.config, app.sender.clone());
         }
         app
+    }
+
+    /// Saves all things
+    fn save_all(&self) {
+        if let Err(e) = self.config.save() {
+            error!("Failed to save config: {e}");
+        }
+        if let Err(e) = self.library.save(&self.config) {
+            error!("Failed to save library: {e}");
+        }
+        if let Err(e) = self.gui.save(&self.config) {
+            error!("Failed to save GUI state: {e}");
+        }
+        if let Err(e) = self.player.save(&self.config) {
+            error!("Failed to save player state: {e}");
+        }
     }
 
     //>=====================================================================<//
