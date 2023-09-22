@@ -33,12 +33,16 @@ impl BumpApp {
             songs
                 .iter()
                 .enumerate()
-                .map(|(c, s)| {
-                    let style = match cur {
-                        Some(value) if value.to_owned() == c => Text::Prim,
-                        _ => Text::Default,
-                    };
-                    self.list_item(s, style, c, None, true)
+                .filter_map(|(c, s)| {
+                    if s.get_deleted() {
+                        None
+                    } else {
+                        let style = match cur {
+                            Some(value) if value.to_owned() == c => Text::Prim,
+                            _ => Text::Default,
+                        };
+                        Some(self.list_item(s, style, c, None, true))
+                    }
                 })
                 .collect(),
             self.gui.get_wb_state(0),

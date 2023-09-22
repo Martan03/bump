@@ -9,26 +9,37 @@ use std::{
 #[derive(Clone, Serialize, Deserialize)]
 pub struct Config {
     /// Paths where songs are saved
+    #[serde(default="Config::get_default_song_paths")]
     paths: Vec<PathBuf>,
     /// Valid file extensions
+    #[serde(default="Config::get_default_extensions")]
     extensions: Vec<String>,
     /// Path to the library
+    #[serde(default="Config::get_default_library_path")]
     library_path: PathBuf,
     /// Path to the gui state json
+    #[serde(default="Config::get_default_gui_path")]
     gui_path: PathBuf,
     /// Path to the player file
+    #[serde(default="Config::get_default_player_path")]
     player_path: PathBuf,
     /// Whether it should use recursive search when finding songs
+    #[serde(default="Config::get_default_recursive_search")]
     recursive_search: bool,
     /// When true shuffles currently playing song as well
+    #[serde(default="Config::get_default_shuffle_current")]
     shuffle_current: bool,
     /// Fade length of the playback when pausing
+    #[serde(default="Config::get_default_fade")]
     fade: Duration,
     /// When true automatically starts playing last played song after start
+    #[serde(default="Config::get_default_autoplay")]
     autoplay: bool,
     /// When true loads new songs on app start
+    #[serde(default="Config::get_default_start_load")]
     start_load: bool,
     /// When true plays songs without the gaps in between
+    #[serde(default="Config::get_default_gapless")]
     gapless: bool,
     /// True when anything in config changed, else false
     #[serde(skip, default)]

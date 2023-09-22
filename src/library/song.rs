@@ -19,6 +19,8 @@ pub struct Song {
     length: Duration,
     /// Song genre
     genre: String,
+    /// When true song is deleted
+    deleted: bool,
 }
 
 impl Song {
@@ -33,6 +35,7 @@ impl Song {
             year: tag.year().unwrap_or(i32::MAX),
             length: Duration::from_secs_f64(tag.duration().unwrap_or(0.0)),
             genre: tag.genre().unwrap_or("-").to_owned(),
+            deleted: false,
         })
     }
 
@@ -110,6 +113,16 @@ impl Song {
     pub fn get_genre(&self) -> &str {
         &self.genre
     }
+
+    /// Gets whether song is deleted
+    pub fn get_deleted(&self) -> bool {
+        self.deleted
+    }
+
+    /// Sets whether song is deleted
+    pub fn set_deleted(&mut self, deleted: bool) {
+        self.deleted = deleted;
+    }
 }
 
 /// Implements default for Song
@@ -123,6 +136,7 @@ impl Default for Song {
             year: Default::default(),
             length: Default::default(),
             genre: Default::default(),
+            deleted: true,
         }
     }
 }

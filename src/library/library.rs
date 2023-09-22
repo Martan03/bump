@@ -51,6 +51,10 @@ impl Library {
         let mut paths = config.get_paths().clone();
         let mut i = 0;
 
+        for s in &mut self.songs {
+            s.set_deleted(true);
+        }
+
         while i < paths.len() {
             let dir = &paths[i];
             i += 1;
@@ -84,8 +88,9 @@ impl Library {
                     }
                     if let Ok(song) = Song::load(&path) {
                         let mut exist = false;
-                        for s in self.get_songs() {
+                        for s in &mut self.songs {
                             if s.get_path() == song.get_path() {
+                                s.set_deleted(false);
                                 exist = true;
                                 break;
                             }
