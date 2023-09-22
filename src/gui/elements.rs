@@ -23,10 +23,20 @@ impl BumpApp {
             container(svg(ICON).width(50).height(50),)
                 .width(Length::Fill)
                 .align_x(Horizontal::Center),
-            button("Library").on_press(Msg::Page(Page::Library)),
-            button("Playlist").on_press(Msg::Page(Page::Playlist)),
+            Space::new(Length::Shrink, 5),
+            button("Library")
+                .width(Length::Fill)
+                .style(Button::Item)
+                .on_press(Msg::Page(Page::Library)),
+            button("Playlist")
+                .width(Length::Fill)
+                .style(Button::Item)
+                .on_press(Msg::Page(Page::Playlist)),
             Space::new(Length::Shrink, Length::Fill),
-            button("Settings").on_press(Msg::Page(Page::Settings)),
+            button("Settings")
+                .width(Length::Fill)
+                .style(Button::Item)
+                .on_press(Msg::Page(Page::Settings)),
         ]
         .width(175)
         .height(Length::Fill)
@@ -166,7 +176,7 @@ impl BumpApp {
             text(data).size(11).style(Text::Darker).into()
         }
 
-        column![top_text(top, style), bottom_text(bottom),]
+        column![top_text(top, style), bottom_text(bottom)]
             .height(Length::Shrink)
             .width(Length::FillPortion(p))
             .into()
@@ -183,9 +193,9 @@ impl BumpApp {
             .height(4)
             .step(0.01),
             row![
-                container(self.title_bar(),).width(Length::FillPortion(1)),
+                container(self.title_bar()).width(Length::FillPortion(1)),
                 self.play_menu(),
-                container(self.volume_menu(),).width(Length::FillPortion(1)),
+                container(self.volume_menu()).width(Length::FillPortion(1)),
             ]
             .height(Length::Fill)
             .padding(5)

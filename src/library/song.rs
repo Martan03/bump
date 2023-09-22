@@ -1,8 +1,8 @@
 use audiotags::Tag;
 use eyre::Result;
-use raplay::source::{Symph, Source};
+use raplay::source::{Source, Symph};
 use serde_derive::{Deserialize, Serialize};
-use std::{path::PathBuf, time::Duration, fs::File};
+use std::{fs::File, path::PathBuf, time::Duration};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Song {
@@ -114,7 +114,7 @@ impl Song {
         let symph = Symph::try_new(file, &Default::default())?;
         match symph.get_time() {
             Some((_, t)) => self.length = t,
-            _ => {},
+            _ => {}
         }
         Ok(())
     }
