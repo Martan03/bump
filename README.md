@@ -6,13 +6,23 @@ Best Universal Music Player written in Rust and iced
 ## Configuration
 
 Config files are saved in config folder (on Linux `~/.config/bump`) in file
-`config.json`. There's not much options yet, but I'm planning to add others.
+`config.json`. There are few options you can set and I'll be adding more in the future.  
+So far I don't have settings in the app, so this is the only place you can adjust settings.
 
 ## GUI
 
-Currently there's not much GUI. Currently the GUI is in state for testing.
+The GUI isn't quite finished, but at least it looks somewhat decent.
 
 ![image](https://github.com/Martan03/bump/assets/46300167/e5a48ebf-742c-49cb-b0d6-84756fd9cfbb)
+
+## How to get it?
+
+You have to compile it yourself, but that shouldn't a problem. Only thing you need to have is `cargo`:
+```
+cargo build -r
+```
+
+After it is done compiling, you can then start the binary `./target/release/bump`.
 
 ## Library for playing audio
 
