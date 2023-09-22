@@ -12,6 +12,8 @@ Config files are saved in config folder (on Linux `~/.config/bump`) in file
 
 Currently there's not much GUI. Currently the GUI is in state for testing.
 
+![image](https://github.com/Martan03/bump/assets/46300167/e5a48ebf-742c-49cb-b0d6-84756fd9cfbb)
+
 ## Library for playing audio
 
 I use library coded by my friend, so thanks!
