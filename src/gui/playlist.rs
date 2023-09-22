@@ -39,14 +39,18 @@ impl BumpApp {
                 .get_playlist()
                 .iter()
                 .enumerate()
-                .map(|(i, p)| {
+                .filter_map(|(i, p)| {
                     let c = p.to_owned();
-                    let song = self.library.get_song(c);
-                    let style = match cur {
-                        Some(value) if value.to_owned() == c => Text::Prim,
-                        _ => Text::Default,
-                    };
-                    self.list_item(&song, style, c, Some(i + 1), false)
+                    let s = self.library.get_song(c);
+                    if s.get_deleted() {
+                        None
+                    } else {
+                        let style = match cur {
+                            Some(value) if value.to_owned() == c => Text::Prim,
+                            _ => Text::Default,
+                        };
+                        Some(self.list_item(&s, style, c, Some(i + 1), false))
+                    }
                 })
                 .collect(),
             self.gui.get_wb_state(1),

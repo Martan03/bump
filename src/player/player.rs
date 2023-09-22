@@ -4,7 +4,7 @@ use std::{
 };
 
 use eyre::Result;
-use log::{error, info};
+use log::error;
 use rand::seq::SliceRandom;
 use raplay::sink::CallbackInfo;
 use serde_derive::{Deserialize, Serialize};
@@ -73,7 +73,9 @@ impl Player {
             },
         };
 
-        let state = if config.get_autoplay() {
+        let state = if data.current == usize::MAX {
+            PlayState::Stopped
+        } else if config.get_autoplay() {
             PlayState::Playing
         } else {
             PlayState::Paused
@@ -136,12 +138,7 @@ impl Player {
     }
 
     /// Plays song on given index
-    pub fn play_at(
-        &mut self,
-        lib: &mut Library,
-        index: usize,
-        play: bool,
-    ) {
+    pub fn play_at(&mut self, lib: &mut Library, index: usize, play: bool) {
         self.set_current(index);
         self.load_song(lib, play);
         if let Ok((_, l)) = self.sinker.get_timestamp() {
@@ -154,11 +151,7 @@ impl Player {
         if self.current != usize::MAX {
             match self.try_load_song(lib, play) {
                 Ok(_) => self.set_state(play),
-                Err(e) => {
-                    error!("Failed to load the song: {e}");
-                    self.next(lib);
-                    info!("Skipped to next song");
-                },
+                Err(e) => error!("Failed to load the song: {e}"),
             }
         }
     }
@@ -289,7 +282,7 @@ impl Player {
     }
 
     /// Sets playback volume
-    pub fn set_volume(&mut self, volume: f32){
+    pub fn set_volume(&mut self, volume: f32) {
         match self.sinker.set_volume(volume) {
             Ok(_) => self.volume = volume,
             Err(e) => error!("Failed to set volume: {e}"),
@@ -314,9 +307,7 @@ impl Player {
     pub fn get_timestamp(&self) -> (Duration, Duration) {
         match self.sinker.get_timestamp() {
             Ok((t, l)) if self.state != PlayState::Stopped => (t, l),
-            _ => {
-                (Duration::from_secs_f32(0.), Duration::from_secs_f32(0.))
-            }
+            _ => (Duration::from_secs_f32(0.), Duration::from_secs_f32(0.)),
         }
     }
 
