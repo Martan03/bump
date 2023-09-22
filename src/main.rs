@@ -48,17 +48,15 @@ fn main() -> Result<(), iced::Error> {
 
 /// Inits logger
 fn init_logger() -> eyre::Result<()> {
-    if let Ok(logger) = flexi_logger::Logger::try_with_str("warn") {
+    if let Ok(logger) = flexi_logger::Logger::try_with_env_or_str("warn") {
         logger
             .log_to_file(
                 flexi_logger::FileSpec::default()
                     .directory(Config::get_config_dir().join("log")),
             )
             .start()?;
-        Ok(())
-    } else {
-        Ok(())
     }
+    Ok(())
 }
 
 /// Makes window settings, loads saved settings
