@@ -60,15 +60,17 @@ impl Library {
             };
 
             for f in dir {
-                let f = if let Ok(file) = f {
-                    file
-                } else {
-                    continue;
+                let f = match f {
+                    Ok(f) => f,
+                    Err(_) => continue,
                 };
                 let path = f.path();
 
-                if path.is_dir() && config.get_recursive_search() {
-                    paths.push(path.clone());
+                if path.is_dir() {
+                    if config.get_recursive_search() {
+                        paths.push(path.clone());
+                    }
+                    continue;
                 }
 
                 if let Some(ext) = path.extension() {
