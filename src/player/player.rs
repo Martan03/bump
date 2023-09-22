@@ -367,11 +367,8 @@ impl Player {
             CallbackInfo::SourceEnded => {
                 _ = sender.send(Msg::Plr(PlayerMsg::SongEnd))
             }
-            CallbackInfo::PauseEnds(i) => {
-                println!("test");
-                _ = sender.send(Msg::HardPause(i))
-            },
-            _ => todo!(),
+            CallbackInfo::PauseEnds(i) => _ = sender.send(Msg::HardPause(i)),
+            _ => { },
         });
     }
 }
