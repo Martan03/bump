@@ -24,6 +24,7 @@ pub struct BumpApp {
     pub(super) receiver: Cell<Option<UnboundedReceiver<Msg>>>,
     pub(super) theme: Theme,
     pub(super) page: Page,
+    pub(super) hard_pause: Option<Instant>,
 }
 
 /// Messages to player
@@ -65,6 +66,7 @@ pub enum Msg {
     Move(i32, i32),
     Size(u32, u32),
     Close,
+    HardPause(Instant),
 }
 
 impl Application for BumpApp {
@@ -85,6 +87,7 @@ impl Application for BumpApp {
 
     /// Handles app updates (messages)
     fn update(&mut self, message: Self::Message) -> Command<Self::Message> {
+        // Handle messages
         match message {
             Msg::Page(msg) => self.page = msg,
             Msg::Plr(msg) => self.player.handle_msg(msg, &mut self.library),
@@ -101,7 +104,16 @@ impl Application for BumpApp {
                 self.save_all();
                 return iced::window::close();
             }
+            Msg::HardPause(i) => self.hard_pause = Some(i),
         };
+        // Handle hard pause
+        if let Some(i) = self.hard_pause {
+            let now = Instant::now();
+            if i <= now {
+                self.player.hard_pause();
+                self.hard_pause = None;
+            }
+        }
         Command::none()
     }
 
@@ -153,6 +165,7 @@ impl BumpApp {
             receiver: Cell::new(Some(receiver)),
             theme: Theme::default(),
             page: Page::Library,
+            hard_pause: None,
         };
 
         if app.config.get_start_load() {

@@ -2,9 +2,8 @@ use std::{fs::File, time::Duration};
 
 use eyre::{Report, Result};
 use raplay::{
-    sink::CallbackInfo,
     source::{symph::SymphOptions, Symph},
-    Sink,
+    CallbackInfo, Sink, Timestamp,
 };
 
 use crate::library::library::Library;
@@ -47,10 +46,16 @@ impl Sinker {
         Ok(())
     }
 
+    /// Creates hard pause - completely paused audio
+    pub fn hard_pause(&mut self) -> Result<()> {
+        self.sink.hard_pause()?;
+        Ok(())
+    }
+
     /// Calls function on song end
     pub fn song_end<F>(&mut self, f: F) -> Result<()>
     where
-        F: Send + 'static + Fn(CallbackInfo),
+        F: Send + 'static + FnMut(CallbackInfo),
     {
         self.sink.on_callback(Some(f))?;
         Ok(())
@@ -63,9 +68,9 @@ impl Sinker {
     }
 
     /// Gets timestamp of currently playing song
-    pub fn get_timestamp(&self) -> Result<(Duration, Duration)> {
+    pub fn get_timestamp(&self) -> Result<Timestamp> {
         match self.sink.get_timestamp() {
-            Ok((t, l)) => Ok((t, l)),
+            Ok(t) => Ok(t),
             Err(e) => Err(e.into()),
         }
     }

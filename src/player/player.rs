@@ -6,7 +6,7 @@ use std::{
 use eyre::Result;
 use log::error;
 use rand::seq::SliceRandom;
-use raplay::sink::CallbackInfo;
+use raplay::CallbackInfo;
 use serde_derive::{Deserialize, Serialize};
 use tokio::sync::mpsc::UnboundedSender;
 
@@ -121,6 +121,14 @@ impl Player {
         }
     }
 
+    /// Hard pauses the player
+    pub fn hard_pause(&mut self) {
+        match self.sinker.hard_pause() {
+            Ok(_) => self.state = PlayState::Paused,
+            Err(e) => error!("Failed to hard pause: {e}"),
+        }
+    }
+
     /// Plays next song
     pub fn next(&mut self, lib: &Library) {
         self.play_at(lib, self.current + 1, self.is_playing());
@@ -145,6 +153,7 @@ impl Player {
 
     /// Loads song from the library
     fn load_song(&mut self, lib: &Library, play: bool) {
+        self.set_state(play);
         if self.current != usize::MAX {
             match self.try_load_song(lib, play) {
                 Ok(_) => self.set_state(play),
@@ -196,7 +205,7 @@ impl Player {
                     self.find_current(id)
                 }
 
-                _ = self.play_at(library, self.current, true)
+                self.play_at(library, self.current, true)
             }
             PlayerMsg::Next if self.playlist.len() > 0 => {
                 _ = self.next(library)
@@ -303,7 +312,7 @@ impl Player {
     /// Gets currently playing song timestamp
     pub fn get_timestamp(&self) -> (Duration, Duration) {
         match self.sinker.get_timestamp() {
-            Ok((t, l)) if self.state != PlayState::Stopped => (t, l),
+            Ok(t) if self.state != PlayState::Stopped => (t.current, t.total),
             _ => (Duration::from_secs_f32(0.), Duration::from_secs_f32(0.)),
         }
     }
@@ -356,8 +365,12 @@ impl Player {
         // Sets on song end function
         _ = self.sinker.song_end(move |info| match info {
             CallbackInfo::SourceEnded => {
-                _ = sender.send(Msg::Plr(PlayerMsg::SongEnd));
+                _ = sender.send(Msg::Plr(PlayerMsg::SongEnd))
             }
+            CallbackInfo::PauseEnds(i) => {
+                println!("test");
+                _ = sender.send(Msg::HardPause(i))
+            },
             _ => todo!(),
         });
     }

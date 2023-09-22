@@ -113,7 +113,7 @@ impl Song {
         let file = File::open(&self.path)?;
         let symph = Symph::try_new(file, &Default::default())?;
         match symph.get_time() {
-            Some((_, t)) => self.length = t,
+            Some(t) => self.length = t.total,
             _ => {}
         }
         Ok(())
