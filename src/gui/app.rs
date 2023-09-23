@@ -1,4 +1,6 @@
 use std::cell::Cell;
+use std::io::{BufReader, prelude::*};
+use std::net::TcpListener;
 use std::thread;
 use std::time::{Duration, Instant};
 
@@ -6,6 +8,7 @@ use iced::widget::{column, row, Rule};
 use iced::{executor, Application, Command, Element, Renderer, Subscription};
 use iced_core::{window, Alignment, Event, Length};
 use log::error;
+use serde_derive::{Serialize, Deserialize};
 use tokio::sync::mpsc::{self, UnboundedReceiver, UnboundedSender};
 
 use crate::config::config::Config;
@@ -28,7 +31,7 @@ pub struct BumpApp {
 }
 
 /// Messages to player
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 pub enum PlayerMsg {
     Play(Option<bool>),
     PlaySong(usize, bool),
@@ -42,7 +45,7 @@ pub enum PlayerMsg {
 }
 
 /// All pages enum
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 pub enum Page {
     Library,
     Playlist,
@@ -50,13 +53,13 @@ pub enum Page {
 }
 
 /// Library messages
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 pub enum LibMsg {
     LoadEnded,
 }
 
 /// Bump app messages
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 pub enum Msg {
     Page(Page),
     Plr(PlayerMsg),
@@ -66,6 +69,7 @@ pub enum Msg {
     Move(i32, i32),
     Size(u32, u32),
     Close,
+    #[serde(skip)]
     HardPause(Instant),
 }
 
@@ -142,11 +146,20 @@ impl Application for BumpApp {
 
     /// Creates app subscriptions
     fn subscription(&self) -> Subscription<Msg> {
-        Subscription::batch([
-            self.receiver_subscription(),
-            self.window_subscription(),
-            self.tick_subscription(Duration::from_secs(1)),
-        ])
+        if let Ok(listener) = TcpListener::bind("127.0.0.1:2867") {
+            Subscription::batch([
+                self.receiver_subscription(),
+                self.window_subscription(),
+                self.tick_subscription(Duration::from_secs(1)),
+                self.server_subscription(listener),
+            ])
+        } else {
+            Subscription::batch([
+                self.receiver_subscription(),
+                self.window_subscription(),
+                self.tick_subscription(Duration::from_secs(1)),
+            ])
+        }
     }
 }
 
@@ -233,6 +246,31 @@ impl BumpApp {
                 }
                 (Msg::Tick, t + tick)
             },
+        )
+    }
+
+    /// Creates server subscription
+    fn server_subscription(&self, listener: TcpListener) -> Subscription<Msg> {
+        iced::subscription::unfold(
+            "bump server".to_owned(),
+            listener,
+            |listener| async {
+                loop {
+                    let stream = match listener.accept() {
+                        Ok(stream) => stream,
+                        Err(_) => continue,
+                    };
+                    let buf_reader = BufReader::new(&stream.0);
+
+                    let msg = match buf_reader.lines().next() {
+                        Some(Ok(msg)) => msg,
+                        _ => continue,
+                    };
+                    if let Ok(msg) = serde_json::from_str::<Msg>(&msg) {
+                        return (msg, listener);
+                    }
+                }
+            }
         )
     }
 }
