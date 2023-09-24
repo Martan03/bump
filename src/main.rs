@@ -124,18 +124,15 @@ fn help() {
 
 /// Parses instance arguments
 fn parse_instance_args(args: Vec<String>) {
-    if let Some(arg) = args.get(1) {
-        eprintln!("Invalid option given: {arg}");
-        return;
-    }
-    let action = &args[0];
-    match action.as_str() {
-        "pp" | "play-pause" => send_message(Msg::Plr(PlayerMsg::Play(None))),
-        "next" => send_message(Msg::Plr(PlayerMsg::Next)),
-        "prev" => send_message(Msg::Plr(PlayerMsg::Prev)),
-        "shuffle" | "mix" => send_message(Msg::Plr(PlayerMsg::Shuffle)),
-        "exit" | "close" | "quit" => send_message(Msg::Close),
-        _ => todo!(),
+    for arg in args {
+        match arg.as_str() {
+            "pp" | "play-pause" => send_message(Msg::Plr(PlayerMsg::Play(None))),
+            "next" => send_message(Msg::Plr(PlayerMsg::Next)),
+            "prev" => send_message(Msg::Plr(PlayerMsg::Prev)),
+            "shuffle" | "mix" => send_message(Msg::Plr(PlayerMsg::Shuffle)),
+            "exit" | "close" | "quit" => send_message(Msg::Close),
+            _ => todo!(),
+        }
     }
 }
 

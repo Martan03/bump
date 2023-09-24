@@ -28,6 +28,7 @@ pub struct BumpApp {
     pub(super) theme: Theme,
     pub(super) page: Page,
     pub(super) hard_pause: Option<Instant>,
+    listener: Cell<Option<TcpListener>>,
 }
 
 /// Messages to player
@@ -146,20 +147,12 @@ impl Application for BumpApp {
 
     /// Creates app subscriptions
     fn subscription(&self) -> Subscription<Msg> {
-        if let Ok(listener) = TcpListener::bind("127.0.0.1:2867") {
-            Subscription::batch([
-                self.receiver_subscription(),
-                self.window_subscription(),
-                self.tick_subscription(Duration::from_secs(1)),
-                self.server_subscription(listener),
-            ])
-        } else {
-            Subscription::batch([
-                self.receiver_subscription(),
-                self.window_subscription(),
-                self.tick_subscription(Duration::from_secs(1)),
-            ])
-        }
+        Subscription::batch([
+            self.receiver_subscription(),
+            self.window_subscription(),
+            self.tick_subscription(Duration::from_secs(1)),
+            self.server_subscription(),
+        ])
     }
 }
 
@@ -168,6 +161,11 @@ impl BumpApp {
     fn new(config: Config, gui: Gui) -> Self {
         let (sender, receiver) = mpsc::unbounded_channel::<Msg>();
         let library = Library::load(&config);
+
+        let listener = match TcpListener::bind("127.0.0.1:2867") {
+            Ok(listener) => Some(listener),
+            Err(_) => None,
+        };
 
         let mut app = Self {
             player: Player::new(sender.clone(), &library, &config),
@@ -179,6 +177,7 @@ impl BumpApp {
             theme: Theme::default(),
             page: Page::Library,
             hard_pause: None,
+            listener: Cell::new(listener),
         };
 
         if app.config.get_start_load() {
@@ -250,27 +249,39 @@ impl BumpApp {
     }
 
     /// Creates server subscription
-    fn server_subscription(&self, listener: TcpListener) -> Subscription<Msg> {
-        iced::subscription::unfold(
-            "bump server".to_owned(),
-            listener,
-            |listener| async {
-                loop {
-                    let stream = match listener.incoming().next() {
-                        Some(Ok(stream)) => stream,
-                        _ => continue,
-                    };
-                    let buf_reader = BufReader::new(&stream);
+    fn server_subscription(&self) -> Subscription<Msg> {
+        if let Some(listener) = self.listener.take() {
+            iced::subscription::unfold(
+                "bump server".to_owned(),
+                listener,
+                |listener| async {
+                    loop {
+                        let stream = match listener.accept() {
+                            Ok(stream) => stream,
+                            _ => continue,
+                        };
+                        let buf_reader = BufReader::new(&stream.0);
 
-                    let msg = match buf_reader.lines().next() {
-                        Some(Ok(msg)) => msg,
-                        _ => continue,
-                    };
-                    if let Ok(msg) = serde_json::from_str::<Msg>(&msg) {
-                        return (msg, listener);
+                        let msg = match buf_reader.lines().next() {
+                            Some(Ok(msg)) => msg,
+                            _ => continue,
+                        };
+                        if let Ok(msg) = serde_json::from_str::<Msg>(&msg) {
+                            return (msg, listener);
+                        }
+                    }
+                },
+            )
+        } else {
+            iced::subscription::unfold(
+                "bump server".to_owned(),
+                (),
+                |_| async {
+                    loop {
+                        println!("Duck");
                     }
                 }
-            },
-        )
+            )
+        }
     }
 }
