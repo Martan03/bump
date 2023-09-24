@@ -1,5 +1,5 @@
 use std::cell::Cell;
-use std::io::{BufReader, prelude::*};
+use std::io::{prelude::*, BufReader};
 use std::net::TcpListener;
 use std::thread;
 use std::time::{Duration, Instant};
@@ -8,7 +8,7 @@ use iced::widget::{column, row, Rule};
 use iced::{executor, Application, Command, Element, Renderer, Subscription};
 use iced_core::{window, Alignment, Event, Length};
 use log::error;
-use serde_derive::{Serialize, Deserialize};
+use serde_derive::{Deserialize, Serialize};
 use tokio::sync::mpsc::{self, UnboundedReceiver, UnboundedSender};
 
 use crate::config::config::Config;
@@ -256,11 +256,11 @@ impl BumpApp {
             listener,
             |listener| async {
                 loop {
-                    let stream = match listener.accept() {
-                        Ok(stream) => stream,
-                        Err(_) => continue,
+                    let stream = match listener.incoming().next() {
+                        Some(Ok(stream)) => stream,
+                        _ => continue,
                     };
-                    let buf_reader = BufReader::new(&stream.0);
+                    let buf_reader = BufReader::new(&stream);
 
                     let msg = match buf_reader.lines().next() {
                         Some(Ok(msg)) => msg,
@@ -270,7 +270,7 @@ impl BumpApp {
                         return (msg, listener);
                     }
                 }
-            }
+            },
         )
     }
 }

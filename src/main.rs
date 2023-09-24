@@ -1,8 +1,4 @@
-use std::{
-    io::prelude::*,
-    net::TcpStream, env,
-};
-
+use std::{env, io::prelude::*, net::TcpStream};
 
 use config::config::Config;
 use gui::app::BumpApp;
@@ -128,16 +124,18 @@ fn help() {
 
 /// Parses instance arguments
 fn parse_instance_args(args: Vec<String>) {
-    for arg in args {
-        if arg == "pp" || arg == "play-pause" {
-            send_message(Msg::Plr(PlayerMsg::Play(None)));
-        } else if arg == "next" {
-            send_message(Msg::Plr(PlayerMsg::Next));
-        } else if arg == "prev" {
-            send_message(Msg::Plr(PlayerMsg::Prev));
-        } else {
-            println!("Invalid argument: {arg}");
-        }
+    if let Some(arg) = args.get(1) {
+        eprintln!("Invalid option given: {arg}");
+        return;
+    }
+    let action = &args[0];
+    match action.as_str() {
+        "pp" | "play-pause" => send_message(Msg::Plr(PlayerMsg::Play(None))),
+        "next" => send_message(Msg::Plr(PlayerMsg::Next)),
+        "prev" => send_message(Msg::Plr(PlayerMsg::Prev)),
+        "shuffle" | "mix" => send_message(Msg::Plr(PlayerMsg::Shuffle)),
+        "exit" | "close" | "quit" => send_message(Msg::Close),
+        _ => todo!(),
     }
 }
 
@@ -147,5 +145,7 @@ fn send_message(msg: Msg) {
         if let Ok(msg) = serde_json::to_string::<Msg>(&msg) {
             _ = stream.write(msg.as_bytes());
         }
+    } else {
+        eprintln!("Error sending message");
     }
 }

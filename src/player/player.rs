@@ -368,7 +368,7 @@ impl Player {
                 _ = sender.send(Msg::Plr(PlayerMsg::SongEnd))
             }
             CallbackInfo::PauseEnds(i) => _ = sender.send(Msg::HardPause(i)),
-            _ => { },
+            _ => {}
         });
     }
 }
