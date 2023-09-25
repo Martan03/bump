@@ -1,5 +1,4 @@
 use std::cell::Cell;
-use std::io::{prelude::*, BufReader};
 use std::net::TcpListener;
 use std::thread;
 use std::time::{Duration, Instant};
@@ -14,6 +13,7 @@ use tokio::sync::mpsc::{self, UnboundedReceiver, UnboundedSender};
 use crate::config::config::Config;
 use crate::library::library::Library;
 use crate::player::player::Player;
+use crate::server::server::Server;
 
 use super::gui::Gui;
 use super::theme::Theme;
@@ -260,13 +260,8 @@ impl BumpApp {
                             Ok(stream) => stream,
                             _ => continue,
                         };
-                        let buf_reader = BufReader::new(&stream.0);
 
-                        let msg = match buf_reader.lines().next() {
-                            Some(Ok(msg)) => msg,
-                            _ => continue,
-                        };
-                        if let Ok(msg) = serde_json::from_str::<Msg>(&msg) {
+                        if let Some(msg) = Server::handle_client(stream.0) {
                             return (msg, listener);
                         }
                     }

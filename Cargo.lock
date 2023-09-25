@@ -303,6 +303,7 @@ name = "bump"
 version = "0.1.0"
 dependencies = [
  "audiotags",
+ "base64",
  "dirs",
  "eyre",
  "flexi_logger",

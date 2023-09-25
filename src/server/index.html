@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+            :root {
+                --bg: #1b1b1b;
+                --bg-light: #252525;
+                --bg-dark: #151515;
+                --primary: #3acbaf;
+            }
+
+            *{
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
+            html {
+                background-color: var(--bg);
+                font-family: Arial, Helvetica, sans-serif;
+            }
+
+            body {
+                height: 100vh;
+                width: 100%;
+                display: grid;
+                grid-template-rows: 1fr 70px;
+            }
+
+            .wrapper {
+                display: flex;
+            }
+
+            .menu {
+                width: 200px;
+                height: 100%;
+                background-color: var(--bg-dark);
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                padding: 5px;
+            }
+
+            .menu img {
+                max-width: 50px;
+                object-fit: contain;
+            }
+
+            .wrapper-songs {
+                width: 100%;
+                padding: 5px;
+            }
+
+            table.songs {
+                width: 100%;
+                border-collapse: collapse;
+            }
+
+            table.songs thead {
+                border-bottom: 2px solid #333;
+            }
+
+            table.songs th {
+                color: #888;
+                font-weight: normal;
+                text-align: left;
+            }
+
+            table.songs tr:not(:first-child) {
+                border-top: 1px solid var(--bg-light);
+            }
+
+            table.songs td {
+                color: #eee;
+                padding: 5px 0;
+            }
+
+            table.songs td.active {
+                color: var(--primary);
+            }
+
+            .player-bar {
+                height: 70px;
+                background-color: var(--bg-dark);
+                display: grid;
+                grid-template-columns: 1fr auto 1fr;
+                align-items: center;
+                position: relative;
+                padding: 2px;
+            }
+
+            .player-bar-slider {
+                width: 100%;
+                height: 4px;
+                position: absolute;
+                top: 0;
+                left: 0;
+                background-color: #303030;
+                border-radius: 3px;
+            }
+
+            .player-bar-slider hr {
+                width: 36%;
+                border: 2px solid var(--primary);
+                border-radius: 2px;
+            }
+
+            .player-bar-info {
+                display: flex;
+                align-items: center;
+            }
+
+            .player-bar-info-pic {
+                width: 68px;
+                height: 68px;
+                padding: 5px;
+            }
+
+            .player-bar-info-pic img {
+                max-width: 58px;
+                max-height: 58px;
+                object-fit: contain;
+                border-radius: 3px;
+            }
+
+            .player-bar-info-title h3 {
+                font-size: 16px;
+                font-weight: normal;
+                color: #fff;
+            }
+
+            .player-bar-info-title h4 {
+                font-size: 14px;
+                font-weight: normal;
+                color: #aaa;
+            }
+
+            .player-bar-buttons {
+                display: flex;
+                align-items: center;
+                gap: 20px;
+            }
+
+            .player-bar-buttons img {
+                width: 16px;
+                height: 16px;
+            }
+
+            .player-bar-buttons #play {
+                width: 30px;
+                height: 30px;
+                padding: 5px 0;
+                padding-left: 7px;
+                padding-right: 5px;
+                object-fit: contain;
+                background-color: #fff;
+                border-radius: 50%;
+            }
+
+            .player-bar-volume {
+                display: flex;
+                align-items: center;
+                justify-content: right;
+                gap: 10px;
+                color: #eee;
+                margin-right: 5px;
+            }
+
+            .player-bar-volume img {
+                max-width: 18px;
+                max-height: 18px;
+            }
+
+            .player-bar-volume-slider {
+                width: 90px;
+                height: 4px;
+                background-color: var(--bg-light);
+                border-radius: 2px;
+            }
+
+            .player-bar-volume-slider hr {
+                width: 16%;
+                border: 2px solid var(--primary);
+                border-radius: 2px;
+            }
+        </style>
+        <link href="style.css" rel="stylesheet">
+        <title>BUMP</title>
+    </head>
+
+    <body>
+        <div class="wrapper">
+            <div class="menu">
+                <img src="/icons/icon.svg">
+                <p>Library</p>
+                <p>Playlist</p>
+            </div>
+            <div class="wrapper-songs">
+                <table class="songs">
+                    <thead>
+                        <th>Title</th>
+                        <th>Artist</th>
+                        <th>Album</th>
+                        <th>Duration</th>
+                    </thead>
+                    {songs}
+                </table>
+            </div>
+        </div>
+        <div class="player-bar">
+            <div class="player-bar-slider">
+                <hr />
+            </div>
+            <div class="player-bar-info">
+                <div class="player-bar-info-title">
+                    <h3>Children of the Sky (a Starfield song)</h3>
+                    <h4>Imagine Dragons</h4>
+                </div>
+            </div>
+
+            <div class="player-bar-buttons">
+                <img id="prev" src="icons/prev.svg">
+                <img id="play" src="icons/play.svg">
+                <img id="next" src="icons/next.svg">
+            </div>
+
+            <div class="player-bar-volume">
+                <img src="icons/volume.svg">
+                <p>16</p>
+                <div class="player-bar-volume-slider">
+                    <hr />
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

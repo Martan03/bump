@@ -35,6 +35,9 @@ mod player {
     pub mod player;
     pub mod sinker;
 }
+mod server {
+    pub mod server;
+}
 
 fn main() -> Result<(), iced::Error> {
     let args: Vec<_> = env::args().skip(1).collect();
