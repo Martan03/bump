@@ -4,7 +4,7 @@ use iced_core::{
     alignment::{Horizontal, Vertical},
     layout,
     text::{self, Shaping},
-    Color, Element, Length, Padding, Text, Widget,
+    Color, Element, Length, Padding, Pixels, Text, Widget,
 };
 
 pub struct TextEllipsis<'a, Renderer>
@@ -66,8 +66,8 @@ where
     }
 
     /// Sets the size of the [`TextEllipsis`]
-    pub fn size(mut self, size: impl Into<f32>) -> Self {
-        self.size = Some(size.into());
+    pub fn size(mut self, size: impl Into<Pixels>) -> Self {
+        self.size = Some(size.into().0);
         self
     }
 
