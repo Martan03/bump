@@ -112,7 +112,10 @@ where
         renderer: &Renderer,
         limits: &iced_core::layout::Limits,
     ) -> iced_core::layout::Node {
-        let limits = limits.width(self.width).height(self.height);
+        let limits = limits
+            .width(self.width)
+            .height(self.height)
+            .pad(self.padding);
 
         let size = self.size.unwrap_or_else(|| renderer.default_size());
 
@@ -134,21 +137,63 @@ where
         &self,
         _state: &iced_core::widget::Tree,
         renderer: &mut Renderer,
-        _theme: &<Renderer as iced_core::Renderer>::Theme,
-        _style: &iced_core::renderer::Style,
+        theme: &<Renderer as iced_core::Renderer>::Theme,
+        style: &iced_core::renderer::Style,
         layout: iced_core::Layout<'_>,
         _cursor: iced_core::mouse::Cursor,
         _viewport: &iced_core::Rectangle,
     ) {
-        let bounds = layout.bounds();
+        let mut bounds = layout.bounds();
+        bounds.x += self.padding.left;
+        bounds.y += self.padding.top;
+
+        let size = self.size.unwrap_or_else(|| renderer.default_size());
+        let font = self.font.unwrap_or_else(|| renderer.default_font());
+
+        let mut text_width =
+            renderer.measure_width(&self.content, size, font, self.shaping);
+
+        if text_width <= bounds.width {
+            renderer.fill_text(Text {
+                content: &self.content,
+                size,
+                bounds,
+                line_height: Default::default(),
+                color: theme
+                    .foreground(&self.style)
+                    .unwrap_or(style.text_color),
+                font,
+                horizontal_alignment: self.horizontal_alignment,
+                vertical_alignment: self.vertical_alignment,
+                shaping: self.shaping,
+            });
+            return;
+        }
+
+        let ellipsis_width =
+            renderer.measure_width(&self.ellipsis, size, font, self.shaping);
+        let width = bounds.width - ellipsis_width;
+
+        let mut chars_fit = self.content.chars().count();
+        while text_width > width {
+            chars_fit -= 1;
+            text_width = renderer.measure_width(
+                &self.content[..chars_fit],
+                size,
+                font,
+                self.shaping,
+            );
+        }
+        let mut content = self.content[..chars_fit].to_owned();
+        content += &self.ellipsis;
 
         renderer.fill_text(Text {
-            content: &self.content,
-            size: self.size.unwrap_or_else(|| renderer.default_size()),
+            content: &content,
+            size,
             bounds,
             line_height: Default::default(),
-            color: Color::from_rgb(1., 1., 1.),
-            font: self.font.unwrap_or_else(|| renderer.default_font()),
+            color: theme.foreground(&self.style).unwrap_or(style.text_color),
+            font,
             horizontal_alignment: self.horizontal_alignment,
             vertical_alignment: self.vertical_alignment,
             shaping: self.shaping,

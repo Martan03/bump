@@ -33,7 +33,7 @@ impl BumpApp {
                 .width(Length::Fill)
                 .style(Button::Item)
                 .on_press(Msg::Page(Page::Playlist)),
-            TextEllipsis::new("Test"),
+            TextEllipsis::new("Test").ellipsis("..."),
             Space::new(Length::Shrink, Length::Fill),
             button("Settings")
                 .width(Length::Fill)
