@@ -12,7 +12,7 @@ use iced::{
 };
 use iced_core::{Background, BorderRadius, Color, Vector};
 
-use super::widgets::{list_view, svg_button};
+use super::widgets::{list_view, svg_button, text_ellipsis};
 
 macro_rules! hex_to_color {
     ($x:literal) => {
@@ -684,6 +684,21 @@ impl list_view::LayoutStyleSheet<()> for Theme {
             padding: Some([0, 0, 0, 20].into()),
             spacing: (None, Some(1.)),
             ..list_view::LayoutStyle::default()
+        }
+    }
+}
+
+impl text_ellipsis::StyleSheet for Theme {
+    type Style = Text;
+
+    fn foreground(&self, style: &Self::Style) -> Option<Color> {
+        match style {
+            Text::Light => Some(FG_LIGHT),
+            Text::Normal => Some(FG),
+            Text::Dark => Some(FG_DARK),
+            Text::Darker => Some(FG_DARKER),
+            Text::Prim => Some(PRIM),
+            _ => None,
         }
     }
 }

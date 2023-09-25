@@ -13,6 +13,7 @@ use super::theme::{
     self, Button, Container, SvgButton as SvgTheme, Text, Theme,
 };
 use super::widgets::svg_button::SvgButton;
+use super::widgets::text_ellipsis::TextEllipsis;
 
 type Element<'a> = iced::Element<'a, Msg, Renderer<Theme>>;
 
@@ -32,6 +33,7 @@ impl BumpApp {
                 .width(Length::Fill)
                 .style(Button::Item)
                 .on_press(Msg::Page(Page::Playlist)),
+            TextEllipsis::new("Test"),
             Space::new(Length::Shrink, Length::Fill),
             button("Settings")
                 .width(Length::Fill)

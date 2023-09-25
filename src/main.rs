@@ -25,6 +25,7 @@ mod gui {
     pub mod widgets {
         pub mod list_view;
         pub mod svg_button;
+        pub mod text_ellipsis;
     }
 }
 mod library {
