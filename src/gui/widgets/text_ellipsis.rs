@@ -4,7 +4,7 @@ use iced_core::{
     alignment::{Horizontal, Vertical},
     layout,
     text::{self, Shaping},
-    Color, Element, Length, Padding, Pixels, Text, Widget,
+    Color, Element, Length, Padding, Pixels, Size, Text, Widget,
 };
 
 pub struct TextEllipsis<'a, Renderer>
@@ -119,18 +119,27 @@ where
 
         let size = self.size.unwrap_or_else(|| renderer.default_size());
 
-        let bounds = renderer.measure(
+        let width = renderer.measure_width(
             &self.content,
             size,
-            size.into(),
             self.font.unwrap_or_else(|| renderer.default_font()),
-            limits.max(),
             self.shaping,
-        );
+        ) + 0.1;
 
-        let size = limits.resolve(bounds);
+        let lim = limits.width(width).height(size * 1.3);
+        let w = match self.width {
+            Length::Fill | Length::FillPortion(_) => lim.max().width,
+            Length::Shrink => lim.min().width,
+            Length::Fixed(n) => n,
+        };
 
-        layout::Node::new(size)
+        let h = match self.height {
+            Length::Fill | Length::FillPortion(_) => lim.max().height,
+            Length::Shrink => lim.min().height,
+            Length::Fixed(n) => n,
+        };
+
+        layout::Node::new(Size::new(w, h))
     }
 
     fn draw(
@@ -175,7 +184,7 @@ where
         let width = bounds.width - ellipsis_width;
 
         let mut chars_fit = self.content.chars().count();
-        while text_width > width {
+        while text_width > width && chars_fit > 0 {
             chars_fit -= 1;
             text_width = renderer.measure_width(
                 &self.content[..chars_fit],

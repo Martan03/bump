@@ -33,7 +33,6 @@ impl BumpApp {
                 .width(Length::Fill)
                 .style(Button::Item)
                 .on_press(Msg::Page(Page::Playlist)),
-            TextEllipsis::new("Test").ellipsis("..."),
             Space::new(Length::Shrink, Length::Fill),
             button("Settings")
                 .width(Length::Fill)
@@ -47,39 +46,26 @@ impl BumpApp {
     }
 
     pub fn list_header(&self, numbered: bool) -> Element {
+        fn header_item<'a>(data: &'a str, fill: u16) -> Element<'a> {
+            TextEllipsis::new(data)
+                .width(Length::FillPortion(fill))
+                .style(Text::Darker)
+                .size(15)
+                .ellipsis("...")
+                .into()
+        }
         let item = if numbered {
             row![
-                text("#")
-                    .width(Length::FillPortion(1))
-                    .style(Text::Darker)
-                    .size(15),
-                text("Title / Artist")
-                    .width(Length::FillPortion(10))
-                    .size(15)
-                    .style(Text::Darker),
-                text("Album / Year")
-                    .width(Length::FillPortion(9))
-                    .size(15)
-                    .style(Text::Darker),
-                text("Length / Genre")
-                    .width(Length::FillPortion(1))
-                    .size(15)
-                    .style(Text::Darker),
+                header_item("#", 1),
+                header_item("Title / Artist", 10),
+                header_item("Album / Year", 9),
+                header_item("Length / Genre", 1),
             ]
         } else {
             row![
-                text("Title / Artist")
-                    .width(Length::FillPortion(10))
-                    .size(15)
-                    .style(Text::Darker),
-                text("Album / Year")
-                    .width(Length::FillPortion(10))
-                    .size(15)
-                    .style(Text::Darker),
-                text("Length / Genre")
-                    .width(Length::FillPortion(1))
-                    .size(15)
-                    .style(Text::Darker),
+                header_item("Title / Artist", 10),
+                header_item("Album / Year", 10),
+                header_item("Length / Genre", 1),
             ]
         };
         column![
@@ -129,57 +115,76 @@ impl BumpApp {
         let item = if let Some(n) = num {
             row![
                 text(n).width(Length::FillPortion(1)).style(Text::Darker),
-                self.list_item_col(s.get_name(), style, s.get_artist(), 10),
-                self.list_item_col(s.get_album(), style, &s.get_year_str(), 9),
                 self.list_item_col(
-                    &s.get_length_str(),
+                    s.get_name().to_owned(),
                     style,
-                    s.get_genre(),
+                    s.get_artist().to_owned(),
+                    10
+                ),
+                self.list_item_col(
+                    s.get_album().to_owned(),
+                    style,
+                    s.get_year_str(),
+                    9
+                ),
+                self.list_item_col(
+                    s.get_length_str(),
+                    style,
+                    s.get_genre().to_owned(),
                     1
                 ),
             ]
         } else {
             row![
-                self.list_item_col(s.get_name(), style, s.get_artist(), 10),
                 self.list_item_col(
-                    s.get_album(),
+                    s.get_name().to_owned(),
                     style,
-                    &s.get_year_str(),
+                    s.get_artist().to_owned(),
                     10
                 ),
                 self.list_item_col(
-                    &s.get_length_str(),
+                    s.get_album().to_owned(),
                     style,
-                    s.get_genre(),
+                    s.get_year_str(),
+                    10
+                ),
+                self.list_item_col(
+                    s.get_length_str(),
+                    style,
+                    s.get_genre().to_owned(),
                     1
                 ),
             ]
         };
-        item.height(Length::Shrink)
-            .spacing(3)
-            .align_items(Alignment::Center)
-            .into()
+        item.spacing(3).align_items(Alignment::Center).into()
     }
 
     /// Gets column of the list item
     fn list_item_col(
         &self,
-        top: &str,
+        top: String,
         style: Text,
-        bottom: &str,
+        bottom: String,
         p: u16,
     ) -> Element {
         // Gets top text
-        fn top_text(data: &str, style: Text) -> Element<'static> {
-            text(data).size(15).style(style).into()
+        fn top_text<'a>(data: String, style: Text) -> Element<'a> {
+            TextEllipsis::new(data)
+                .size(15)
+                .style(style)
+                .ellipsis("...")
+                .into()
         }
         // Gets bottom text
-        fn bottom_text(data: &str) -> Element<'static> {
-            text(data).size(11).style(Text::Darker).into()
+        fn bottom_text<'a>(data: String) -> Element<'a> {
+            TextEllipsis::new(data)
+                .size(11)
+                .style(Text::Darker)
+                .ellipsis("...")
+                .into()
         }
 
         column![top_text(top, style), bottom_text(bottom)]
-            .height(Length::Shrink)
             .width(Length::FillPortion(p))
             .into()
     }
