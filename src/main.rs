@@ -119,19 +119,30 @@ fn parse_args(mut args: Vec<String>) {
 /// Prints help
 /// TODO
 fn help() {
-    println!("This will be help one day");
+    println!("Welcome to help for Bump by Martan03");
+    println!("\nUsage: bump [action] [parameters]\n");
+    println!("Actions:");
+    println!("  h -h --help");
+    println!("    Display help\n");
+    println!("  i instance [parameter]");
+    println!("    Sends message given by parameter to running instance\n");
 }
 
 /// Parses instance arguments
 fn parse_instance_args(args: Vec<String>) {
     for arg in args {
         match arg.as_str() {
-            "pp" | "play-pause" => send_message(Msg::Plr(PlayerMsg::Play(None))),
+            "pp" | "play-pause" => {
+                send_message(Msg::Plr(PlayerMsg::Play(None)))
+            }
             "next" => send_message(Msg::Plr(PlayerMsg::Next)),
             "prev" => send_message(Msg::Plr(PlayerMsg::Prev)),
             "shuffle" | "mix" => send_message(Msg::Plr(PlayerMsg::Shuffle)),
             "exit" | "close" | "quit" => send_message(Msg::Close),
-            _ => todo!(),
+            s => {
+                eprintln!("Invalid argument: {s}");
+                return;
+            }
         }
     }
 }

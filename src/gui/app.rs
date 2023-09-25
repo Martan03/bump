@@ -280,7 +280,7 @@ impl BumpApp {
                     loop {
                         println!("Duck");
                     }
-                }
+                },
             )
         }
     }
