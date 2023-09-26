@@ -65,6 +65,18 @@ where
         self
     }
 
+    /// Sets the horizontal alignment of the [`TextEllipsis`]
+    pub fn horizontal_alignment(mut self, alignment: Horizontal) -> Self {
+        self.horizontal_alignment = alignment;
+        self
+    }
+
+    /// Sets the vertical alignment of the [`TextEllipsis`]
+    pub fn vertical_alignment(mut self, alignment: Vertical) -> Self {
+        self.vertical_alignment = alignment;
+        self
+    }
+
     /// Sets the size of the [`TextEllipsis`]
     pub fn size(mut self, size: impl Into<Pixels>) -> Self {
         self.size = Some(size.into().0);
@@ -74,6 +86,12 @@ where
     /// Sets the font of the [`TextEllipsis`]
     pub fn font(mut self, font: impl Into<Renderer::Font>) -> Self {
         self.font = Some(font.into());
+        self
+    }
+
+    /// Sets the shaping of the [`TextEllipsis`]
+    pub fn shaping(mut self, shaping: Shaping) -> Self {
+        self.shaping = shaping;
         self
     }
 
@@ -126,7 +144,7 @@ where
             self.shaping,
         ) + 0.1;
 
-        let lim = limits.width(width).height(size * 1.3);
+        let lim = limits.min_width(width).min_height(size * 1.3);
         let w = match self.width {
             Length::Fill | Length::FillPortion(_) => lim.max().width,
             Length::Shrink => lim.min().width,
@@ -155,6 +173,18 @@ where
         let mut bounds = layout.bounds();
         bounds.x += self.padding.left;
         bounds.y += self.padding.top;
+
+        bounds.x = match self.horizontal_alignment {
+            Horizontal::Left => bounds.x,
+            Horizontal::Center => bounds.center_x(),
+            Horizontal::Right => bounds.width + bounds.x,
+        };
+
+        bounds.y = match self.vertical_alignment {
+            Vertical::Top => bounds.y,
+            Vertical::Center => bounds.center_y(),
+            Vertical::Bottom => bounds.height + bounds.y,
+        };
 
         let size = self.size.unwrap_or_else(|| renderer.default_size());
         let font = self.font.unwrap_or_else(|| renderer.default_font());

@@ -54,22 +54,18 @@ impl BumpApp {
                 .ellipsis("...")
                 .into()
         }
-        let item = if numbered {
-            row![
-                header_item("#", 1),
-                header_item("Title / Artist", 10),
-                header_item("Album / Year", 9),
-                header_item("Length / Genre", 1),
-            ]
-        } else {
-            row![
-                header_item("Title / Artist", 10),
-                header_item("Album / Year", 10),
-                header_item("Length / Genre", 1),
-            ]
-        };
+        let mut items: Vec<Element> = Vec::new();
+        if numbered {
+            items.push(header_item("#", 1));
+        }
+        items.extend([
+            header_item("Title / Artist", 10),
+            header_item("Album / Year", 9),
+            header_item("Length / Genre", 1),
+        ]);
         column![
-            item.height(20)
+            row(items)
+                .height(20)
                 .padding([0, 25, 0, 10])
                 .spacing(3)
                 .align_items(Alignment::Center),
@@ -112,51 +108,36 @@ impl BumpApp {
         style: Text,
         num: Option<usize>,
     ) -> Element {
-        let item = if let Some(n) = num {
-            row![
-                text(n).width(Length::FillPortion(1)).style(Text::Darker),
-                self.list_item_col(
-                    s.get_name().to_owned(),
-                    style,
-                    s.get_artist().to_owned(),
-                    10
-                ),
-                self.list_item_col(
-                    s.get_album().to_owned(),
-                    style,
-                    s.get_year_str(),
-                    9
-                ),
-                self.list_item_col(
-                    s.get_length_str(),
-                    style,
-                    s.get_genre().to_owned(),
-                    1
-                ),
-            ]
-        } else {
-            row![
-                self.list_item_col(
-                    s.get_name().to_owned(),
-                    style,
-                    s.get_artist().to_owned(),
-                    10
-                ),
-                self.list_item_col(
-                    s.get_album().to_owned(),
-                    style,
-                    s.get_year_str(),
-                    10
-                ),
-                self.list_item_col(
-                    s.get_length_str(),
-                    style,
-                    s.get_genre().to_owned(),
-                    1
-                ),
-            ]
-        };
-        item.spacing(3).align_items(Alignment::Center).into()
+        let mut items: Vec<Element> = Vec::new();
+        if let Some(num) = num {
+            items.push(
+                TextEllipsis::new(num.to_string())
+                    .width(Length::FillPortion(1))
+                    .style(Text::Darker)
+                    .into(),
+            );
+        }
+        items.extend([
+            self.list_item_col(
+                s.get_name().to_owned(),
+                style,
+                s.get_artist().to_owned(),
+                10,
+            ),
+            self.list_item_col(
+                s.get_album().to_owned(),
+                style,
+                s.get_year_str(),
+                9,
+            ),
+            self.list_item_col(
+                s.get_length_str(),
+                style,
+                s.get_genre().to_owned(),
+                1,
+            ),
+        ]);
+        row(items).spacing(3).align_items(Alignment::Center).into()
     }
 
     /// Gets column of the list item
