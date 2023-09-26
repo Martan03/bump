@@ -20,7 +20,6 @@ type Element<'a> = iced::Element<'a, Msg, Renderer<Theme>>;
 impl BumpApp {
     /// Gets app menu
     pub fn menu(&self) -> Element {
-
         column![
             container(svg(ICON).width(50).height(50),)
                 .width(Length::Fill)
@@ -202,8 +201,14 @@ impl BumpApp {
     fn title_bar(&self) -> Element {
         let song = self.player.get_current_song(&self.library);
         column![
-            text(song.get_name()).size(16).style(Text::Light),
-            text(song.get_artist()).size(14).style(Text::Dark),
+            TextEllipsis::new(song.get_name().to_owned())
+                .size(16)
+                .style(Text::Light)
+                .ellipsis("..."),
+            TextEllipsis::new(song.get_artist().to_owned())
+                .size(14)
+                .style(Text::Dark)
+                .ellipsis("..."),
         ]
         .into()
     }
