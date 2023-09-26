@@ -20,24 +20,16 @@ type Element<'a> = iced::Element<'a, Msg, Renderer<Theme>>;
 impl BumpApp {
     /// Gets app menu
     pub fn menu(&self) -> Element {
+
         column![
             container(svg(ICON).width(50).height(50),)
                 .width(Length::Fill)
                 .align_x(Horizontal::Center),
             Space::new(Length::Shrink, 5),
-            button("Library")
-                .width(Length::Fill)
-                .style(Button::Item)
-                .on_press(Msg::Page(Page::Library)),
-            button("Playlist")
-                .width(Length::Fill)
-                .style(Button::Item)
-                .on_press(Msg::Page(Page::Playlist)),
+            self.menu_button("Library", Page::Library),
+            self.menu_button("Playlist", Page::Playlist),
             Space::new(Length::Shrink, Length::Fill),
-            button("Settings")
-                .width(Length::Fill)
-                .style(Button::Item)
-                .on_press(Msg::Page(Page::Settings)),
+            self.menu_button("Settings", Page::Settings),
         ]
         .width(175)
         .height(Length::Fill)
@@ -45,6 +37,16 @@ impl BumpApp {
         .into()
     }
 
+    /// Create menu button
+    fn menu_button<'a>(&self, data: &'a str, page: Page) -> Element<'a> {
+        button(data)
+            .width(Length::Fill)
+            .style(Button::Menu(self.page == page))
+            .on_press(Msg::Page(page))
+            .into()
+    }
+
+    /// Create list header
     pub fn list_header(&self, numbered: bool) -> Element {
         fn header_item<'a>(data: &'a str, fill: u16) -> Element<'a> {
             TextEllipsis::new(data)

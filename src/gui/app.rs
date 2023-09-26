@@ -46,7 +46,7 @@ pub enum PlayerMsg {
 }
 
 /// All pages enum
-#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq)]
 pub enum Page {
     Library,
     Playlist,

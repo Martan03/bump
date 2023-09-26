@@ -62,6 +62,7 @@ pub enum Button {
     Default,
     Primary,
     Item,
+    Menu(bool),
 }
 
 impl button::StyleSheet for Theme {
@@ -88,6 +89,10 @@ impl button::StyleSheet for Theme {
                 text_color: FG,
                 ..default
             },
+            Button::Menu(selected) => button::Appearance {
+                text_color: if *selected { PRIM } else { FG },
+                ..default
+            },
             _ => default,
         }
     }
@@ -98,7 +103,7 @@ impl button::StyleSheet for Theme {
                 background: Some(Background::Color(PRIM_DARK)),
                 ..self.active(style)
             },
-            Button::Item => button::Appearance {
+            Button::Item | Button::Menu(_) => button::Appearance {
                 background: Some(Background::Color(BG_LIGHT)),
                 border_radius: BorderRadius::from(6.),
                 ..self.active(style)
