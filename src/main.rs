@@ -1,9 +1,8 @@
-use std::{env, io::prelude::*, net::TcpStream};
+use std::env;
 
+use cli::cli::Cli;
 use config::config::Config;
 use gui::app::BumpApp;
-use gui::app::Msg;
-use gui::app::PlayerMsg;
 use gui::gui::Gui;
 use iced::window;
 use iced::window::PlatformSpecific;
@@ -49,7 +48,8 @@ fn main() -> Result<(), iced::Error> {
 
     let args: Vec<_> = env::args().skip(1).collect();
     if !args.is_empty() {
-        parse_args(config, args);
+        let mut cli = Cli::new(&config, args);
+        cli.parse();
         return Ok(());
     }
     // on wayland, the app freezes when minimized, this is temporary workaround
@@ -103,68 +103,5 @@ fn make_settings(config: Config) -> Settings<(Config, Gui)> {
         exit_on_close_request: false,
         flags: (config, gui),
         ..Default::default()
-    }
-}
-
-/// Parses given arguments
-fn parse_args(config: Config, mut args: Vec<String>) {
-    if let Some(arg) = args.get(0) {
-        if arg == "h" || arg == "-h" || arg == "--help" {
-            help();
-        } else if arg == "i" || arg == "instance" {
-            args.remove(0);
-            if args.is_empty() {
-                eprintln!("No instance arguments given");
-            } else {
-                parse_instance_args(&config, args);
-            }
-        } else {
-            eprintln!("Invalid argument: {arg}");
-            return;
-        }
-    }
-}
-
-/// Prints help
-/// TODO
-fn help() {
-    println!("Welcome to help for Bump by Martan03");
-    println!("\nUsage: bump [action] [parameters]\n");
-    println!("Actions:");
-    println!("  h -h --help");
-    println!("    Display help\n");
-    println!("  i instance [parameter]");
-    println!("    Sends message given by parameter to running instance\n");
-}
-
-/// Parses instance arguments
-fn parse_instance_args(config: &Config, args: Vec<String>) {
-    for arg in args {
-        match arg.as_str() {
-            "pp" | "play-pause" => {
-                send_message(&config, Msg::Plr(PlayerMsg::Play(None)))
-            }
-            "next" => send_message(&config, Msg::Plr(PlayerMsg::Next)),
-            "prev" => send_message(&config, Msg::Plr(PlayerMsg::Prev)),
-            "shuffle" | "mix" => {
-                send_message(&config, Msg::Plr(PlayerMsg::Shuffle))
-            }
-            "exit" | "close" | "quit" => send_message(&config, Msg::Close),
-            s => {
-                eprintln!("Invalid argument: {s}");
-                return;
-            }
-        }
-    }
-}
-
-/// Sends given message to the server
-fn send_message(config: &Config, msg: Msg) {
-    if let Ok(mut stream) = TcpStream::connect(config.get_server_address()) {
-        if let Ok(msg) = serde_json::to_string::<Msg>(&msg) {
-            _ = stream.write(msg.as_bytes());
-        }
-    } else {
-        eprintln!("Error sending message");
     }
 }

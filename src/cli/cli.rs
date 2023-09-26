@@ -42,5 +42,14 @@ impl Cli {
         }
     }
 
-    fn help(&self) {}
+    /// Display CLI help
+    fn help(&self) {
+        println!("Welcome to help for Bump by Martan03");
+        println!("\nUsage: bump [action] [parameters]\n");
+        println!("Actions:");
+        println!("  h -h --help");
+        println!("    Display help\n");
+        println!("  i instance [parameter]");
+        println!("    Sends message given by parameter to running instance\n");
+    }
 }

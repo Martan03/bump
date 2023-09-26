@@ -1,4 +1,4 @@
-use std::{env, io::prelude::*, net::TcpStream};
+use std::{io::prelude::*, net::TcpStream};
 
 use crate::gui::app::{Msg, PlayerMsg};
 
@@ -54,7 +54,7 @@ impl Instance {
         for arg in self.invalid.iter() {
             invalid = format!("{invalid} {arg}");
         }
-        println!("Invalid intance actions: {invalid}");
+        println!("Invalid intance actions:{invalid}");
     }
 
     /// Submits [`Instance`] actions
