@@ -42,7 +42,7 @@ where
             size: None,
             font: None,
             shaping: Shaping::Basic,
-            ellipsis: "".into(),
+            ellipsis: "...".into(),
             style: Default::default(),
         }
     }

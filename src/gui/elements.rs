@@ -52,7 +52,6 @@ impl BumpApp {
                 .width(Length::FillPortion(fill))
                 .style(Text::Darker)
                 .size(15)
-                .ellipsis("...")
                 .into()
         }
         let mut items: Vec<Element> = Vec::new();
@@ -151,19 +150,11 @@ impl BumpApp {
     ) -> Element {
         // Gets top text
         fn top_text<'a>(data: String, style: Text) -> Element<'a> {
-            TextEllipsis::new(data)
-                .size(15)
-                .style(style)
-                .ellipsis("...")
-                .into()
+            TextEllipsis::new(data).size(15).style(style).into()
         }
         // Gets bottom text
         fn bottom_text<'a>(data: String) -> Element<'a> {
-            TextEllipsis::new(data)
-                .size(11)
-                .style(Text::Darker)
-                .ellipsis("...")
-                .into()
+            TextEllipsis::new(data).size(11).style(Text::Darker).into()
         }
 
         column![top_text(top, style), bottom_text(bottom)]

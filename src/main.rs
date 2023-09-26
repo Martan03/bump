@@ -41,9 +41,11 @@ mod server {
 }
 
 fn main() -> Result<(), iced::Error> {
+    let config = Config::load();
+
     let args: Vec<_> = env::args().skip(1).collect();
     if !args.is_empty() {
-        parse_args(args);
+        parse_args(config, args);
         return Ok(());
     }
     // on wayland, the app freezes when minimized, this is temporary workaround
@@ -54,7 +56,7 @@ fn main() -> Result<(), iced::Error> {
         eprintln!("Failed to start logger");
     }
 
-    BumpApp::run(make_settings())
+    BumpApp::run(make_settings(config))
 }
 
 /// Inits logger
@@ -71,8 +73,7 @@ fn init_logger() -> eyre::Result<()> {
 }
 
 /// Makes window settings, loads saved settings
-fn make_settings() -> Settings<(Config, Gui)> {
-    let config = Config::load();
+fn make_settings(config: Config) -> Settings<(Config, Gui)> {
     let gui = Gui::load(&config);
 
     let icon = window::icon::from_rgba(
@@ -102,7 +103,7 @@ fn make_settings() -> Settings<(Config, Gui)> {
 }
 
 /// Parses given arguments
-fn parse_args(mut args: Vec<String>) {
+fn parse_args(config: Config, mut args: Vec<String>) {
     if let Some(arg) = args.get(0) {
         if arg == "h" || arg == "-h" || arg == "--help" {
             help();
@@ -111,7 +112,7 @@ fn parse_args(mut args: Vec<String>) {
             if args.is_empty() {
                 eprintln!("No instance arguments given");
             } else {
-                parse_instance_args(args);
+                parse_instance_args(&config, args);
             }
         } else {
             eprintln!("Invalid argument: {arg}");
@@ -133,16 +134,18 @@ fn help() {
 }
 
 /// Parses instance arguments
-fn parse_instance_args(args: Vec<String>) {
+fn parse_instance_args(config: &Config, args: Vec<String>) {
     for arg in args {
         match arg.as_str() {
             "pp" | "play-pause" => {
-                send_message(Msg::Plr(PlayerMsg::Play(None)))
+                send_message(&config, Msg::Plr(PlayerMsg::Play(None)))
             }
-            "next" => send_message(Msg::Plr(PlayerMsg::Next)),
-            "prev" => send_message(Msg::Plr(PlayerMsg::Prev)),
-            "shuffle" | "mix" => send_message(Msg::Plr(PlayerMsg::Shuffle)),
-            "exit" | "close" | "quit" => send_message(Msg::Close),
+            "next" => send_message(&config, Msg::Plr(PlayerMsg::Next)),
+            "prev" => send_message(&config, Msg::Plr(PlayerMsg::Prev)),
+            "shuffle" | "mix" => {
+                send_message(&config, Msg::Plr(PlayerMsg::Shuffle))
+            }
+            "exit" | "close" | "quit" => send_message(&config, Msg::Close),
             s => {
                 eprintln!("Invalid argument: {s}");
                 return;
@@ -152,8 +155,8 @@ fn parse_instance_args(args: Vec<String>) {
 }
 
 /// Sends given message to the server
-fn send_message(msg: Msg) {
-    if let Ok(mut stream) = TcpStream::connect("127.0.0.1:2867") {
+fn send_message(config: &Config, msg: Msg) {
+    if let Ok(mut stream) = TcpStream::connect(config.get_server_address()) {
         if let Ok(msg) = serde_json::to_string::<Msg>(&msg) {
             _ = stream.write(msg.as_bytes());
         }

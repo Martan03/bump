@@ -41,6 +41,10 @@ pub struct Config {
     /// When true plays songs without the gaps in between
     #[serde(default = "Config::get_default_gapless")]
     gapless: bool,
+    /// IP of the server
+    server_ip: String,
+    /// Port of the server
+    server_port: String,
     /// True when anything in config changed, else false
     #[serde(skip, default)]
     changed: bool,
@@ -149,6 +153,11 @@ impl Config {
         self.gapless
     }
 
+    /// Gets server address
+    pub fn get_server_address(&self) -> String {
+        format!("{}:{}", self.server_ip, self.server_port)
+    }
+
     ///>===================================================================<///
     ///                        Default Config values                        ///
     ///>===================================================================<///
@@ -207,12 +216,24 @@ impl Config {
         false
     }
 
+    /// Gets default start load
     fn get_default_start_load() -> bool {
         true
     }
 
+    /// Gets defautl gapless
     fn get_default_gapless() -> bool {
         false
+    }
+
+    /// Gets default server ip
+    fn get_default_server_ip() -> String {
+        "127.0.0.1".to_owned()
+    }
+
+    /// Gets default server port
+    fn get_default_server_port() -> String {
+        "2867".to_owned()
     }
 }
 
@@ -239,6 +260,8 @@ impl Default for Config {
             start_load: Config::get_default_start_load(),
             gapless: Config::get_default_gapless(),
             changed: true,
+            server_ip: Config::get_default_server_ip(),
+            server_port: Config::get_default_server_port(),
         }
     }
 }

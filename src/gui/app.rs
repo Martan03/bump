@@ -162,7 +162,7 @@ impl BumpApp {
         let (sender, receiver) = mpsc::unbounded_channel::<Msg>();
         let library = Library::load(&config);
 
-        let listener = match TcpListener::bind("127.0.0.1:2867") {
+        let listener = match TcpListener::bind(config.get_server_address()) {
             Ok(listener) => Some(listener),
             Err(_) => None,
         };
