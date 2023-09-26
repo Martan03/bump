@@ -153,6 +153,16 @@ impl Config {
         self.gapless
     }
 
+    /// Gets server ip
+    pub fn get_server_ip(&self) -> &str {
+        &self.server_ip
+    }
+
+    /// Gets server port
+    pub fn get_server_port(&self) -> &str {
+        &self.server_port
+    }
+
     /// Gets server address
     pub fn get_server_address(&self) -> String {
         format!("{}:{}", self.server_ip, self.server_port)

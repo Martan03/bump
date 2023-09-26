@@ -10,6 +10,10 @@ use iced::window::PlatformSpecific;
 use iced::Application;
 use iced::Settings;
 
+mod cli {
+    pub mod cli;
+    pub mod instance;
+}
 mod config {
     pub mod config;
 }
