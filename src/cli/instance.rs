@@ -1,6 +1,6 @@
 use std::{io::prelude::*, net::TcpStream, time::Duration};
 
-use crate::gui::app::{Msg, PlayerMsg};
+use crate::gui::app::{Msg, PlayerMsg, LibMsg};
 
 pub struct Instance {
     // Actions to be sent to instance
@@ -103,7 +103,7 @@ impl Instance {
                 }
             }
             "shuffle" | "mix" => Some(Msg::Plr(PlayerMsg::Shuffle)),
-            "load-songs" => Some(Msg::Update),
+            "load-songs" => Some(Msg::Lib(LibMsg::LoadStart)),
             "exit" | "close" | "quit" => Some(Msg::Close),
             _ => None,
         }

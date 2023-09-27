@@ -44,7 +44,7 @@ impl Cli {
 
     /// Display CLI help
     fn help(&self) {
-        print!("Welcome to help for \x1b[92mBump\x1b[0m by ");
+        print!("Welcome to \x1b[92mBump\x1b[0m by ");
         let name = "Martan03";
         let r = 0;
         let g = 220;
@@ -59,7 +59,7 @@ impl Cli {
         println!("\x1b[92mActions:\x1b[0m");
         println!("\x1b[93m  h, -h, --help\x1b[0m");
         println!("    Display help\n");
-        println!("\x1b[93m  i, instance \x1b[90m[action]\x1b[0m");
+        println!("\x1b[93m  i, instance \x1b[90m[instance-action]\x1b[0m");
         println!("    Sends message given by action to running instance\n");
         self.instance.help();
     }

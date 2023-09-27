@@ -58,6 +58,7 @@ pub enum Page {
 /// Library messages
 #[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 pub enum LibMsg {
+    LoadStart,
     LoadEnded,
 }
 
@@ -67,7 +68,6 @@ pub enum Msg {
     Page(Page),
     Plr(PlayerMsg),
     Lib(LibMsg),
-    Update,
     Tick,
     Move(i32, i32),
     Size(u32, u32),
@@ -98,11 +98,9 @@ impl Application for BumpApp {
         match message {
             Msg::Page(msg) => self.page = msg,
             Msg::Plr(msg) => self.player.handle_msg(msg, &mut self.library),
-            Msg::Lib(msg) => self.library.handle_msg(msg),
-            Msg::Update => {
-                _ = self
-                    .library
-                    .start_find(&mut self.config, self.sender.clone())
+            Msg::Lib(msg) => {
+                self.library
+                    .handle_msg(&self.config, self.sender.clone(), msg)
             }
             Msg::Tick => {}
             Msg::Move(x, y) => self.gui.set_pos(x, y),

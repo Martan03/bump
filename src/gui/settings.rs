@@ -5,7 +5,7 @@ use iced::{
 use iced_core::Length;
 
 use super::{
-    app::{BumpApp, Msg},
+    app::{BumpApp, Msg, LibMsg},
     theme::{Button, Text, Theme},
 };
 
@@ -16,7 +16,7 @@ impl BumpApp {
         column![
             text("Settings").size(25).style(Text::Normal),
             button("Update library")
-                .on_press(Msg::Update)
+                .on_press(Msg::Lib(LibMsg::LoadStart))
                 .style(Button::Primary),
         ]
         .width(Length::Fill)

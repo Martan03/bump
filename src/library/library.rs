@@ -143,8 +143,14 @@ impl Library {
         }
     }
 
-    pub fn handle_msg(&mut self, msg: LibMsg) {
+    pub fn handle_msg(
+        &mut self,
+        config: &Config,
+        sender: UnboundedSender<Msg>,
+        msg: LibMsg,
+    ) {
         match msg {
+            LibMsg::LoadStart => self.start_find(config, sender),
             LibMsg::LoadEnded => self.end_find(),
         }
     }
