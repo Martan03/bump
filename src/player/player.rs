@@ -170,7 +170,13 @@ impl Player {
     }
 
     /// Seeks to given position
-    pub fn seek_to(&mut self, time: Duration) -> Result<()> {
+    pub fn seek_to(&mut self, lib: &Library, time: Duration) -> Result<()> {
+        if let Ok(timestamp) = self.sinker.get_timestamp() {
+            if timestamp.total < time {
+                self.next(lib);
+                return Ok(());
+            }
+        }
         self.sinker.seek_to(time)
     }
 
@@ -198,7 +204,7 @@ impl Player {
                 _ = self.prev(library)
             }
             PlayerMsg::SeekTo(time) => {
-                _ = self.seek_to(time);
+                _ = self.seek_to(library, time);
             }
             PlayerMsg::SongEnd => _ = self.next(library),
             PlayerMsg::Volume(vol) => _ = self.set_volume(vol),
