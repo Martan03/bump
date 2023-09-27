@@ -41,6 +41,8 @@ pub struct Player {
     playlist: Vec<usize>,
     /// True when shuffle should shuffle currently playing song
     shuffle_current: bool,
+    /// Step of the volume when up or down used
+    volume_step: f32,
 }
 
 impl Player {
@@ -88,6 +90,7 @@ impl Player {
             mute: data.mute,
             playlist: data.playlist,
             shuffle_current: config.get_shuffle_current(),
+            volume_step: 0.1,
         };
 
         res.init_sinker(lib, config, sender);
@@ -151,25 +154,6 @@ impl Player {
         self.load_song(lib, play);
     }
 
-    /// Loads song from the library
-    fn load_song(&mut self, lib: &Library, play: bool) {
-        self.set_state(play);
-        if self.current != usize::MAX {
-            match self.try_load_song(lib, play) {
-                Ok(_) => self.set_state(play),
-                Err(e) => error!("Failed to load the song: {e}"),
-            }
-        }
-    }
-
-    /// Tries to load a song from the library
-    fn try_load_song(&mut self, lib: &Library, play: bool) -> Result<()> {
-        if self.current != usize::MAX {
-            self.sinker.load(lib, self.playlist[self.current], play)?;
-        }
-        Ok(())
-    }
-
     /// Shuffles current playlist
     pub fn shuffle(&mut self) {
         if let Some(id) = self.get_current() {
@@ -213,8 +197,8 @@ impl Player {
             PlayerMsg::Prev if self.playlist.len() > 0 => {
                 _ = self.prev(library)
             }
-            PlayerMsg::SeekTo(secs) => {
-                _ = self.seek_to(Duration::from_secs_f32(secs));
+            PlayerMsg::SeekTo(time) => {
+                _ = self.seek_to(time);
             }
             PlayerMsg::SongEnd => _ = self.next(library),
             PlayerMsg::Volume(vol) => _ = self.set_volume(vol),
@@ -222,6 +206,8 @@ impl Player {
                 _ = self.set_mute(mute.unwrap_or(!self.get_mute()))
             }
             PlayerMsg::Shuffle => self.shuffle(),
+            PlayerMsg::VolumeUp(step) => self.volume_up(step),
+            PlayerMsg::VolumeDown(step) => self.volume_down(step),
             _ => {}
         }
     }
@@ -295,6 +281,24 @@ impl Player {
         }
     }
 
+    /// Sets volume up by given step
+    pub fn volume_up(&mut self, step: Option<f32>) {
+        let step = match step {
+            Some(step) => step,
+            None => self.volume_step,
+        };
+        self.set_volume(self.volume + step);
+    }
+
+    /// Sets volume down by given step
+    pub fn volume_down(&mut self, step: Option<f32>) {
+        let step = match step {
+            Some(step) => step,
+            None => self.volume_step,
+        };
+        self.set_volume(self.volume - step);
+    }
+
     /// Gets whether playback is muted
     pub fn get_mute(&self) -> bool {
         self.mute
@@ -320,6 +324,25 @@ impl Player {
     //>=====================================================================<//
     //                           Private functions                           //
     //>=====================================================================<//
+
+    /// Loads song from the library
+    fn load_song(&mut self, lib: &Library, play: bool) {
+        self.set_state(play);
+        if self.current != usize::MAX {
+            match self.try_load_song(lib, play) {
+                Ok(_) => self.set_state(play),
+                Err(e) => error!("Failed to load the song: {e}"),
+            }
+        }
+    }
+
+    /// Tries to load a song from the library
+    fn try_load_song(&mut self, lib: &Library, play: bool) -> Result<()> {
+        if self.current != usize::MAX {
+            self.sinker.load(lib, self.playlist[self.current], play)?;
+        }
+        Ok(())
+    }
 
     /// Creates playlist from library
     fn create_playlist(&mut self, library: &Library, id: usize) {
@@ -383,6 +406,7 @@ impl Default for Player {
             mute: false,
             playlist: Vec::new(),
             shuffle_current: true,
+            volume_step: 0.1,
         }
     }
 }

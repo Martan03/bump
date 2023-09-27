@@ -24,7 +24,7 @@ impl Instance {
                     self.invalid = true;
                     eprintln!("Unknown instance action: {arg}");
                     return;
-                },
+                }
             }
         }
     }
@@ -61,9 +61,13 @@ impl Instance {
                 } else {
                     Some(Msg::Plr(PlayerMsg::Play(None)))
                 }
-            },
+            }
             "next" => Some(Msg::Plr(PlayerMsg::Next)),
             "prev" => Some(Msg::Plr(PlayerMsg::Prev)),
+            "vu" | "volume-up" => Some(Msg::Plr(PlayerMsg::VolumeUp(None))),
+            "vd" | "volume-down" => {
+                Some(Msg::Plr(PlayerMsg::VolumeDown(None)))
+            }
             "shuffle" | "mix" => Some(Msg::Plr(PlayerMsg::Shuffle)),
             "exit" | "close" | "quit" => Some(Msg::Close),
             _ => None,
@@ -79,6 +83,14 @@ impl Instance {
         println!("    Plays the next song\n");
         println!("\x1b[93m  prev\x1b[0m");
         println!("    Plays the previous song\n");
+        println!("\x1b[93m  vu, volume-up\x1b[0m");
+        println!(
+            "    Sets volume up by step, w/o parameter uses default step\n"
+        );
+        println!("\x1b[93m  vd, volume-down\x1b[0m");
+        println!(
+            "    Sets volume down by step, w/o parameter uses default step\n"
+        );
         println!("\x1b[93m  shuffle, mix\x1b[0m");
         println!("    Shuffles current playlist\n");
         println!("\x1b[93m  exit, close, quit\x1b[0m");

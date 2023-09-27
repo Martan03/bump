@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use iced::widget::{
     button, column, container, row, slider, svg, text, Rule, Space,
 };
@@ -168,7 +170,7 @@ impl BumpApp {
 
         container(column![
             slider(0.0..=len.as_secs_f32(), time.as_secs_f32(), |v| {
-                Msg::Plr(PlayerMsg::SeekTo(v))
+                Msg::Plr(PlayerMsg::SeekTo(Duration::from_secs_f32(v)))
             })
             .height(4)
             .step(0.01),

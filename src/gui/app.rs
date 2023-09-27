@@ -38,11 +38,13 @@ pub enum PlayerMsg {
     PlaySong(usize, bool),
     Next,
     Prev,
-    SeekTo(f32),
+    SeekTo(Duration),
     SongEnd,
     Volume(f32),
     Mute(Option<bool>),
     Shuffle,
+    VolumeUp(Option<f32>),
+    VolumeDown(Option<f32>),
 }
 
 /// All pages enum
