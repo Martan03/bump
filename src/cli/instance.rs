@@ -38,8 +38,25 @@ impl Instance {
 
     /// Gets [`Msg`] by [`Instance`] action
     pub fn get_action_msg(action: &str) -> Option<Msg> {
+        fn get_action_param(action: &str) -> Option<&str> {
+            let mut param = action.split("=");
+            param.next();
+            param.next()
+        }
+
         match action {
-            "pp" | "play-pause" => Some(Msg::Plr(PlayerMsg::Play(None))),
+            s if s.starts_with("pp") || s.starts_with("play-pause") => {
+                if let Some(param) = get_action_param(action) {
+                    let param = match param {
+                        "play" => Some(true),
+                        "pause" => Some(false),
+                        _ => return None,
+                    };
+                    Some(Msg::Plr(PlayerMsg::Play(param)))
+                } else {
+                    Some(Msg::Plr(PlayerMsg::Play(None)))
+                }
+            },
             "next" => Some(Msg::Plr(PlayerMsg::Next)),
             "prev" => Some(Msg::Plr(PlayerMsg::Prev)),
             "shuffle" | "mix" => Some(Msg::Plr(PlayerMsg::Shuffle)),
