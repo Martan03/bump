@@ -274,7 +274,12 @@ impl Player {
     }
 
     /// Sets playback volume
-    pub fn set_volume(&mut self, volume: f32) {
+    pub fn set_volume(&mut self, mut volume: f32) {
+        if volume < 0. {
+            volume = 0.;
+        } else if volume > 1. {
+            volume = 1.;
+        }
         match self.sinker.set_volume(volume) {
             Ok(_) => self.volume = volume,
             Err(e) => error!("Failed to set volume: {e}"),
