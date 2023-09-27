@@ -5,8 +5,8 @@ use crate::gui::app::{Msg, PlayerMsg};
 pub struct Instance {
     // Actions to be sent to instance
     actions: Vec<Msg>,
-    // Contains invalid instance actions given as arg
-    invalid: Vec<String>,
+    // Contains whether invalid action was given
+    invalid: bool,
 }
 
 impl Instance {
@@ -20,17 +20,22 @@ impl Instance {
         for arg in args {
             match Instance::get_action_msg(&arg) {
                 Some(msg) => self.actions.push(msg),
-                None => self.invalid.push(arg),
+                None => {
+                    self.invalid = true;
+                    eprintln!("Unknown instance action: {arg}");
+                    return;
+                },
             }
         }
     }
 
     /// Submits [`Instance`]
     pub fn submit(&self, ip: &str, port: &str) {
-        if !self.invalid.is_empty() {
-            self.invalid_msg();
-        } else if self.actions.is_empty() {
-            eprintln!("No instance arguments given");
+        if self.invalid {
+            return;
+        }
+        if self.actions.is_empty() {
+            eprintln!("Instance action expected, none given.");
         } else {
             self.submit_actions(ip, port);
         }
@@ -65,13 +70,19 @@ impl Instance {
         }
     }
 
-    /// Prints invalid actions
-    fn invalid_msg(&self) {
-        let mut invalid = String::from("");
-        for arg in self.invalid.iter() {
-            invalid = format!("{invalid} {arg}");
-        }
-        println!("Invalid intance actions:{invalid}");
+    /// Prints help for instance
+    pub fn help(&self) {
+        println!("\x1b[92mInstance actions:\x1b[0m");
+        println!("\x1b[93m  pp, play-pause \x1b[90m[=(play|pause)]\x1b[0m");
+        println!("    Play or pause, no parameter toggles\n");
+        println!("\x1b[93m  next\x1b[0m");
+        println!("    Plays the next song\n");
+        println!("\x1b[93m  prev\x1b[0m");
+        println!("    Plays the previous song\n");
+        println!("\x1b[93m  shuffle, mix\x1b[0m");
+        println!("    Shuffles current playlist\n");
+        println!("\x1b[93m  exit, close, quit\x1b[0m");
+        println!("    Closes running instance");
     }
 
     /// Submits [`Instance`] actions
@@ -99,7 +110,7 @@ impl Default for Instance {
     fn default() -> Self {
         Self {
             actions: Vec::new(),
-            invalid: Vec::new(),
+            invalid: false,
         }
     }
 }
