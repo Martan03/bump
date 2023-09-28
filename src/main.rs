@@ -29,6 +29,7 @@ mod gui {
         pub mod list_view;
         pub mod svg_button;
         pub mod text_ellipsis;
+        pub mod toggler;
     }
 }
 mod library {

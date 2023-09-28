@@ -12,7 +12,7 @@ use iced::{
 };
 use iced_core::{Background, BorderRadius, Color, Vector};
 
-use super::widgets::{list_view, svg_button, text_ellipsis};
+use super::widgets::{self, list_view, svg_button, text_ellipsis};
 
 macro_rules! hex_to_color {
     ($x:literal) => {
@@ -475,11 +475,7 @@ impl toggler::StyleSheet for Theme {
         _style: &Self::Style,
         is_active: bool,
     ) -> toggler::Appearance {
-        let bg = if is_active {
-            PRIM
-        } else {
-            OUTLINE
-        };
+        let bg = if is_active { PRIM } else { OUTLINE };
         toggler::Appearance {
             background: bg,
             background_border: None,
@@ -493,11 +489,7 @@ impl toggler::StyleSheet for Theme {
         style: &Self::Style,
         is_active: bool,
     ) -> toggler::Appearance {
-        let bg = if is_active {
-            PRIM_DARK
-        } else {
-            OUTLINE_DARK
-        };
+        let bg = if is_active { PRIM_DARK } else { OUTLINE_DARK };
         toggler::Appearance {
             background: bg,
             ..self.active(style, is_active)
@@ -717,6 +709,37 @@ impl text_ellipsis::StyleSheet for Theme {
             Text::Darker => Some(FG_DARKER),
             Text::Prim => Some(PRIM),
             _ => None,
+        }
+    }
+}
+
+impl widgets::toggler::StyleSheet for Theme {
+    type Style = ();
+
+    fn active(
+        &self,
+        _style: &Self::Style,
+        is_active: bool,
+    ) -> widgets::toggler::Appearance {
+        let bg = if is_active { PRIM } else { OUTLINE };
+        widgets::toggler::Appearance {
+            background: bg,
+            background_border: None,
+            foreground: FG,
+            foreground_border: None,
+            text_color: FG_DARK,
+        }
+    }
+
+    fn hovered(
+        &self,
+        style: &Self::Style,
+        is_active: bool,
+    ) -> widgets::toggler::Appearance {
+        let bg = if is_active { PRIM_DARK } else { OUTLINE_DARK };
+        widgets::toggler::Appearance {
+            background: bg,
+            ..self.active(style, is_active)
         }
     }
 }
