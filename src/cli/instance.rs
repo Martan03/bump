@@ -1,6 +1,6 @@
 use std::{io::prelude::*, net::TcpStream, time::Duration};
 
-use crate::gui::app::{Msg, PlayerMsg, LibMsg};
+use crate::gui::app::{LibMsg, Msg, PlayerMsg};
 
 pub struct Instance {
     // Actions to be sent to instance

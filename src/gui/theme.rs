@@ -473,10 +473,15 @@ impl toggler::StyleSheet for Theme {
     fn active(
         &self,
         _style: &Self::Style,
-        _is_active: bool,
+        is_active: bool,
     ) -> toggler::Appearance {
+        let bg = if is_active {
+            PRIM
+        } else {
+            OUTLINE
+        };
         toggler::Appearance {
-            background: BG_DARK,
+            background: bg,
             background_border: None,
             foreground: FG,
             foreground_border: None,
@@ -488,7 +493,15 @@ impl toggler::StyleSheet for Theme {
         style: &Self::Style,
         is_active: bool,
     ) -> toggler::Appearance {
-        self.active(style, is_active)
+        let bg = if is_active {
+            PRIM_DARK
+        } else {
+            OUTLINE_DARK
+        };
+        toggler::Appearance {
+            background: bg,
+            ..self.active(style, is_active)
+        }
     }
 }
 

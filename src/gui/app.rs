@@ -62,12 +62,22 @@ pub enum LibMsg {
     LoadEnded,
 }
 
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+pub enum ConfMsg {
+    RecursiveSearch(bool),
+    ShuffleCurrent(bool),
+    Autoplay(bool),
+    StartLoad(bool),
+    Gapless(bool),
+}
+
 /// Bump app messages
 #[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 pub enum Msg {
     Page(Page),
     Plr(PlayerMsg),
     Lib(LibMsg),
+    Conf(ConfMsg),
     Tick,
     Move(i32, i32),
     Size(u32, u32),
@@ -102,6 +112,7 @@ impl Application for BumpApp {
                 self.library
                     .handle_msg(&self.config, self.sender.clone(), msg)
             }
+            Msg::Conf(msg) => self.config.handle_msg(msg),
             Msg::Tick => {}
             Msg::Move(x, y) => self.gui.set_pos(x, y),
             Msg::Size(w, h) => self.gui.set_size(w, h),

@@ -11,6 +11,7 @@ base64 = "0.21.4"
 dirs = "5.0.1"
 eyre = "0.6.8"
 flexi_logger = "0.27.0"
+global-hotkey = "0.3.0"
 iced = { version = "0.10.0", features = ["svg", "image"] }
 iced_core = "0.10.0"
 log = "0.4.20"

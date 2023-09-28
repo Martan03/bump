@@ -6,6 +6,8 @@ use std::{
     time::Duration,
 };
 
+use crate::gui::app::ConfMsg;
+
 #[derive(Clone, Serialize, Deserialize)]
 pub struct Config {
     /// Paths where songs are saved
@@ -84,6 +86,16 @@ impl Config {
         Ok(())
     }
 
+    pub fn handle_msg(&mut self, msg: ConfMsg) {
+        match msg {
+            ConfMsg::RecursiveSearch(val) => self.set_recursive_search(val),
+            ConfMsg::ShuffleCurrent(val) => self.set_shuffle_current(val),
+            ConfMsg::Autoplay(val) => self.set_autoplay(val),
+            ConfMsg::StartLoad(val) => self.set_start_load(val),
+            ConfMsg::Gapless(val) => self.set_gapless(val),
+        }
+    }
+
     ///>===================================================================<///
     ///                          Getters & Setters                          ///
     ///>===================================================================<///
@@ -128,9 +140,21 @@ impl Config {
         self.shuffle_current
     }
 
+    /// Sets shuffle current to given value
+    pub fn set_shuffle_current(&mut self, val: bool) {
+        self.changed = true;
+        self.shuffle_current = val;
+    }
+
     /// Gets whether songs finder should use recursive search
     pub fn get_recursive_search(&self) -> bool {
         self.recursive_search
+    }
+
+    /// Sets recursive search to given value
+    pub fn set_recursive_search(&mut self, val: bool) {
+        self.changed = true;
+        self.recursive_search = val;
     }
 
     /// Gets fade length
@@ -143,14 +167,32 @@ impl Config {
         self.autoplay
     }
 
+    /// Sets autoplay to given value
+    pub fn set_autoplay(&mut self, val: bool) {
+        self.changed = true;
+        self.autoplay = val;
+    }
+
     /// Gets whether songs should load on start
     pub fn get_start_load(&self) -> bool {
         self.start_load
     }
 
+    /// Sets start load to given value
+    pub fn set_start_load(&mut self, val: bool) {
+        self.changed = true;
+        self.start_load = val;
+    }
+
     /// Gets whether gapless is enabled
     pub fn get_gapless(&self) -> bool {
         self.gapless
+    }
+
+    /// Sets gapless to given value
+    pub fn set_gapless(&mut self, val: bool) {
+        self.changed = true;
+        self.gapless = val;
     }
 
     /// Gets server ip
