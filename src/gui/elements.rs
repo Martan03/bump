@@ -49,7 +49,6 @@ impl BumpApp {
                 .into()
         )
         .height(Length::Shrink)
-        .padding(20)
         .into()
     }
 
