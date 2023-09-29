@@ -103,12 +103,7 @@ impl button::StyleSheet for Theme {
                 background: Some(Background::Color(PRIM_DARK)),
                 ..self.active(style)
             },
-            Button::Item => button::Appearance {
-                ..self.active(style)
-            },
-            Button::Menu(_) => button::Appearance {
-                background: Some(Background::Color(BG_LIGHT)),
-                border_radius: BorderRadius::from(6.),
+            Button::Item | Button::Menu(_) => button::Appearance {
                 ..self.active(style)
             },
             _ => button::Appearance {
@@ -757,9 +752,9 @@ impl hover_grad::StyleSheet for Theme {
     fn hovered(&self, style: &Self::Style) -> Option<hover_grad::Appearance> {
         Some(hover_grad::Appearance {
             border_radius: 6.,
-            mouse_color: Color::from_rgba8(0x99, 0x99, 0x99, 0.05),
-            fade_color: Color::from_rgba8(0x99, 0x99, 0x99, 0.),
-            fade_len: 700.,
+            center_col: BG_LIGHT,
+            side_col: BG,
+            len_percent: 0.75,
         })
     }
 }

@@ -93,6 +93,7 @@ where
             .pad(self.padding);
 
         let child = self.content.as_widget().layout(renderer, &limits);
+        let child_size = child.size();
 
         let min = limits.min();
         let limits = limits
@@ -101,12 +102,12 @@ where
 
         let w = match self.width {
             Length::Fill | Length::FillPortion(_) => limits.max().width,
-            Length::Shrink => limits.min().width,
+            Length::Shrink => child_size.width,
             Length::Fixed(n) => n,
         };
         let h = match self.height {
             Length::Fill | Length::FillPortion(_) => limits.max().height,
-            Length::Shrink => limits.min().height,
+            Length::Shrink => child_size.height,
             Length::Fixed(n) => n,
         };
 
@@ -203,28 +204,26 @@ where
         } else {
             return;
         };
+        let grad_len = bounds.width * grad_style.len_percent;
 
-        let pos = if let Some(p) = cursor.position() {
-            p
+        let mut center = if let Some(pos) = cursor.position() {
+            pos.x - bounds.x
         } else {
             return;
         };
 
-        // in pixels
-        let mut center = pos.x - bounds.x;
-        let left = center - grad_style.fade_len;
-        let right = center + grad_style.fade_len;
+        let left = center - grad_len;
+        let right = center + grad_len;
 
-        let (mut left, l_mul) = if left > 0. {
-            (left, 0.)
+        let (mut left, left_col) = if left > 0. {
+            (left, 1.)
         } else {
-            (0., left.abs() / grad_style.fade_len)
+            (0., center / grad_len)
         };
-
-        let (mut right, r_mul) = if right < bounds.width {
-            (right, 0.)
+        let (mut right, right_col) = if right < bounds.width {
+            (right, 1.)
         } else {
-            (bounds.width, (right - bounds.width) / grad_style.fade_len)
+            (bounds.width, (bounds.width - center) / grad_len)
         };
 
         center /= bounds.width;
@@ -233,27 +232,33 @@ where
 
         let mut grad = Linear::new(Degrees(180.));
 
-        let m = grad_style.mouse_color;
-        let f = grad_style.fade_color;
         grad = grad.add_stop(
             left,
             Color::from_rgba(
-                m.r * l_mul + f.r * (1. - l_mul),
-                m.g * l_mul + f.g * (1. - l_mul),
-                m.b * l_mul + f.b * (1. - l_mul),
-                m.a * l_mul + f.a * (1. - l_mul),
+                grad_style.center_col.r * (1. - left_col)
+                    + grad_style.side_col.r * left_col,
+                grad_style.center_col.g * (1. - left_col)
+                    + grad_style.side_col.g * left_col,
+                grad_style.center_col.b * (1. - left_col)
+                    + grad_style.side_col.b * left_col,
+                grad_style.center_col.a * (1. - left_col)
+                    + grad_style.side_col.a * left_col,
             ),
         );
 
-        grad = grad.add_stop(center, m);
+        grad = grad.add_stop(center, grad_style.center_col);
 
         grad = grad.add_stop(
             right,
             Color::from_rgba(
-                m.r * r_mul + f.r * (1. - r_mul),
-                m.g * r_mul + f.g * (1. - r_mul),
-                m.b * r_mul + f.b * (1. - r_mul),
-                m.a * r_mul + f.a * (1. - r_mul),
+                grad_style.center_col.r * (1. - right_col)
+                    + grad_style.side_col.r * right_col,
+                grad_style.center_col.g * (1. - right_col)
+                    + grad_style.side_col.g * right_col,
+                grad_style.center_col.b * (1. - right_col)
+                    + grad_style.side_col.b * right_col,
+                grad_style.center_col.a * (1. - right_col)
+                    + grad_style.side_col.a * right_col,
             ),
         );
 
@@ -295,9 +300,9 @@ where
 
 pub struct Appearance {
     pub border_radius: f32,
-    pub mouse_color: Color,
-    pub fade_color: Color,
-    pub fade_len: f32,
+    pub center_col: Color,
+    pub side_col: Color,
+    pub len_percent: f32,
 }
 
 pub trait StyleSheet {

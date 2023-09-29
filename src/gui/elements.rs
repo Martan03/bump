@@ -41,11 +41,16 @@ impl BumpApp {
 
     /// Create menu button
     fn menu_button<'a>(&self, data: &'a str, page: Page) -> Element<'a> {
-        button(data)
-            .width(Length::Fill)
-            .style(Button::Menu(self.page == page))
-            .on_press(Msg::Page(page))
-            .into()
+        HoverGrad::new(
+            button(data)
+                .width(Length::Fill)
+                .style(Button::Menu(self.page == page))
+                .on_press(Msg::Page(page))
+                .into()
+        )
+        .height(Length::Shrink)
+        .padding(20)
+        .into()
     }
 
     /// Create list header
