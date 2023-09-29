@@ -1,5 +1,6 @@
 use std::cell::Cell;
 use std::net::TcpListener;
+use std::path::PathBuf;
 use std::thread;
 use std::time::{Duration, Instant};
 
@@ -48,7 +49,7 @@ pub enum PlayerMsg {
 }
 
 /// All pages enum
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub enum Page {
     Library,
     Playlist,
@@ -56,23 +57,25 @@ pub enum Page {
 }
 
 /// Library messages
-#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum LibMsg {
     LoadStart,
     LoadEnded,
 }
 
-#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum ConfMsg {
     RecursiveSearch(bool),
     ShuffleCurrent(bool),
     Autoplay(bool),
     StartLoad(bool),
     Gapless(bool),
+    RemPath(usize),
+    AddPath(PathBuf),
 }
 
 /// Bump app messages
-#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum Msg {
     Page(Page),
     Plr(PlayerMsg),
@@ -198,7 +201,7 @@ impl BumpApp {
     }
 
     /// Saves all things
-    fn save_all(&self) {
+    fn save_all(&mut self) {
         if let Err(e) = self.config.save() {
             error!("Failed to save config: {e}");
         }

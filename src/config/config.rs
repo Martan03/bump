@@ -68,7 +68,7 @@ impl Config {
     }
 
     /// Saves config to the config directory
-    pub fn save(&self) -> Result<()> {
+    pub fn save(&mut self) -> Result<()> {
         // When nothing changed, don't save
         if !self.changed {
             return Ok(());
@@ -83,6 +83,8 @@ impl Config {
         let text = serde_json::to_string_pretty::<Config>(self)?;
         fs::write(dir, text)?;
 
+        self.changed = false;
+
         Ok(())
     }
 
@@ -93,6 +95,8 @@ impl Config {
             ConfMsg::Autoplay(val) => self.set_autoplay(val),
             ConfMsg::StartLoad(val) => self.set_start_load(val),
             ConfMsg::Gapless(val) => self.set_gapless(val),
+            ConfMsg::RemPath(id) => self.remove_path(id),
+            ConfMsg::AddPath(path) => self.add_path(path),
         }
     }
 
@@ -103,6 +107,20 @@ impl Config {
     /// Gets all paths songs are saved in
     pub fn get_paths(&self) -> &Vec<PathBuf> {
         &self.paths
+    }
+
+    /// Adds given path to paths
+    pub fn add_path(&mut self, path: PathBuf) {
+        self.changed = true;
+        self.paths.push(path);
+    }
+
+    /// Removes path on given index
+    pub fn remove_path(&mut self, id: usize) {
+        if id < self.paths.len() {
+            self.changed = true;
+            self.paths.remove(id);
+        }
     }
 
     /// Gets library path

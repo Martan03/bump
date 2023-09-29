@@ -1,13 +1,16 @@
 use iced::{
-    widget::{button, column, text},
+    widget::{button, column, row, text, text_input},
     Renderer,
 };
 use iced_core::Length;
 
 use super::{
     app::{BumpApp, ConfMsg, LibMsg, Msg},
+    svg_data::BIN,
     theme::{Button, Text, Theme},
-    widgets::toggler::Toggler,
+    widgets::{
+        svg_button::SvgButton, text_ellipsis::TextEllipsis, toggler::Toggler,
+    },
 };
 
 type Element<'a> = iced::Element<'a, Msg, Renderer<Theme>>;
@@ -49,10 +52,37 @@ impl BumpApp {
                 |val| { Msg::Conf(ConfMsg::Gapless(val)) }
             )
             .spacing(3),
+            self.get_paths_input(),
         ]
         .width(Length::Fill)
         .spacing(3)
         .padding(3)
+        .into()
+    }
+
+    fn get_paths_input(&self) -> Element {
+        let mut items: Vec<Element> = Vec::new();
+
+        items.push(text("Songs search paths:").style(Text::Normal).into());
+        for (i, path) in self.config.get_paths().iter().enumerate() {
+            items.push(
+                self.get_remove_input(path.to_string_lossy().to_string(), i),
+            );
+        }
+        items.push(text_input("path", "").into());
+
+        column(items).spacing(3).into()
+    }
+
+    fn get_remove_input(&self, text: String, id: usize) -> Element {
+        row![
+            SvgButton::new(BIN.into())
+                .width(20)
+                .height(20)
+                .on_press(Msg::Conf(ConfMsg::RemPath(id))),
+            TextEllipsis::new(text).style(Text::Normal),
+        ]
+        .spacing(3)
         .into()
     }
 }
