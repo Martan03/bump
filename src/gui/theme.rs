@@ -12,7 +12,7 @@ use iced::{
 };
 use iced_core::{Background, BorderRadius, Color, Vector};
 
-use super::widgets::{self, list_view, svg_button, text_ellipsis};
+use super::widgets::{self, hover_grad, list_view, svg_button, text_ellipsis};
 
 macro_rules! hex_to_color {
     ($x:literal) => {
@@ -103,7 +103,10 @@ impl button::StyleSheet for Theme {
                 background: Some(Background::Color(PRIM_DARK)),
                 ..self.active(style)
             },
-            Button::Item | Button::Menu(_) => button::Appearance {
+            Button::Item => button::Appearance {
+                ..self.active(style)
+            },
+            Button::Menu(_) => button::Appearance {
                 background: Some(Background::Color(BG_LIGHT)),
                 border_radius: BorderRadius::from(6.),
                 ..self.active(style)
@@ -741,5 +744,22 @@ impl widgets::toggler::StyleSheet for Theme {
             background: bg,
             ..self.active(style, is_active)
         }
+    }
+}
+
+impl hover_grad::StyleSheet for Theme {
+    type Style = ();
+
+    fn active(&self, _style: &Self::Style) -> Option<hover_grad::Appearance> {
+        None
+    }
+
+    fn hovered(&self, style: &Self::Style) -> Option<hover_grad::Appearance> {
+        Some(hover_grad::Appearance {
+            border_radius: 6.,
+            mouse_color: Color::from_rgba8(0x99, 0x99, 0x99, 0.05),
+            fade_color: Color::from_rgba8(0x99, 0x99, 0x99, 0.),
+            fade_len: 700.,
+        })
     }
 }

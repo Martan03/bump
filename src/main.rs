@@ -26,6 +26,7 @@ mod gui {
     pub mod svg_data;
     pub mod theme;
     pub mod widgets {
+        pub mod hover_grad;
         pub mod list_view;
         pub mod svg_button;
         pub mod text_ellipsis;

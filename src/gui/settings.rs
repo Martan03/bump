@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use iced::{
     widget::{button, column, row, text, text_input},
     Renderer,
@@ -69,7 +71,11 @@ impl BumpApp {
                 self.get_remove_input(path.to_string_lossy().to_string(), i),
             );
         }
-        items.push(text_input("path", "").into());
+        items.push(
+            text_input("path", "")
+                .on_submit(Msg::Conf(ConfMsg::AddPath(PathBuf::from(""))))
+                .into(),
+        );
 
         column(items).spacing(3).into()
     }

@@ -14,6 +14,7 @@ use super::svg_data::{pp_icon, vol_icon, ICON, NEXT, PREV};
 use super::theme::{
     self, Button, Container, SvgButton as SvgTheme, Text, Theme,
 };
+use super::widgets::hover_grad::HoverGrad;
 use super::widgets::svg_button::SvgButton;
 use super::widgets::text_ellipsis::TextEllipsis;
 
@@ -85,21 +86,25 @@ impl BumpApp {
         num: Option<usize>,
         new: bool,
     ) -> Element {
-        button(
-            column![
-                Space::new(Length::Shrink, Length::FillPortion(1)),
-                self.list_item_data(s, style, num),
-                Space::new(Length::Shrink, Length::FillPortion(1)),
-                // Creates bottom border
-                Rule::horizontal(1).style(theme::Rule::Separate(1)),
-            ]
-            .padding([0, 6, 0, 6]),
+        HoverGrad::new(
+            button(
+                column![
+                    Space::new(Length::Shrink, Length::FillPortion(1)),
+                    self.list_item_data(s, style, num),
+                    Space::new(Length::Shrink, Length::FillPortion(1)),
+                    // Creates bottom border
+                    Rule::horizontal(1).style(theme::Rule::Separate(1)),
+                ]
+                .padding([0, 6, 0, 6]),
+            )
+            .width(Length::Fill)
+            .height(Length::Fill)
+            .padding(0)
+            .style(Button::Item)
+            .on_press(Msg::Plr(PlayerMsg::PlaySong(c, new)))
+            .into(),
         )
         .height(45)
-        .width(Length::Fill)
-        .padding(0)
-        .style(Button::Item)
-        .on_press(Msg::Plr(PlayerMsg::PlaySong(c, new)))
         .into()
     }
 
