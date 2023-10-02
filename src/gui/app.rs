@@ -4,6 +4,7 @@ use std::path::PathBuf;
 use std::thread;
 use std::time::{Duration, Instant};
 
+use global_hotkey::hotkey::{Code, HotKey, Modifiers};
 use iced::widget::{column, row, Rule};
 use iced::{executor, Application, Command, Element, Renderer, Subscription};
 use iced_core::{window, Alignment, Event, Length};
@@ -12,6 +13,8 @@ use serde_derive::{Deserialize, Serialize};
 use tokio::sync::mpsc::{self, UnboundedReceiver, UnboundedSender};
 
 use crate::config::config::Config;
+use crate::hotkeys::hotkey::Hotkey;
+use crate::hotkeys::hotkeys::Hotkeys;
 use crate::library::library::Library;
 use crate::player::player::Player;
 use crate::server::server::Server;
@@ -30,6 +33,7 @@ pub struct BumpApp {
     pub(super) page: Page,
     pub(super) hard_pause: Option<Instant>,
     listener: Cell<Option<TcpListener>>,
+    hotkeys: Hotkeys,
 }
 
 /// Messages to player
@@ -192,7 +196,14 @@ impl BumpApp {
             page: Page::Library,
             hard_pause: None,
             listener: Cell::new(listener),
+            hotkeys: Hotkeys::new(),
         };
+
+        let hotkeys = vec![Hotkey::new(
+            HotKey::new(Some(Modifiers::CONTROL), Code::Home),
+            "pp".to_owned(),
+        )];
+        app.hotkeys.init(hotkeys);
 
         if app.config.get_start_load() {
             app.library.start_find(&mut app.config, app.sender.clone());

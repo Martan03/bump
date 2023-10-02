@@ -9,11 +9,18 @@ pub struct Hotkeys {
 }
 
 impl Hotkeys {
-    pub fn new(hotkeys: Vec<Hotkey>) -> Self {
-        let manager = GlobalHotKeyManager::new().unwrap();
+    /// Creates new hotkeys
+    pub fn new() -> Self {
+        Self {
+            manager: GlobalHotKeyManager::new().unwrap(),
+            hotkeys: Vec::new(),
+        }
+    }
 
+    /// Inits and registers hotkeys
+    pub fn init(&mut self, hotkeys: Vec<Hotkey>) {
         for hotkey in hotkeys.iter() {
-            if let Err(e) = manager.register(hotkey.get_hotkey()) {
+            if let Err(e) = self.manager.register(hotkey.get_hotkey()) {
                 error!("Failed to register the hotkey {e}");
             }
 
@@ -21,7 +28,5 @@ impl Hotkeys {
                 println!("{:?}", e);
             }))
         }
-
-        Self { manager, hotkeys }
     }
 }
