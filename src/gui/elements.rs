@@ -46,7 +46,7 @@ impl BumpApp {
                 .width(Length::Fill)
                 .style(Button::Menu(self.page == page))
                 .on_press(Msg::Page(page))
-                .into()
+                .into(),
         )
         .height(Length::Shrink)
         .into()

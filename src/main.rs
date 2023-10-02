@@ -33,6 +33,10 @@ mod gui {
         pub mod toggler;
     }
 }
+mod hotkeys {
+    pub mod hotkey;
+    pub mod hotkeys;
+}
 mod library {
     pub mod library;
     pub mod song;
