@@ -34,8 +34,10 @@ mod gui {
     }
 }
 mod hotkeys {
+    pub mod code;
     pub mod hotkey;
     pub mod hotkeys;
+    pub mod modifiers;
 }
 mod library {
     pub mod library;

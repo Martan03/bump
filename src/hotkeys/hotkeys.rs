@@ -32,6 +32,7 @@ impl Hotkeys {
         let mut actions: HashMap<u32, String> = HashMap::new();
         for hotkey in self.hotkeys.iter() {
             let hk = hotkey.get_hotkey();
+            println!("{}", hotkey.to_string());
             if let Err(e) = self.manager.register(hk) {
                 error!("Failed to register the hotkey {e}");
             } else {
@@ -40,12 +41,14 @@ impl Hotkeys {
         }
 
         let sender = sender.clone();
-        GlobalHotKeyEvent::set_event_handler(Some(move |e: GlobalHotKeyEvent| {
-            if let Some(action) = actions.get(&e.id) {
-                if let Some(msg) = Instance::get_action_msg(action) {
-                    _ = sender.send(msg);
+        GlobalHotKeyEvent::set_event_handler(Some(
+            move |e: GlobalHotKeyEvent| {
+                if let Some(action) = actions.get(&e.id) {
+                    if let Some(msg) = Instance::get_action_msg(action) {
+                        _ = sender.send(msg);
+                    }
                 }
-            }
-        }));
+            },
+        ));
     }
 }
