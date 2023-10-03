@@ -4,7 +4,6 @@ use std::path::PathBuf;
 use std::thread;
 use std::time::{Duration, Instant};
 
-use global_hotkey::hotkey::{Code, Modifiers};
 use iced::widget::{column, row, Rule};
 use iced::{executor, Application, Command, Element, Renderer, Subscription};
 use iced_core::{window, Alignment, Event, Length};
@@ -13,7 +12,6 @@ use serde_derive::{Deserialize, Serialize};
 use tokio::sync::mpsc::{self, UnboundedReceiver, UnboundedSender};
 
 use crate::config::config::Config;
-use crate::hotkeys::hotkey::Hotkey;
 use crate::hotkeys::hotkeys::Hotkeys;
 use crate::library::library::Library;
 use crate::player::player::Player;
@@ -184,6 +182,7 @@ impl BumpApp {
             Ok(listener) => Some(listener),
             Err(_) => None,
         };
+        let hotkeys = Hotkeys::new(&config, sender.clone());
 
         let mut app = Self {
             player: Player::new(sender.clone(), &library, &config),
@@ -196,22 +195,8 @@ impl BumpApp {
             page: Page::Library,
             hard_pause: None,
             listener: Cell::new(listener),
-            hotkeys: Hotkeys::new(),
+            hotkeys,
         };
-
-        let hotkeys = vec![
-            Hotkey::new(
-                Modifiers::CONTROL | Modifiers::SHIFT,
-                Code::Home,
-                "pp".to_owned(),
-            ),
-            Hotkey::new(
-                Modifiers::CONTROL | Modifiers::SHIFT,
-                Code::PageDown,
-                "next".to_owned(),
-            ),
-        ];
-        app.hotkeys.init(hotkeys, app.sender.clone());
 
         if app.config.get_start_load() {
             app.library.start_find(&mut app.config, app.sender.clone());

@@ -1,6 +1,7 @@
 use eyre::Result;
 use serde_derive::{Deserialize, Serialize};
 use std::{
+    collections::HashMap,
     fs::{self, File},
     path::PathBuf,
     time::Duration,
@@ -49,6 +50,9 @@ pub struct Config {
     /// Port of the server
     #[serde(default = "Config::get_default_server_port")]
     server_port: String,
+    /// App hotkeys
+    #[serde(default = "Config::get_default_hotkeys")]
+    hotkeys: HashMap<String, String>,
     /// True when anything in config changed, else false
     #[serde(skip, default)]
     changed: bool,
@@ -230,6 +234,11 @@ impl Config {
         format!("{}:{}", self.server_ip, self.server_port)
     }
 
+    /// Gets hotkeys
+    pub fn get_hotkeys(&self) -> &HashMap<String, String> {
+        &self.hotkeys
+    }
+
     ///>===================================================================<///
     ///                        Default Config values                        ///
     ///>===================================================================<///
@@ -307,6 +316,17 @@ impl Config {
     fn get_default_server_port() -> String {
         "2867".to_owned()
     }
+
+    /// Gets default hotkeys
+    fn get_default_hotkeys() -> HashMap<String, String> {
+        let mut hotkeys = HashMap::new();
+        hotkeys.insert("ctrl+alt+home".to_owned(), "pp".to_owned());
+        hotkeys.insert("ctrl+alt+pg_up".to_owned(), "prev".to_owned());
+        hotkeys.insert("ctrl+alt+pg_down".to_owned(), "next".to_owned());
+        hotkeys.insert("ctrl+alt+up".to_owned(), "vu".to_owned());
+        hotkeys.insert("ctrl+alt+down".to_owned(), "vd".to_owned());
+        hotkeys
+    }
 }
 
 /// Implements default for Config
@@ -334,6 +354,7 @@ impl Default for Config {
             changed: true,
             server_ip: Config::get_default_server_ip(),
             server_port: Config::get_default_server_port(),
+            hotkeys: Config::get_default_hotkeys(),
         }
     }
 }

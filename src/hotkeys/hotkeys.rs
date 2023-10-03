@@ -4,43 +4,54 @@ use global_hotkey::{GlobalHotKeyEvent, GlobalHotKeyManager};
 use log::error;
 use tokio::sync::mpsc::UnboundedSender;
 
-use crate::{cli::instance::Instance, gui::app::Msg};
+use crate::{cli::instance::Instance, config::config::Config, gui::app::Msg};
 
 use super::hotkey::Hotkey;
 
 pub struct Hotkeys {
     manager: GlobalHotKeyManager,
-    hotkeys: Vec<Hotkey>,
+    actions: HashMap<u32, String>,
 }
 
 impl Hotkeys {
     /// Creates new hotkeys
-    pub fn new() -> Self {
-        Self {
+    pub fn new(conf: &Config, sender: UnboundedSender<Msg>) -> Self {
+        let mut hotkeys = Self {
             manager: GlobalHotKeyManager::new().unwrap(),
-            hotkeys: Vec::new(),
-        }
+            actions: HashMap::new(),
+        };
+        hotkeys.init(conf.get_hotkeys(), sender);
+        hotkeys
     }
 
     /// Inits and registers hotkeys
     pub fn init(
         &mut self,
-        hotkeys: Vec<Hotkey>,
+        hotkeys: &HashMap<String, String>,
         sender: UnboundedSender<Msg>,
     ) {
-        self.hotkeys = hotkeys;
-        let mut actions: HashMap<u32, String> = HashMap::new();
-        for hotkey in self.hotkeys.iter() {
+        for (hk, act) in hotkeys.iter() {
+            let hotkey =
+                match Hotkey::new_from_str(hk.to_owned(), act.to_owned()) {
+                    Ok(hotkey) => hotkey,
+                    Err(e) => {
+                        error!("Failed to read hotkey: {e}");
+                        continue;
+                    }
+                };
+
             let hk = hotkey.get_hotkey();
-            println!("{}", hotkey.to_string());
-            if let Err(e) = self.manager.register(hk) {
-                error!("Failed to register the hotkey {e}");
-            } else {
-                actions.insert(hk.id(), hotkey.get_action().to_owned());
+            match self.manager.register(hk) {
+                Ok(_) => {
+                    self.actions
+                        .insert(hk.id(), hotkey.get_action().to_owned());
+                }
+                Err(e) => error!("Failed to register the hotkey {e}"),
             }
         }
 
         let sender = sender.clone();
+        let actions = self.actions.clone();
         GlobalHotKeyEvent::set_event_handler(Some(
             move |e: GlobalHotKeyEvent| {
                 if let Some(action) = actions.get(&e.id) {

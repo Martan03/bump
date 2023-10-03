@@ -1,7 +1,10 @@
+use eyre::{Report, Result};
 use global_hotkey::hotkey::{Code, HotKey, Modifiers};
-use eyre::{Result, Report};
 
-use super::{code::{get_code_string, string_to_code}, modifiers::{get_modifier_string, string_to_modifier}};
+use super::{
+    code::{get_code_string, string_to_code},
+    modifiers::{get_modifier_string, string_to_modifier},
+};
 
 pub struct Hotkey {
     modifiers: Modifiers,
@@ -11,7 +14,7 @@ pub struct Hotkey {
 
 impl Hotkey {
     /// Creates new [`Hotkey`]
-    pub fn new(modifiers: Modifiers, code: Code ,action: String) -> Self {
+    pub fn new(modifiers: Modifiers, code: Code, action: String) -> Self {
         Self {
             modifiers,
             code,
@@ -19,17 +22,8 @@ impl Hotkey {
         }
     }
 
-    /// Gets hotkey
-    pub fn get_hotkey(&self) -> HotKey {
-        HotKey::new(Some(self.modifiers), self.code)
-    }
-
-    /// Gets hotkey action
-    pub fn get_action(&self) -> &str {
-        &self.action
-    }
-
-    pub fn get_from_str(hotkey: String) -> Result<(Modifiers, Option<Code>)> {
+    /// Creates new [`Hotkey`] by given String
+    pub fn new_from_str(hotkey: String, action: String) -> Result<Self> {
         let parts = hotkey.split("+");
         let mut mods = Modifiers::empty();
         let mut code: Option<Code> = None;
@@ -46,7 +40,20 @@ impl Hotkey {
             }
         }
 
-        Ok((mods, code))
+        match code {
+            Some(code) => Ok(Hotkey::new(mods, code, action)),
+            None => Err(Report::msg("No code given")),
+        }
+    }
+
+    /// Gets hotkey
+    pub fn get_hotkey(&self) -> HotKey {
+        HotKey::new(Some(self.modifiers), self.code)
+    }
+
+    /// Gets hotkey action
+    pub fn get_action(&self) -> &str {
+        &self.action
     }
 }
 
