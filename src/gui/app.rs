@@ -199,11 +199,20 @@ impl BumpApp {
             hotkeys: Hotkeys::new(),
         };
 
-        let hotkeys = vec![Hotkey::new(
-            HotKey::new(Some(Modifiers::CONTROL), Code::Home),
-            "pp".to_owned(),
-        )];
-        app.hotkeys.init(hotkeys);
+        let hotkeys = vec![
+            Hotkey::new(
+                HotKey::new(Some(Modifiers::CONTROL), Code::Home),
+                "pp".to_owned(),
+            ),
+            Hotkey::new(
+                HotKey::new(
+                    Some(Modifiers::CONTROL | Modifiers::SHIFT),
+                    Code::Home,
+                ),
+                "next".to_owned(),
+            ),
+        ];
+        app.hotkeys.init(hotkeys, app.sender.clone());
 
         if app.config.get_start_load() {
             app.library.start_find(&mut app.config, app.sender.clone());

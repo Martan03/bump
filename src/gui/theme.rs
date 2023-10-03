@@ -752,9 +752,9 @@ impl hover_grad::StyleSheet for Theme {
     fn hovered(&self, style: &Self::Style) -> Option<hover_grad::Appearance> {
         Some(hover_grad::Appearance {
             border_radius: 6.,
-            center_col: BG_LIGHT,
+            center_col: OUTLINE_DARK,
             side_col: BG,
-            len_percent: 0.75,
+            len_percent: 0.7,
         })
     }
 }
