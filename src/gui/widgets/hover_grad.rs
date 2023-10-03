@@ -5,7 +5,7 @@ use iced_core::{
     renderer::{Quad, Style},
     widget::Tree,
     Background, Color, Degrees, Element, Gradient, Layout, Length, Padding,
-    Rectangle, Size, Widget,
+    Rectangle, Size, Vector, Widget,
 };
 
 pub struct HoverGrad<'a, Message, Renderer>
@@ -87,13 +87,16 @@ where
     }
 
     fn layout(&self, renderer: &Renderer, limits: &Limits) -> Node {
-        let limits = limits
-            .width(self.width)
-            .height(self.height)
-            .pad(self.padding);
+        let limits = limits.width(self.width).height(self.height);
 
-        let child = self.content.as_widget().layout(renderer, &limits);
-        let child_size = child.size();
+        let content_limits = limits.pad(self.padding);
+
+        let content = self
+            .content
+            .as_widget()
+            .layout(renderer, &content_limits)
+            .translate(Vector::new(self.padding.left, self.padding.top));
+        let content_size = content.size();
 
         let min = limits.min();
         let limits = limits
@@ -102,16 +105,16 @@ where
 
         let w = match self.width {
             Length::Fill | Length::FillPortion(_) => limits.max().width,
-            Length::Shrink => child_size.width,
+            Length::Shrink => content_size.width + self.padding.horizontal(),
             Length::Fixed(n) => n,
         };
         let h = match self.height {
             Length::Fill | Length::FillPortion(_) => limits.max().height,
-            Length::Shrink => child_size.height,
+            Length::Shrink => content_size.height + self.padding.vertical(),
             Length::Fixed(n) => n,
         };
 
-        Node::with_children(Size::new(w, h), vec![child])
+        Node::with_children(Size::new(w, h), vec![content])
     }
 
     fn operate(

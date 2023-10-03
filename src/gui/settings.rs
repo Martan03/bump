@@ -11,7 +11,8 @@ use super::{
     svg_data::BIN,
     theme::{Button, Text, Theme},
     widgets::{
-        svg_button::SvgButton, text_ellipsis::TextEllipsis, toggler::Toggler,
+        hover_grad::HoverGrad, svg_button::SvgButton,
+        text_ellipsis::TextEllipsis, toggler::Toggler,
     },
 };
 
@@ -24,36 +25,31 @@ impl BumpApp {
             button("Update library")
                 .on_press(Msg::Lib(LibMsg::LoadStart))
                 .style(Button::Primary),
-            Toggler::new(
+            toggler(
                 "Update library on start".to_owned(),
                 self.config.get_start_load(),
                 |val| { Msg::Conf(ConfMsg::StartLoad(val)) }
-            )
-            .spacing(3),
-            Toggler::new(
+            ),
+            toggler(
                 "Recursive search for songs".to_owned(),
                 self.config.get_recursive_search(),
                 |val| { Msg::Conf(ConfMsg::RecursiveSearch(val)) }
-            )
-            .spacing(3),
-            Toggler::new(
+            ),
+            toggler(
                 "Shuffle currently playing song".to_owned(),
                 self.config.get_shuffle_current(),
                 |val| { Msg::Conf(ConfMsg::ShuffleCurrent(val)) }
-            )
-            .spacing(3),
-            Toggler::new(
+            ),
+            toggler(
                 "Automatically start playing song on start".to_owned(),
                 self.config.get_autoplay(),
                 |val| { Msg::Conf(ConfMsg::Autoplay(val)) }
-            )
-            .spacing(3),
-            Toggler::new(
+            ),
+            toggler(
                 "Play songs without gap between them".to_owned(),
                 self.config.get_gapless(),
                 |val| { Msg::Conf(ConfMsg::Gapless(val)) }
-            )
-            .spacing(3),
+            ),
             self.get_paths_input(),
         ]
         .width(Length::Fill)
@@ -91,4 +87,21 @@ impl BumpApp {
         .spacing(3)
         .into()
     }
+}
+
+/// Gets toggler widget
+pub fn toggler<'a, F>(text: String, val: bool, msg: F) -> Element<'a>
+where
+    F: Fn(bool) -> Msg + 'static,
+{
+    HoverGrad::new(
+        Toggler::new(Some(text), val, move |val| msg(val))
+            .width(Length::Shrink)
+            .spacing(5)
+            .into(),
+    )
+    .padding([3, 10, 3, 10])
+    .width(Length::Shrink)
+    .height(Length::Shrink)
+    .into()
 }
