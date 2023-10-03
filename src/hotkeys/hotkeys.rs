@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use global_hotkey::{GlobalHotKeyEvent, GlobalHotKeyManager};
 use log::error;
 use tokio::sync::mpsc::UnboundedSender;
@@ -27,22 +29,21 @@ impl Hotkeys {
         sender: UnboundedSender<Msg>,
     ) {
         self.hotkeys = hotkeys;
+        let mut actions: HashMap<u32, String> = HashMap::new();
         for hotkey in self.hotkeys.iter() {
-            if let Err(e) = self.manager.register(hotkey.get_hotkey()) {
+            let hk = hotkey.get_hotkey();
+            if let Err(e) = self.manager.register(hk) {
                 error!("Failed to register the hotkey {e}");
+            } else {
+                actions.insert(hk.id(), hotkey.get_action().to_owned());
             }
         }
 
-        let hotkeys: Vec<_> = self.hotkeys.clone();
         let sender = sender.clone();
         GlobalHotKeyEvent::set_event_handler(Some(move |e: GlobalHotKeyEvent| {
-            for hotkey in &hotkeys {
-                if hotkey.get_id() == e.id {
-                    if let Some(msg) =
-                        Instance::get_action_msg(hotkey.get_action())
-                    {
-                        _ = sender.send(msg);
-                    }
+            if let Some(action) = actions.get(&e.id) {
+                if let Some(msg) = Instance::get_action_msg(action) {
+                    _ = sender.send(msg);
                 }
             }
         }));

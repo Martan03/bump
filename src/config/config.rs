@@ -44,8 +44,10 @@ pub struct Config {
     #[serde(default = "Config::get_default_gapless")]
     gapless: bool,
     /// IP of the server
+    #[serde(default = "Config::get_default_server_ip")]
     server_ip: String,
     /// Port of the server
+    #[serde(default = "Config::get_default_server_port")]
     server_port: String,
     /// True when anything in config changed, else false
     #[serde(skip, default)]

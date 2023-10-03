@@ -4,7 +4,7 @@ use std::path::PathBuf;
 use std::thread;
 use std::time::{Duration, Instant};
 
-use global_hotkey::hotkey::{Code, HotKey, Modifiers};
+use global_hotkey::hotkey::{Code, Modifiers};
 use iced::widget::{column, row, Rule};
 use iced::{executor, Application, Command, Element, Renderer, Subscription};
 use iced_core::{window, Alignment, Event, Length};
@@ -201,14 +201,13 @@ impl BumpApp {
 
         let hotkeys = vec![
             Hotkey::new(
-                HotKey::new(Some(Modifiers::CONTROL), Code::Home),
+                Modifiers::CONTROL | Modifiers::SHIFT,
+                Code::Home,
                 "pp".to_owned(),
             ),
             Hotkey::new(
-                HotKey::new(
-                    Some(Modifiers::CONTROL | Modifiers::SHIFT),
-                    Code::Home,
-                ),
+                Modifiers::CONTROL | Modifiers::SHIFT,
+                Code::PageDown,
                 "next".to_owned(),
             ),
         ];
