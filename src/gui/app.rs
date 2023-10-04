@@ -21,17 +21,17 @@ use super::gui::Gui;
 use super::theme::Theme;
 
 pub struct BumpApp {
-    pub(super) player: Player,
-    pub(super) library: Library,
-    pub(super) config: Config,
-    pub(super) gui: Gui,
-    pub(super) sender: UnboundedSender<Msg>,
-    pub(super) receiver: Cell<Option<UnboundedReceiver<Msg>>>,
-    pub(super) theme: Theme,
-    pub(super) page: Page,
-    pub(super) hard_pause: Option<Instant>,
+    pub player: Player,
+    pub library: Library,
+    pub config: Config,
+    pub gui: Gui,
+    pub sender: UnboundedSender<Msg>,
+    pub receiver: Cell<Option<UnboundedReceiver<Msg>>>,
+    pub theme: Theme,
+    pub page: Page,
+    pub hard_pause: Option<Instant>,
     listener: Cell<Option<TcpListener>>,
-    hotkeys: Option<Hotkeys>,
+    pub hotkeys: Option<Hotkeys>,
 }
 
 /// Messages to player
@@ -118,7 +118,7 @@ impl Application for BumpApp {
                 self.library
                     .handle_msg(&self.config, self.sender.clone(), msg)
             }
-            Msg::Conf(msg) => self.config.handle_msg(msg),
+            Msg::Conf(msg) => self.conf_update(msg),
             Msg::Tick => {}
             Msg::Move(x, y) => self.gui.set_pos(x, y),
             Msg::Size(w, h) => self.gui.set_size(w, h),
@@ -184,7 +184,14 @@ impl BumpApp {
             Err(_) => None,
         };
         let hotkeys = if config.get_enable_hotkeys() {
-            Hotkeys::new(&config, sender.clone())
+            let mut hotkeys = Hotkeys::new();
+            match hotkeys.init(&config, sender.clone()) {
+                Ok(_) => Some(hotkeys),
+                Err(e) => {
+                    error!("{e}");
+                    None
+                }
+            }
         } else {
             None
         };

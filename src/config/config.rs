@@ -1,4 +1,5 @@
 use eyre::Result;
+use log::error;
 use serde_derive::{Deserialize, Serialize};
 use std::{
     collections::HashMap,
@@ -7,7 +8,7 @@ use std::{
     time::Duration,
 };
 
-use crate::gui::app::ConfMsg;
+use crate::gui::app::{BumpApp, ConfMsg};
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct Config {
@@ -93,19 +94,6 @@ impl Config {
         self.changed = false;
 
         Ok(())
-    }
-
-    pub fn handle_msg(&mut self, msg: ConfMsg) {
-        match msg {
-            ConfMsg::RecursiveSearch(val) => self.set_recursive_search(val),
-            ConfMsg::ShuffleCurrent(val) => self.set_shuffle_current(val),
-            ConfMsg::Autoplay(val) => self.set_autoplay(val),
-            ConfMsg::StartLoad(val) => self.set_start_load(val),
-            ConfMsg::Gapless(val) => self.set_gapless(val),
-            ConfMsg::RemPath(id) => self.remove_path(id),
-            ConfMsg::AddPath(path) => self.add_path(path),
-            ConfMsg::EnableHotkeys(val) => self.set_enable_hotkeys(val),
-        }
     }
 
     ///>===================================================================<///
@@ -373,6 +361,46 @@ impl Default for Config {
             server_port: Config::get_default_server_port(),
             hotkeys: Config::get_default_hotkeys(),
             enable_hotkeys: Config::get_default_enable_hotkeys(),
+        }
+    }
+}
+
+///>=======================================================================<///
+///                          Handle Config Messages                         ///
+///>=======================================================================<///
+impl BumpApp {
+    pub fn conf_update(&mut self, msg: ConfMsg) {
+        match msg {
+            ConfMsg::RecursiveSearch(val) => {
+                self.config.set_recursive_search(val)
+            }
+            ConfMsg::ShuffleCurrent(val) => {
+                self.config.set_shuffle_current(val)
+            }
+            ConfMsg::Autoplay(val) => self.config.set_autoplay(val),
+            ConfMsg::StartLoad(val) => self.config.set_start_load(val),
+            ConfMsg::Gapless(val) => self.config.set_gapless(val),
+            ConfMsg::RemPath(id) => self.config.remove_path(id),
+            ConfMsg::AddPath(path) => self.config.add_path(path),
+            ConfMsg::EnableHotkeys(mut val) => {
+                let hotkeys = if let Some(hotkeys) = &mut self.hotkeys {
+                    hotkeys
+                } else {
+                    error!("Failed to set enable hotkeys to: {val}");
+                    return;
+                };
+                if val {
+                    if let Err(_) =
+                        hotkeys.init(&self.config, self.sender.clone())
+                    {
+                        error!("Failed to initialize hotkeys");
+                        val = false;
+                    }
+                } else {
+                    hotkeys.disable();
+                }
+                self.config.set_enable_hotkeys(val);
+            }
         }
     }
 }

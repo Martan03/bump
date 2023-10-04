@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+use eyre::Result;
 use global_hotkey::{GlobalHotKeyEvent, GlobalHotKeyManager};
 use log::error;
 use tokio::sync::mpsc::UnboundedSender;
@@ -9,35 +10,27 @@ use crate::{cli::instance::Instance, config::config::Config, gui::app::Msg};
 use super::hotkey::Hotkey;
 
 pub struct Hotkeys {
-    manager: GlobalHotKeyManager,
+    manager: Option<GlobalHotKeyManager>,
     actions: HashMap<u32, String>,
 }
 
 impl Hotkeys {
     /// Creates new hotkeys
-    pub fn new(conf: &Config, sender: UnboundedSender<Msg>) -> Option<Self> {
-        let mngr = match GlobalHotKeyManager::new() {
-            Ok(mngr) => mngr,
-            Err(e) => {
-                error!("Failed to create hotkey manager: {e}");
-                return None;
-            },
-        };
-        let mut hotkeys = Self {
-            manager: mngr,
+    pub fn new() -> Self {
+        Self {
+            manager: None,
             actions: HashMap::new(),
-        };
-        hotkeys.init(conf.get_hotkeys(), sender);
-        Some(hotkeys)
+        }
     }
 
     /// Inits and registers hotkeys
     pub fn init(
         &mut self,
-        hotkeys: &HashMap<String, String>,
+        conf: &Config,
         sender: UnboundedSender<Msg>,
-    ) {
-        for (hk, act) in hotkeys.iter() {
+    ) -> Result<()> {
+        let mngr = GlobalHotKeyManager::new()?;
+        for (hk, act) in conf.get_hotkeys().iter() {
             let hotkey =
                 match Hotkey::new_from_str(hk.to_owned(), act.to_owned()) {
                     Ok(hotkey) => hotkey,
@@ -48,7 +41,7 @@ impl Hotkeys {
                 };
 
             let hk = hotkey.get_hotkey();
-            match self.manager.register(hk) {
+            match mngr.register(hk) {
                 Ok(_) => {
                     self.actions
                         .insert(hk.id(), hotkey.get_action().to_owned());
@@ -68,5 +61,11 @@ impl Hotkeys {
                 }
             },
         ));
+        self.manager = Some(mngr);
+        Ok(())
+    }
+
+    pub fn disable(&mut self) {
+        self.manager = None;
     }
 }
