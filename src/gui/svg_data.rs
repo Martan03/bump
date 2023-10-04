@@ -36,8 +36,10 @@ pub const SCROLL_DOWN: SvgData =
 
 pub const BIN: SvgData =
     SvgData::new(include_bytes!("../../assets/icons/bin.svg"));
+/*
 pub const PLUS: SvgData =
     SvgData::new(include_bytes!("../../assets/icons/add.svg"));
+*/
 
 /// Gets play or pause icon based on play bool
 pub fn pp_icon(play: bool) -> Handle {

@@ -366,7 +366,7 @@ impl Default for Config {
 }
 
 ///>=======================================================================<///
-///                          Handle Config Messages                         ///
+///                         Config message handling                         ///
 ///>=======================================================================<///
 impl BumpApp {
     pub fn conf_update(&mut self, msg: ConfMsg) {
