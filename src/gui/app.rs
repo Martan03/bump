@@ -31,7 +31,7 @@ pub struct BumpApp {
     pub(super) page: Page,
     pub(super) hard_pause: Option<Instant>,
     listener: Cell<Option<TcpListener>>,
-    hotkeys: Hotkeys,
+    hotkeys: Option<Hotkeys>,
 }
 
 /// Messages to player
@@ -74,6 +74,7 @@ pub enum ConfMsg {
     Gapless(bool),
     RemPath(usize),
     AddPath(PathBuf),
+    EnableHotkeys(bool),
 }
 
 /// Bump app messages
@@ -182,7 +183,11 @@ impl BumpApp {
             Ok(listener) => Some(listener),
             Err(_) => None,
         };
-        let hotkeys = Hotkeys::new(&config, sender.clone());
+        let hotkeys = if config.get_enable_hotkeys() {
+            Hotkeys::new(&config, sender.clone())
+        } else {
+            None
+        };
 
         let mut app = Self {
             player: Player::new(sender.clone(), &library, &config),

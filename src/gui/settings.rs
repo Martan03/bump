@@ -28,7 +28,7 @@ impl BumpApp {
             toggler(
                 "Update library on start".to_owned(),
                 self.config.get_start_load(),
-                |val| { Msg::Conf(ConfMsg::StartLoad(val)) }
+                |val| Msg::Conf(ConfMsg::StartLoad(val))
             ),
             toggler(
                 "Recursive search for songs".to_owned(),
@@ -49,6 +49,11 @@ impl BumpApp {
                 "Play songs without gap between them".to_owned(),
                 self.config.get_gapless(),
                 |val| { Msg::Conf(ConfMsg::Gapless(val)) }
+            ),
+            toggler(
+                "Enable hotkeys".to_owned(),
+                self.config.get_enable_hotkeys(),
+                |val| Msg::Conf(ConfMsg::EnableHotkeys(val))
             ),
             self.get_paths_input(),
         ]

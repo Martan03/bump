@@ -15,13 +15,20 @@ pub struct Hotkeys {
 
 impl Hotkeys {
     /// Creates new hotkeys
-    pub fn new(conf: &Config, sender: UnboundedSender<Msg>) -> Self {
+    pub fn new(conf: &Config, sender: UnboundedSender<Msg>) -> Option<Self> {
+        let mngr = match GlobalHotKeyManager::new() {
+            Ok(mngr) => mngr,
+            Err(e) => {
+                error!("Failed to create hotkey manager: {e}");
+                return None;
+            },
+        };
         let mut hotkeys = Self {
-            manager: GlobalHotKeyManager::new().unwrap(),
+            manager: mngr,
             actions: HashMap::new(),
         };
         hotkeys.init(conf.get_hotkeys(), sender);
-        hotkeys
+        Some(hotkeys)
     }
 
     /// Inits and registers hotkeys
