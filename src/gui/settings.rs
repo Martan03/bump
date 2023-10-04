@@ -53,7 +53,7 @@ impl BumpApp {
             self.get_paths_input(),
         ]
         .width(Length::Fill)
-        .spacing(3)
+        .spacing(2)
         .padding(3)
         .into()
     }

@@ -184,16 +184,6 @@ where
         cursor: Cursor,
         viewport: &Rectangle,
     ) {
-        self.content.as_widget().draw(
-            &state.children[0],
-            renderer,
-            theme,
-            style,
-            layout.children().next().unwrap(),
-            cursor,
-            viewport,
-        );
-
         let bounds = layout.bounds();
 
         let grad_style = if cursor.is_over(bounds) {
@@ -205,6 +195,15 @@ where
         let grad_style = if let Some(grad_style) = grad_style {
             grad_style
         } else {
+            self.content.as_widget().draw(
+                &state.children[0],
+                renderer,
+                theme,
+                style,
+                layout.children().next().unwrap(),
+                cursor,
+                viewport,
+            );
             return;
         };
         let grad_len = bounds.width * grad_style.len_percent;
@@ -212,6 +211,15 @@ where
         let mut center = if let Some(pos) = cursor.position() {
             pos.x - bounds.x
         } else {
+            self.content.as_widget().draw(
+                &state.children[0],
+                renderer,
+                theme,
+                style,
+                layout.children().next().unwrap(),
+                cursor,
+                viewport,
+            );
             return;
         };
 
@@ -273,6 +281,16 @@ where
         };
 
         renderer.fill_quad(quad, Background::Gradient(Gradient::Linear(grad)));
+
+        self.content.as_widget().draw(
+            &state.children[0],
+            renderer,
+            theme,
+            style,
+            layout.children().next().unwrap(),
+            cursor,
+            viewport,
+        );
     }
 
     fn overlay<'b>(
