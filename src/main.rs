@@ -16,6 +16,9 @@ mod cli {
 mod config {
     pub mod config;
 }
+mod core {
+    pub mod macros;
+}
 mod gui {
     pub mod app;
     pub mod elements;
