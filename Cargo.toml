@@ -15,6 +15,7 @@ iced = { version = "0.10.0", features = ["svg", "image"] }
 iced_core = "0.10.0"
 log = "0.4.20"
 paste = "1.0.14"
+place_macro = "0.2.0"
 rand = "0.8.5"
 raplay = "0.3.3"
 serde = "1.0.188"
