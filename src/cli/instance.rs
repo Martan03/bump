@@ -147,10 +147,14 @@ impl Instance {
 
     /// Sends given message to the server
     fn send_msg(&self, msg: &Msg, ip: &str, port: &str) {
-        match TcpStream::connect(format!("{ip}:{port}")) {
+        let stream = TcpStream::connect(format!("{ip}:{port}"));
+        match stream {
             Ok(mut stream) => {
                 if let Ok(msg) = serde_json::to_string::<Msg>(msg) {
-                    _ = stream.write(msg.as_bytes());
+                    _ = stream.write_all(format!("{msg}\n").as_bytes());
+                    let mut response = String::new();
+                    _ = stream.read_to_string(&mut response);
+                    println!("{response}");
                 }
             }
             Err(_) => eprintln!("Error connecting to the server"),

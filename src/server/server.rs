@@ -31,8 +31,14 @@ impl Server {
             }
             _ => {
                 return match serde_json::from_str::<Msg>(&request) {
-                    Ok(msg) => Some(msg),
-                    Err(_) => None,
+                    Ok(msg) => {
+                        Server::send_cli_response(stream, "ok".to_owned());
+                        Some(msg)
+                    },
+                    Err(_) => {
+                        Server::send_cli_response(stream, "err".to_owned());
+                        None
+                    },
                 }
             }
         };
@@ -60,5 +66,9 @@ impl Server {
         );
 
         stream.write_all(response.as_bytes()).unwrap();
+    }
+
+    fn send_cli_response(mut stream: TcpStream, msg: String) {
+        _ = stream.write_all(msg.as_bytes());
     }
 }
