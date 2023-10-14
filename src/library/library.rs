@@ -1,5 +1,5 @@
 use crate::{
-    config::config::Config,
+    config::Config,
     gui::app::{LibMsg, Msg},
 };
 use std::{

@@ -1,5 +1,6 @@
 use eyre::Result;
 use log::error;
+use place_macro::place;
 use serde_derive::{Deserialize, Serialize};
 use std::{
     collections::HashMap,
@@ -7,9 +8,11 @@ use std::{
     path::PathBuf,
     time::Duration,
 };
-use place_macro::place;
 
-use crate::{gui::app::{BumpApp, ConfMsg}, generate_struct};
+use crate::{
+    generate_struct,
+    gui::app::{BumpApp, ConfMsg},
+};
 
 generate_struct! {
     pub Config {

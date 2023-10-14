@@ -11,11 +11,11 @@ use log::error;
 use serde_derive::{Deserialize, Serialize};
 use tokio::sync::mpsc::{self, UnboundedReceiver, UnboundedSender};
 
-use crate::config::config::Config;
-use crate::hotkeys::hotkeys::Hotkeys;
-use crate::library::library::Library;
-use crate::player::player::Player;
-use crate::server::server::Server;
+use crate::config::Config;
+use crate::hotkeys::Hotkeys;
+use crate::library::Library;
+use crate::player::Player;
+use crate::server::Server;
 
 use super::gui::Gui;
 use super::theme::Theme;

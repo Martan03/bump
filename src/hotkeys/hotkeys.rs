@@ -5,7 +5,7 @@ use global_hotkey::{GlobalHotKeyEvent, GlobalHotKeyManager};
 use log::error;
 use tokio::sync::mpsc::UnboundedSender;
 
-use crate::{cli::instance::Instance, config::config::Config, gui::app::Msg};
+use crate::{cli::Instance, config::Config, gui::app::Msg};
 
 use super::hotkey::Hotkey;
 

@@ -7,7 +7,7 @@ use eyre::Result;
 use iced::window::Position;
 use serde_derive::{Deserialize, Serialize};
 
-use crate::config::config::Config;
+use crate::config::Config;
 
 use super::widgets::list_view;
 

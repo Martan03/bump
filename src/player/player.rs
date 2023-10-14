@@ -11,9 +11,9 @@ use serde_derive::{Deserialize, Serialize};
 use tokio::sync::mpsc::UnboundedSender;
 
 use crate::{
-    config::config::Config,
+    config::Config,
     gui::app::{Msg, PlayerMsg},
-    library::{library::Library, song::Song},
+    library::{Library, Song},
 };
 
 use super::sinker::Sinker;

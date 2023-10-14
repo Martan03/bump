@@ -6,7 +6,7 @@ use raplay::{
     CallbackInfo, Sink, Timestamp,
 };
 
-use crate::library::library::Library;
+use crate::library::Library;
 
 /// Implements core player functions
 pub struct Sinker {

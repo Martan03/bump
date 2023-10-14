@@ -1,7 +1,7 @@
 use std::env;
 
-use cli::cli::Cli;
-use config::config::Config;
+use cli::Cli;
+use config::Config;
 use gui::app::BumpApp;
 use gui::gui::Gui;
 use iced::window;
@@ -9,58 +9,22 @@ use iced::window::PlatformSpecific;
 use iced::Application;
 use iced::Settings;
 
-mod cli {
-    pub mod cli;
-    pub mod instance;
-}
-mod config {
-    pub mod config;
-}
-mod core {
-    pub mod macros;
-}
-mod gui {
-    pub mod app;
-    pub mod elements;
-    pub mod gui;
-    pub mod library;
-    pub mod playlist;
-    pub mod settings;
-    pub mod svg_data;
-    pub mod theme;
-    pub mod widgets {
-        pub mod hover_grad;
-        pub mod list_view;
-        pub mod svg_button;
-        pub mod text_ellipsis;
-        pub mod toggler;
-    }
-}
-mod hotkeys {
-    pub mod code;
-    pub mod hotkey;
-    pub mod hotkeys;
-    pub mod modifiers;
-}
-mod library {
-    pub mod library;
-    pub mod song;
-}
-mod player {
-    pub mod player;
-    pub mod sinker;
-}
-mod server {
-    pub mod server;
-}
+mod cli;
+mod config;
+mod core;
+mod gui;
+mod hotkeys;
+mod library;
+mod player;
+mod server;
 
 fn main() -> Result<(), iced::Error> {
     let config = Config::load();
 
     let args: Vec<_> = env::args().skip(1).collect();
     if !args.is_empty() {
-        let mut cli = Cli::new(&config, args);
-        cli.parse();
+        let mut cli = Cli::new(&config);
+        cli.parse(args);
         return Ok(());
     }
     // on wayland, the app freezes when minimized, this is temporary workaround

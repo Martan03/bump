@@ -7,7 +7,7 @@ use iced::Renderer;
 use iced_core::alignment::{Horizontal, Vertical};
 use iced_core::{Alignment, Length};
 
-use crate::library::song::Song;
+use crate::library::Song;
 
 use super::app::{BumpApp, Msg, Page, PlayerMsg};
 use super::svg_data::{pp_icon, vol_icon, ICON, NEXT, PREV};

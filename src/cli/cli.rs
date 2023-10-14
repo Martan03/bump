@@ -1,4 +1,4 @@
-use crate::config::config::Config;
+use crate::config::Config;
 
 use super::instance::Instance;
 
@@ -7,29 +7,27 @@ pub struct Cli {
     ip: String,
     /// Server port
     port: String,
-    /// Cli arguments
-    args: Vec<String>,
     /// Instance cli parser
     instance: Instance,
 }
 
 impl Cli {
-    pub fn new(config: &Config, args: Vec<String>) -> Self {
+    /// Creates new Cli
+    pub fn new(config: &Config) -> Self {
         Self {
             ip: config.get_server_ip().to_owned(),
             port: config.get_server_port().to_owned(),
-            args,
             instance: Instance::new(),
         }
     }
 
-    pub fn parse(&mut self) {
-        if let Some(arg) = self.args.get(0) {
+    /// Parses given arguments
+    pub fn parse(&mut self, args: Vec<String>) {
+        if let Some(arg) = args.get(0) {
             match arg.as_str() {
                 "h" | "-h" | "--help" => self.help(),
                 "i" | "instance" => {
-                    let instance_args: Vec<String> = self
-                        .args
+                    let instance_args: Vec<String> = args
                         .iter()
                         .skip(1)
                         .map(|arg| arg.to_owned())
@@ -42,7 +40,7 @@ impl Cli {
         }
     }
 
-    /// Display CLI help
+    /// Displays CLI help
     fn help(&self) {
         print!("Welcome to \x1b[92mBump\x1b[0m by ");
         let name = "Martan03";
