@@ -239,7 +239,7 @@ impl BumpApp {
     /// Creates receiver subscription
     fn receiver_subscription(&self) -> Subscription<Msg> {
         iced::subscription::unfold(
-            "bump receiver".to_owned(),
+            format!("{} receiver", Config::get_app_id()),
             self.receiver.take(),
             |receiver| async {
                 let mut receiver = receiver.unwrap();
@@ -266,7 +266,7 @@ impl BumpApp {
     /// creates tick subcription that's sending message every `tick`
     fn tick_subscription(&self, tick: Duration) -> Subscription<Msg> {
         iced::subscription::unfold(
-            "bump tick".to_owned(),
+            format!("{} tick", Config::get_app_id()),
             Instant::now(),
             move |t| async move {
                 let delta = Instant::now() - t;
@@ -282,7 +282,7 @@ impl BumpApp {
     fn server_subscription(&self) -> Subscription<Msg> {
         if let Some(listener) = self.listener.take() {
             iced::subscription::unfold(
-                "bump server".to_owned(),
+                format!("{} server", Config::get_app_id()),
                 listener,
                 |listener| async {
                     loop {
@@ -299,7 +299,7 @@ impl BumpApp {
             )
         } else {
             iced::subscription::unfold(
-                "bump server".to_owned(),
+                format!("{} server", Config::get_app_id()),
                 (),
                 |_| async {
                     loop {

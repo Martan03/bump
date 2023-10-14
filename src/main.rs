@@ -62,7 +62,8 @@ fn make_settings(config: Config) -> Settings<(Config, Gui)> {
         64,
         64,
     );
-    let id = "bump";
+
+    let id = Config::get_app_id();
 
     Settings {
         window: window::Settings {
@@ -74,7 +75,7 @@ fn make_settings(config: Config) -> Settings<(Config, Gui)> {
             },
             ..Default::default()
         },
-        id: Some(id.to_owned()),
+        id: Some(id),
         exit_on_close_request: false,
         flags: (config, gui),
         ..Default::default()

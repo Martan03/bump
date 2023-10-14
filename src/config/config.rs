@@ -35,7 +35,16 @@ generate_struct! {
         gui_path: PathBuf => Config::get_config_dir().join("gui.json"),
         player_path: PathBuf => Config::get_config_dir().join("player.json"),
         server_ip: String => "127.0.0.1".to_owned(),
-        server_port: String => "2867".to_owned(),
+        server_port: String => {
+            #[cfg(debug_assertions)]
+            {
+                "23456".to_owned()
+            }
+            #[cfg(not(debug_assertions))]
+            {
+                "2867".to_owned()
+            }
+        },
         hotkeys: HashMap<String, String> => {
             let mut hotkeys = HashMap::new();
             hotkeys.insert("ctrl+alt+home".to_owned(), "pp".to_owned());
@@ -96,6 +105,18 @@ impl Config {
     ///                          Getters & Setters                          ///
     ///>===================================================================<///
 
+    /// Gets app id based on if running in debug or not
+    pub fn get_app_id() -> String {
+        #[cfg(debug_assertions)]
+        {
+            "bump_debug".to_owned()
+        }
+        #[cfg(not(debug_assertions))]
+        {
+            "bump".to_owned()
+        }
+    }
+
     /// Adds given path to paths
     pub fn add_path(&mut self, path: PathBuf) {
         self.changed = true;
@@ -113,7 +134,7 @@ impl Config {
     /// Gets config dir path
     pub fn get_config_dir() -> PathBuf {
         if let Some(mut dir) = dirs::config_dir() {
-            dir.push("bump");
+            dir.push(Config::get_app_id());
             dir
         } else {
             PathBuf::from(".")
