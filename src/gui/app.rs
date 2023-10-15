@@ -18,6 +18,7 @@ use crate::player::Player;
 use crate::server::Server;
 
 use super::gui::Gui;
+use super::settings::SettingsMsg;
 use super::theme::Theme;
 
 pub struct BumpApp {
@@ -85,6 +86,7 @@ pub enum Msg {
     Plr(PlayerMsg),
     Lib(LibMsg),
     Conf(ConfMsg),
+    Settings(SettingsMsg),
     Tick,
     Move(i32, i32),
     Size(u32, u32),
@@ -120,6 +122,9 @@ impl Application for BumpApp {
                     .handle_msg(&self.config, self.sender.clone(), msg)
             }
             Msg::Conf(msg) => self.conf_update(msg),
+            Msg::Settings(msg) => {
+                return self.settings_update(msg);
+            }
             Msg::Tick => {}
             Msg::Move(x, y) => self.gui.set_pos(x, y),
             Msg::Size(w, h) => self.gui.set_size(w, h),

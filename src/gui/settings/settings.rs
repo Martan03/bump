@@ -1,20 +1,21 @@
 use std::path::PathBuf;
 
 use iced::{
-    widget::{button, column, row, text, text_input},
-    Renderer,
+    widget::{button, column, text},
+    Command, Renderer,
 };
 use iced_core::Length;
 
-use super::{
+use crate::gui::{
     app::{BumpApp, ConfMsg, LibMsg, Msg},
-    svg_data::BIN,
     theme::{Button, Text, Theme},
     widgets::{
-        hover_grad::HoverGrad, svg_button::SvgButton,
-        text_ellipsis::TextEllipsis, toggler::Toggler,
+        hover_grad::HoverGrad,
+        toggler::Toggler,
     },
 };
+
+use super::{elements::removable_item, SettingsMsg};
 
 type Element<'a> = iced::Element<'a, Msg, Renderer<Theme>>;
 
@@ -63,34 +64,36 @@ impl BumpApp {
         .into()
     }
 
+    /// Settings update function
+    pub fn settings_update(&mut self, msg: SettingsMsg) -> Command<Msg> {
+        match msg {
+            SettingsMsg::PickSearchPath => {
+                Command::perform(pick_folder(), |path| match path {
+                    Some(path) => Msg::Conf(ConfMsg::AddPath(path)),
+                    None => Msg::Tick,
+                })
+            }
+        }
+    }
+
     fn get_paths_input(&self) -> Element {
         let mut items: Vec<Element> = Vec::new();
 
         items.push(text("Songs search paths:").style(Text::Normal).into());
         for (i, path) in self.config.get_paths().iter().enumerate() {
-            items.push(
-                self.get_remove_input(path.to_string_lossy().to_string(), i),
-            );
+            items.push(removable_item(
+                path.to_string_lossy().to_string(),
+                Msg::Conf(ConfMsg::RemPath(i)),
+            ));
         }
         items.push(
-            text_input("path", "")
-                .on_submit(Msg::Conf(ConfMsg::AddPath(PathBuf::from(""))))
+            button("Add path")
+                .on_press(Msg::Settings(SettingsMsg::PickSearchPath))
+                .style(Button::Primary)
                 .into(),
         );
 
         column(items).spacing(3).into()
-    }
-
-    fn get_remove_input(&self, text: String, id: usize) -> Element {
-        row![
-            SvgButton::new(BIN.into())
-                .width(20)
-                .height(20)
-                .on_press(Msg::Conf(ConfMsg::RemPath(id))),
-            TextEllipsis::new(text).style(Text::Normal),
-        ]
-        .spacing(3)
-        .into()
     }
 }
 
@@ -109,4 +112,16 @@ where
     .width(Length::Shrink)
     .height(Length::Shrink)
     .into()
+}
+
+pub async fn pick_folder() -> Option<PathBuf> {
+    let handle = rfd::AsyncFileDialog::new()
+        .set_title("Choose a folder...")
+        .pick_folder()
+        .await;
+    if let Some(handle) = handle {
+        Some(handle.path().into())
+    } else {
+        None
+    }
 }
