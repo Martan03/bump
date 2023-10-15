@@ -222,6 +222,15 @@ impl Player {
     //                           Getters & Setters                           //
     //>=====================================================================<//
 
+    pub fn _get_info(&self, lib: &Library) -> String {
+        let song = self.get_current_song(lib);
+        format!(
+            "Now playing:
+            title: {}",
+            song.get_name()
+        )
+    }
+
     /// Checks if playback is playing
     pub fn is_playing(&self) -> bool {
         self.state == PlayState::Playing

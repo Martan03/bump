@@ -154,7 +154,9 @@ impl Instance {
                     _ = stream.write_all(format!("{msg}\n").as_bytes());
                     let mut response = String::new();
                     _ = stream.read_to_string(&mut response);
-                    println!("{response}");
+                    if response.starts_with("Error") {
+                        println!("{response}");
+                    }
                 }
             }
             Err(_) => eprintln!("Error connecting to the server"),

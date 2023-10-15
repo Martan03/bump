@@ -35,7 +35,7 @@ pub struct BumpApp {
 }
 
 /// Messages to player
-#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq)]
 pub enum PlayerMsg {
     Play(Option<bool>),
     PlaySong(usize, bool),
@@ -48,6 +48,7 @@ pub enum PlayerMsg {
     Shuffle,
     VolumeUp(Option<f32>),
     VolumeDown(Option<f32>),
+    Info,
 }
 
 /// All pages enum
@@ -59,13 +60,13 @@ pub enum Page {
 }
 
 /// Library messages
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub enum LibMsg {
     LoadStart,
     LoadEnded,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub enum ConfMsg {
     RecursiveSearch(bool),
     ShuffleCurrent(bool),
@@ -78,7 +79,7 @@ pub enum ConfMsg {
 }
 
 /// Bump app messages
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub enum Msg {
     Page(Page),
     Plr(PlayerMsg),
@@ -291,9 +292,14 @@ impl BumpApp {
                             _ => continue,
                         };
 
-                        if let Some(msg) = Server::handle_client(stream.0) {
+                        if let Some(msg) = Server::handle_client(&stream.0) {
+                            Server::send_cli_response(&stream.0, "Ok");
                             return (msg, listener);
                         }
+                        Server::send_cli_response(
+                            &stream.0,
+                            "Error receiving message",
+                        );
                     }
                 },
             )

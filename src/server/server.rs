@@ -7,7 +7,7 @@ use crate::gui::app::{Msg, PlayerMsg};
 pub struct Server;
 
 impl Server {
-    pub fn handle_client(mut stream: TcpStream) -> Option<Msg> {
+    pub fn handle_client(mut stream: &TcpStream) -> Option<Msg> {
         let buf_reader = BufReader::new(&mut stream);
         let request = buf_reader.lines().next().unwrap().unwrap();
 
@@ -31,14 +31,8 @@ impl Server {
             }
             _ => {
                 return match serde_json::from_str::<Msg>(&request) {
-                    Ok(msg) => {
-                        Server::send_cli_response(stream, "ok".to_owned());
-                        Some(msg)
-                    },
-                    Err(_) => {
-                        Server::send_cli_response(stream, "err".to_owned());
-                        None
-                    },
+                    Ok(msg) => Some(msg),
+                    Err(_) => None,
                 }
             }
         };
@@ -54,7 +48,7 @@ impl Server {
     }
 
     fn send_response(
-        mut stream: TcpStream,
+        mut stream: &TcpStream,
         status: String,
         content_type: String,
         content: String,
@@ -68,7 +62,7 @@ impl Server {
         stream.write_all(response.as_bytes()).unwrap();
     }
 
-    fn send_cli_response(mut stream: TcpStream, msg: String) {
+    pub fn send_cli_response(mut stream: &TcpStream, msg: &str) {
         _ = stream.write_all(msg.as_bytes());
     }
 }
