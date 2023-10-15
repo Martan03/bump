@@ -9,10 +9,7 @@ use iced_core::Length;
 use crate::gui::{
     app::{BumpApp, ConfMsg, LibMsg, Msg},
     theme::{Button, Text, Theme},
-    widgets::{
-        hover_grad::HoverGrad,
-        toggler::Toggler,
-    },
+    widgets::{hover_grad::HoverGrad, toggler::Toggler},
 };
 
 use super::{elements::removable_item, SettingsMsg};
@@ -68,8 +65,8 @@ impl BumpApp {
     pub fn settings_update(&mut self, msg: SettingsMsg) -> Command<Msg> {
         match msg {
             SettingsMsg::PickSearchPath => {
-                Command::perform(pick_folder(), |path| match path {
-                    Some(path) => Msg::Conf(ConfMsg::AddPath(path)),
+                Command::perform(pick_folder(), |paths| match paths {
+                    Some(paths) => Msg::Conf(ConfMsg::AddPath(paths)),
                     None => Msg::Tick,
                 })
             }
@@ -79,7 +76,12 @@ impl BumpApp {
     fn get_paths_input(&self) -> Element {
         let mut items: Vec<Element> = Vec::new();
 
-        items.push(text("Songs search paths:").style(Text::Normal).into());
+        items.push(
+            text("Songs search paths:")
+                .style(Text::Normal)
+                .height(22)
+                .into(),
+        );
         for (i, path) in self.config.get_paths().iter().enumerate() {
             items.push(removable_item(
                 path.to_string_lossy().to_string(),
@@ -114,13 +116,17 @@ where
     .into()
 }
 
-pub async fn pick_folder() -> Option<PathBuf> {
+pub async fn pick_folder() -> Option<Vec<PathBuf>> {
     let handle = rfd::AsyncFileDialog::new()
-        .set_title("Choose a folder...")
-        .pick_folder()
+        .set_title("Choose folders...")
+        .pick_folders()
         .await;
     if let Some(handle) = handle {
-        Some(handle.path().into())
+        let mut paths: Vec<PathBuf> = Vec::new();
+        for path in handle {
+            paths.push(path.path().into())
+        }
+        Some(paths)
     } else {
         None
     }

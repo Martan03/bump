@@ -1,7 +1,7 @@
 use crate::gui::{
     app::Msg,
     svg_data::BIN,
-    theme::{Text, Theme},
+    theme::{self, Text, Theme},
     widgets::{
         hover_grad::HoverGrad, svg_button::SvgButton,
         text_ellipsis::TextEllipsis,
@@ -19,13 +19,15 @@ pub fn removable_item<'a>(content: String, msg: Msg) -> Element<'a> {
             SvgButton::new(BIN.into())
                 .width(20)
                 .height(20)
+                .style(theme::SvgButton::Remove)
                 .on_press(msg),
-            TextEllipsis::new(content).style(Text::Normal),
-        ].spacing(3)
+            TextEllipsis::new(content).style(Text::Dark),
+        ]
+        .spacing(5)
         .into(),
     )
     .width(Length::Shrink)
     .height(Length::Shrink)
-    .padding([3, 10, 3, 10])
+    .padding([4, 10, 4, 10])
     .into()
 }

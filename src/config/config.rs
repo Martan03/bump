@@ -118,9 +118,11 @@ impl Config {
     }
 
     /// Adds given path to paths
-    pub fn add_path(&mut self, path: PathBuf) {
+    pub fn add_path(&mut self, paths: Vec<PathBuf>) {
         self.changed = true;
-        self.paths.push(path);
+        for path in paths {
+            self.paths.push(path);
+        }
     }
 
     /// Removes path on given index
@@ -187,7 +189,7 @@ impl BumpApp {
             ConfMsg::StartLoad(val) => self.config.set_start_load(val),
             ConfMsg::Gapless(val) => self.config.set_gapless(val),
             ConfMsg::RemPath(id) => self.config.remove_path(id),
-            ConfMsg::AddPath(path) => self.config.add_path(path),
+            ConfMsg::AddPath(paths) => self.config.add_path(paths),
             ConfMsg::EnableHotkeys(mut val) => {
                 let hotkeys = if let Some(hotkeys) = &mut self.hotkeys {
                     hotkeys

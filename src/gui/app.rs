@@ -75,7 +75,7 @@ pub enum ConfMsg {
     StartLoad(bool),
     Gapless(bool),
     RemPath(usize),
-    AddPath(PathBuf),
+    AddPath(Vec<PathBuf>),
     EnableHotkeys(bool),
 }
 

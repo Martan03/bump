@@ -32,7 +32,7 @@ const BG_DARK: Color = hex_to_color!(0x121212);
 /// Foreground color
 const FG: Color = hex_to_color!(0xdddddd);
 const FG_LIGHT: Color = hex_to_color!(0xffffff);
-const FG_DARK: Color = hex_to_color!(0xc8c8c8);
+const FG_DARK: Color = hex_to_color!(0xbbbbbb);
 const FG_DARKER: Color = hex_to_color!(0x737373);
 
 // Primary color
@@ -41,6 +41,8 @@ const PRIM_DARK: Color = hex_to_color!(0x2bb599);
 
 const OUTLINE: Color = hex_to_color!(0x333333);
 const OUTLINE_DARK: Color = hex_to_color!(0x2b2b2b);
+
+const REM: Color = hex_to_color!(0xff3333);
 
 #[derive(Default, Clone)]
 pub struct Theme {}
@@ -500,6 +502,7 @@ impl toggler::StyleSheet for Theme {
 pub enum SvgButton {
     #[default]
     Transparent,
+    Remove,
     Circle(f32),
 }
 
@@ -522,6 +525,10 @@ impl svg_button::StyleSheet for Theme {
                 color: Some(BG_DARK),
                 ..transparent
             },
+            SvgButton::Remove => svg_button::Appearance {
+                color: Some(FG),
+                ..transparent
+            },
             _ => transparent,
         }
     }
@@ -532,6 +539,10 @@ impl svg_button::StyleSheet for Theme {
         match style {
             SvgButton::Circle(size) => svg_button::Appearance {
                 background: Background::Color(PRIM),
+                ..active
+            },
+            SvgButton::Remove => svg_button::Appearance {
+                color: Some(REM),
                 ..active
             },
             _ => svg_button::Appearance {
