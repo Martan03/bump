@@ -144,7 +144,12 @@ impl Config {
 
     /// Gets server address
     pub fn get_server_address(&self) -> String {
-        format!("{}:{}", self.server_ip, self.server_port)
+        format!("{}:{}", self.get_server_ip(), self.get_server_port())
+    }
+
+    /// Resets all the settings to the default value
+    pub fn reset_all(&mut self) {
+        *self = Config::default();
     }
 }
 
@@ -190,9 +195,11 @@ impl BumpApp {
             ConfMsg::Autoplay(val) => self.config.set_autoplay(val),
             ConfMsg::StartLoad(val) => self.config.set_start_load(val),
             ConfMsg::Gapless(val) => self.config.set_gapless(val),
+            ConfMsg::ResetAll => self.config.reset_all(),
         }
     }
 
+    /// Enables/disables hotkeys
     fn enable_hotkeys(&mut self, val: bool) {
         if !val {
             if let Some(hotkeys) = &mut self.hotkeys {

@@ -11,4 +11,6 @@ pub enum ConfMsg {
     Autoplay(bool),
     StartLoad(bool),
     Gapless(bool),
+
+    ResetAll,
 }
