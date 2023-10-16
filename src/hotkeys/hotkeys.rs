@@ -46,7 +46,7 @@ impl Hotkeys {
                     self.actions
                         .insert(hk.id(), hotkey.get_action().to_owned());
                 }
-                Err(e) => error!("Failed to register the hotkey {e}"),
+                Err(e) => error!("Failed to register the hotkey: {e}"),
             }
         }
 

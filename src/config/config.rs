@@ -9,10 +9,9 @@ use std::{
     time::Duration,
 };
 
-use crate::{
-    generate_struct,
-    gui::app::{BumpApp, ConfMsg},
-};
+use crate::{generate_struct, gui::app::BumpApp, hotkeys::Hotkeys};
+
+use super::ConfMsg;
 
 generate_struct! {
     pub Config {
@@ -179,6 +178,9 @@ impl Default for Config {
 impl BumpApp {
     pub fn conf_update(&mut self, msg: ConfMsg) {
         match msg {
+            ConfMsg::AddPath(paths) => self.config.add_path(paths),
+            ConfMsg::RemPath(id) => self.config.remove_path(id),
+            ConfMsg::EnableHotkeys(val) => self.enable_hotkeys(val),
             ConfMsg::RecursiveSearch(val) => {
                 self.config.set_recursive_search(val)
             }
@@ -188,27 +190,27 @@ impl BumpApp {
             ConfMsg::Autoplay(val) => self.config.set_autoplay(val),
             ConfMsg::StartLoad(val) => self.config.set_start_load(val),
             ConfMsg::Gapless(val) => self.config.set_gapless(val),
-            ConfMsg::RemPath(id) => self.config.remove_path(id),
-            ConfMsg::AddPath(paths) => self.config.add_path(paths),
-            ConfMsg::EnableHotkeys(mut val) => {
-                let hotkeys = if let Some(hotkeys) = &mut self.hotkeys {
-                    hotkeys
-                } else {
-                    error!("Failed to set enable hotkeys to: {val}");
-                    return;
-                };
-                if val {
-                    if let Err(_) =
-                        hotkeys.init(&self.config, self.sender.clone())
-                    {
-                        error!("Failed to initialize hotkeys");
-                        val = false;
-                    }
-                } else {
-                    hotkeys.disable();
-                }
-                self.config.set_enable_hotkeys(val);
-            }
         }
+    }
+
+    fn enable_hotkeys(&mut self, val: bool) {
+        if !val {
+            if let Some(hotkeys) = &mut self.hotkeys {
+                hotkeys.disable();
+            }
+            self.config.set_enable_hotkeys(val);
+            return;
+        }
+        let mut hotkeys = Hotkeys::new();
+        self.hotkeys =
+            match hotkeys.init(&self.config, self.sender.clone()) {
+                Ok(_) => Some(hotkeys),
+                Err(e) => {
+                    self.config.set_enable_hotkeys(false);
+                    error!("{e}");
+                    return;
+                }
+            };
+        self.config.set_enable_hotkeys(val);
     }
 }

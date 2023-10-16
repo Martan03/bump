@@ -1,6 +1,5 @@
 use std::cell::Cell;
 use std::net::TcpListener;
-use std::path::PathBuf;
 use std::thread;
 use std::time::{Duration, Instant};
 
@@ -11,7 +10,7 @@ use log::error;
 use serde_derive::{Deserialize, Serialize};
 use tokio::sync::mpsc::{self, UnboundedReceiver, UnboundedSender};
 
-use crate::config::Config;
+use crate::config::{ConfMsg, Config};
 use crate::hotkeys::Hotkeys;
 use crate::library::Library;
 use crate::player::Player;
@@ -65,18 +64,6 @@ pub enum Page {
 pub enum LibMsg {
     LoadStart,
     LoadEnded,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-pub enum ConfMsg {
-    RecursiveSearch(bool),
-    ShuffleCurrent(bool),
-    Autoplay(bool),
-    StartLoad(bool),
-    Gapless(bool),
-    RemPath(usize),
-    AddPath(Vec<PathBuf>),
-    EnableHotkeys(bool),
 }
 
 /// Bump app messages

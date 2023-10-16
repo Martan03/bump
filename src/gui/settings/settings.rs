@@ -6,12 +6,18 @@ use iced::{
 };
 use iced_core::Length;
 
-use crate::gui::{
-    app::{BumpApp, ConfMsg, LibMsg, Msg},
-    theme::{Button, Text, Theme},
+use crate::{
+    config::ConfMsg,
+    gui::{
+        app::{BumpApp, LibMsg, Msg},
+        theme::{Button, Text, Theme},
+    },
 };
 
-use super::{elements::{removable_item, toggler}, SettingsMsg};
+use super::{
+    elements::{removable_item, toggler},
+    SettingsMsg,
+};
 
 type Element<'a> = iced::Element<'a, Msg, Renderer<Theme>>;
 
