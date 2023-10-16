@@ -13,6 +13,8 @@ flexi_logger = "0.27.0"
 global-hotkey = "0.3.0"
 iced = { version = "0.10.0", features = ["svg", "image"] }
 iced_core = "0.10.0"
+iced_lazy = "0.6.1"
+iced_native = "0.10.3"
 log = "0.4.20"
 paste = "1.0.14"
 place_macro = "0.2.0"

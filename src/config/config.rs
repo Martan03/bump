@@ -209,15 +209,14 @@ impl BumpApp {
             return;
         }
         let mut hotkeys = Hotkeys::new();
-        self.hotkeys =
-            match hotkeys.init(&self.config, self.sender.clone()) {
-                Ok(_) => Some(hotkeys),
-                Err(e) => {
-                    self.config.set_enable_hotkeys(false);
-                    error!("{e}");
-                    return;
-                }
-            };
+        self.hotkeys = match hotkeys.init(&self.config, self.sender.clone()) {
+            Ok(_) => Some(hotkeys),
+            Err(e) => {
+                self.config.set_enable_hotkeys(false);
+                error!("{e}");
+                return;
+            }
+        };
         self.config.set_enable_hotkeys(val);
     }
 }
