@@ -1,1 +1,2 @@
-mod number_input;
+pub mod input;
+pub mod number_input;

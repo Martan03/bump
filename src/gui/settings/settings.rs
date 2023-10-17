@@ -10,6 +10,7 @@ use crate::{
     config::ConfMsg,
     gui::{
         app::{BumpApp, LibMsg, Msg},
+        components::input::input,
         theme::{Button, Text, Theme},
     },
 };

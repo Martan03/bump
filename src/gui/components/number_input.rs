@@ -1,6 +1,7 @@
-use iced::Renderer;
-use iced_lazy::Component;
-use iced_native::Element;
+use iced::{
+    widget::{text_input, Component},
+    Element, Renderer,
+};
 
 #[derive(Debug, Clone)]
 /// [`NumberInput`] events
@@ -41,15 +42,11 @@ impl<Message> Component<Message, Renderer> for NumberInput<Message> {
     fn update(
         &mut self,
         _state: &mut Self::State,
-        event: Event,
+        event: Self::Event,
     ) -> Option<Message> {
         match event {
-            Event::InputChanged(value) => {
-                if value.is_empty() {
-                    Some((self.on_change)(None))
-                } else {
-                    value.parse().ok().map(Some).map(self.on_change.as_ref())
-                }
+            Event::InputChanged(val) => {
+                val.parse().ok().map(Some).map(self.on_change.as_ref())
             }
         }
     }
@@ -58,6 +55,14 @@ impl<Message> Component<Message, Renderer> for NumberInput<Message> {
         &self,
         _state: &Self::State,
     ) -> Element<'_, Self::Event, Renderer> {
-        todo!()
+        text_input(
+            "Enter a number:",
+            self.value
+                .as_ref()
+                .map(u32::to_string)
+                .as_deref()
+                .unwrap_or(""),
+        )
+        .into()
     }
 }
