@@ -14,6 +14,7 @@ use crate::{generate_struct, gui::app::BumpApp, hotkeys::Hotkeys};
 use super::ConfMsg;
 
 generate_struct! {
+    #[derive(Clone, Serialize, Deserialize)]
     pub Config {
         paths: Vec<PathBuf> => {
             if let Some(dir) = dirs::audio_dir() {
@@ -61,6 +62,7 @@ generate_struct! {
         start_load: bool => true,
         gapless: bool => false,
         enable_hotkeys: bool => true,
+        ;
     }
 }
 

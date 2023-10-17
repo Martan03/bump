@@ -1,17 +1,19 @@
 #[macro_export]
 macro_rules! generate_struct {
     (
+        $(#$der:tt)*
         $access:vis $name:ident {
             $( $ref_access:vis $ref_name:ident: $ref_type:ty
                 $(=> $ref_default:expr)?,
             )*;
             $( $var_access:vis $var_name:ident: $var_type:ty
                 $(=> $var_default:expr)?,
-            )*
+            )*;
+            $( $v_access:vis $v_name:ident: $v_type: ty, )*
         }
     ) => {
         place! {
-            #[derive(Clone, Serialize, Deserialize)]
+            $(#$der)*
             $access struct $name {
                 $(
                     $(
@@ -31,6 +33,7 @@ macro_rules! generate_struct {
                     )?
                     $var_access $var_name: $var_type,
                 )*
+                $( $v_access $v_name: $v_type, )*
                 changed: bool,
             }
 

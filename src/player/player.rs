@@ -3,8 +3,9 @@ use std::{
     time::Duration,
 };
 
-use eyre::Result;
+use eyre::{Result, Report};
 use log::error;
+use place_macro::place;
 use rand::seq::SliceRandom;
 use raplay::CallbackInfo;
 use serde_derive::{Deserialize, Serialize};
@@ -12,6 +13,7 @@ use tokio::sync::mpsc::UnboundedSender;
 
 use crate::{
     config::Config,
+    generate_struct,
     gui::app::{Msg, PlayerMsg},
     library::{Library, Song},
 };
@@ -26,23 +28,18 @@ pub enum PlayState {
     Paused,
 }
 
-pub struct Player {
-    /// Wrapper around sink that plays audio
-    sinker: Sinker,
-    /// State of the player
-    state: PlayState,
-    /// Index of the currently playing song
-    current: usize,
-    /// Volume of the playback
-    volume: f32,
-    /// When true playback is muted
-    mute: bool,
-    /// Current playlist
-    playlist: Vec<usize>,
-    /// True when shuffle should shuffle currently playing song
-    shuffle_current: bool,
-    /// Step of the volume when up or down used
-    volume_step: f32,
+generate_struct! {
+    pub Player {
+        ;;
+        sinker: Sinker,
+        state: PlayState,
+        playlist: Vec<usize>,
+        shuffle_current: bool,
+        current: Option<usize>,
+        volume: f32,
+        volume_step: f32,
+        mute: bool,
+    }
 }
 
 impl Player {
@@ -67,38 +64,35 @@ impl Player {
     ) -> Self {
         let path = config.get_player_path();
 
-        let data = match fs::read_to_string(path) {
+        let data = match serde_json::from_str::<PlayerLoad>(
+            &fs::read_to_string(path).unwrap_or("".to_owned()),
+        ) {
+            Ok(data) => data,
             Err(_) => PlayerLoad::default(),
-            Ok(p) => match serde_json::from_str::<PlayerLoad>(&p) {
-                Err(_) => PlayerLoad::default(),
-                Ok(plr) => plr,
-            },
         };
 
-        let state = if data.current == usize::MAX {
-            PlayState::Stopped
-        } else if config.get_autoplay() {
-            PlayState::Playing
-        } else {
-            PlayState::Paused
-        };
         let mut res = Self {
             sinker: Sinker::new(),
-            state,
+            state: PlayState::Stopped,
             current: data.current,
             volume: data.volume,
             mute: data.mute,
             playlist: data.playlist,
             shuffle_current: config.get_shuffle_current(),
             volume_step: 0.1,
+            changed: true,
         };
-
+        res.set_state(res.shuffle_current);
         res.init_sinker(lib, config, sender);
         res
     }
 
     /// Saves player to the json
-    pub fn save(&self, config: &Config) -> Result<()> {
+    pub fn save(&mut self, config: &Config) -> Result<()> {
+        if !self.changed {
+            return Ok(());
+        }
+
         let data = PlayerSave {
             current: self.current,
             volume: self.volume,
@@ -109,15 +103,15 @@ impl Player {
         let path = config.get_player_path();
         File::create(&path)?;
 
-        let text = serde_json::to_string::<PlayerSave>(&data)?;
-        fs::write(path, text)?;
+        fs::write(path, serde_json::to_string::<PlayerSave>(&data)?)?;
+
+        self.changed = false;
 
         Ok(())
     }
 
     /// Sets playing state based on the given bool
     pub fn play(&mut self, play: bool) {
-        self.set_state(play);
         match self.sinker.play(play) {
             Ok(_) => self.set_state(play),
             Err(e) => error!("Failed to play/pause: {e}"),
@@ -133,19 +127,23 @@ impl Player {
     }
 
     /// Plays next song
-    pub fn next(&mut self, lib: &Library) {
-        self.play_at(lib, self.current + 1, self.is_playing());
+    pub fn next(&mut self, num: Option<usize>, lib: &Library) {
+        let num = num.unwrap_or(1);
+        if let Some(current) = self.current {
+            self.play_at(lib, current + num, self.is_playing());
+        }
     }
 
     /// Plays previous song
-    pub fn prev(&mut self, lib: &Library) {
-        self.play_at(
-            lib,
-            self.current
-                .checked_sub(1)
-                .unwrap_or(self.playlist.len() - 1),
-            self.is_playing(),
-        );
+    pub fn prev(&mut self, num: Option<usize>, lib: &Library) {
+        let num = num.unwrap_or(1);
+        if let Some(current) = self.current {
+            self.play_at(
+                lib,
+                current.checked_sub(num).unwrap_or(self.playlist.len() - 1),
+                self.is_playing(),
+            );
+        }
     }
 
     /// Plays song on given index
@@ -156,15 +154,24 @@ impl Player {
 
     /// Shuffles current playlist
     pub fn shuffle(&mut self) {
-        if let Some(id) = self.get_current() {
-            let mut rng = rand::thread_rng();
-            if self.shuffle_current {
-                self.playlist.shuffle(&mut rng);
-                self.find_current(id);
-            } else {
-                self.playlist.swap(self.current, 0);
-                self.playlist[1..].shuffle(&mut rng);
-                self.set_current(0);
+        let current = match self.current {
+            Some(current) => current,
+            None => return,
+        };
+        let id = self.playlist.get(current).map(|c| *c);
+
+        let mut rng = rand::thread_rng();
+        self.playlist.shuffle(&mut rng);
+
+        match id {
+            Some(id) => self.find_current(id),
+            None => return,
+        };
+
+        if !self.shuffle_current {
+            if let Some(current) = self.current {
+                self.playlist.swap(current, 0);
+                self.current = Some(0);
             }
         }
     }
@@ -173,7 +180,7 @@ impl Player {
     pub fn seek_to(&mut self, lib: &Library, time: Duration) -> Result<()> {
         if let Ok(timestamp) = self.sinker.get_timestamp() {
             if timestamp.total < time {
-                self.next(lib);
+                self.next(Some(1), lib);
                 return Ok(());
             }
         }
@@ -195,18 +202,20 @@ impl Player {
                     self.find_current(id)
                 }
 
-                self.play_at(library, self.current, true)
+                if let Some(current) = self.current {
+                    self.play_at(library, current, true)
+                }
             }
             PlayerMsg::Next if self.playlist.len() > 0 => {
-                _ = self.next(library)
+                _ = self.next(None, library)
             }
             PlayerMsg::Prev if self.playlist.len() > 0 => {
-                _ = self.prev(library)
+                _ = self.prev(None, library)
             }
             PlayerMsg::SeekTo(time) => {
                 _ = self.seek_to(library, time);
             }
-            PlayerMsg::SongEnd => _ = self.next(library),
+            PlayerMsg::SongEnd => _ = self.next(Some(1), library),
             PlayerMsg::Volume(vol) => _ = self.set_volume(vol),
             PlayerMsg::Mute(mute) => {
                 _ = self.set_mute(mute.unwrap_or(!self.get_mute()))
@@ -222,15 +231,6 @@ impl Player {
     //                           Getters & Setters                           //
     //>=====================================================================<//
 
-    pub fn _get_info(&self, lib: &Library) -> String {
-        let song = self.get_current_song(lib);
-        format!(
-            "Now playing:
-            title: {}",
-            song.get_name()
-        )
-    }
-
     /// Checks if playback is playing
     pub fn is_playing(&self) -> bool {
         self.state == PlayState::Playing
@@ -243,38 +243,41 @@ impl Player {
 
     /// Sets state based on boolean
     pub fn set_state(&mut self, play: bool) {
-        self.state = if play {
-            PlayState::Playing
-        } else {
-            PlayState::Paused
-        }
+        self.state = match (self.current.is_some(), play) {
+            (false, _) => PlayState::Stopped,
+            (true, false) => PlayState::Paused,
+            (true, true) => PlayState::Playing,
+        };
     }
 
     /// Gets current as option, returns None when playback stopped
     pub fn get_current(&self) -> Option<usize> {
-        if self.state == PlayState::Stopped {
-            None
-        } else {
-            self.playlist.get(self.current).map(|c| *c)
+        if self.current.is_none() || self.state == PlayState::Stopped {
+            return None;
         }
+        self.playlist.get(self.current.unwrap()).map(|id| *id)
     }
 
     /// Sets current with overflow check
     pub fn set_current(&mut self, index: usize) {
         if index >= self.playlist.len() {
-            self.current = 0;
+            self.current = Some(0);
         } else {
-            self.current = index;
+            self.current = Some(index);
         }
     }
 
     /// Gets currently playing song
     pub fn get_current_song(&self, lib: &Library) -> Song {
-        match self.playlist.get(self.current) {
-            Some(index) if self.state != PlayState::Stopped => {
-                lib.get_song(index.to_owned())
+        if let Some(current) = self.current {
+            match self.playlist.get(current) {
+                Some(index) if self.state != PlayState::Stopped => {
+                    lib.get_song(index.to_owned())
+                }
+                _ => Song::default(),
             }
-            _ => Song::default(),
+        } else {
+            Song::default()
         }
     }
 
@@ -348,7 +351,7 @@ impl Player {
     /// Loads song from the library
     fn load_song(&mut self, lib: &Library, play: bool) {
         self.set_state(play);
-        if self.current != usize::MAX {
+        if self.current.is_some() {
             match self.try_load_song(lib, play) {
                 Ok(_) => self.set_state(play),
                 Err(e) => error!("Failed to load the song: {e}"),
@@ -358,8 +361,8 @@ impl Player {
 
     /// Tries to load a song from the library
     fn try_load_song(&mut self, lib: &Library, play: bool) -> Result<()> {
-        if self.current != usize::MAX {
-            self.sinker.load(lib, self.playlist[self.current], play)?;
+        if let Some(current) = self.current {
+            self.sinker.load(lib, self.playlist[current], play)?;
         }
         Ok(())
     }
@@ -373,9 +376,9 @@ impl Player {
     /// Finds current
     fn find_current(&mut self, id: usize) {
         if let Some(index) = self.playlist.iter().position(|&x| x == id) {
-            self.current = index;
+            self.current = Some(index);
         } else {
-            self.current = usize::MAX;
+            self.current = None;
         }
     }
 
@@ -388,7 +391,7 @@ impl Player {
     ) {
         // Loads default song
         if let Err(_) = self.try_load_song(lib, conf.get_autoplay()) {
-            self.current = usize::MAX;
+            self.current = None;
             self.state = PlayState::Stopped;
         }
         // Sets volume
@@ -421,12 +424,13 @@ impl Default for Player {
         Self {
             sinker: Sinker::new(),
             state: PlayState::Stopped,
-            current: usize::MAX,
+            current: None,
             volume: 1.,
             mute: false,
             playlist: Vec::new(),
             shuffle_current: true,
             volume_step: 0.1,
+            changed: true,
         }
     }
 }
@@ -437,7 +441,7 @@ impl Default for Player {
 #[derive(Deserialize)]
 struct PlayerLoad {
     /// Index of the currently playing song
-    current: usize,
+    current: Option<usize>,
     /// Volume of the playback
     volume: f32,
     /// When true playback is muted
@@ -450,7 +454,7 @@ impl Default for PlayerLoad {
     /// Default values for PlayerLoad
     fn default() -> Self {
         Self {
-            current: usize::MAX,
+            current: None,
             volume: 1.,
             mute: false,
             playlist: Vec::new(),
@@ -461,7 +465,7 @@ impl Default for PlayerLoad {
 #[derive(Serialize)]
 struct PlayerSave<'a> {
     /// Index of the currently playing song
-    current: usize,
+    current: Option<usize>,
     /// Volume of the playback
     volume: f32,
     /// When true playback is muted
