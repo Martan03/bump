@@ -1,6 +1,9 @@
 use std::{io::prelude::*, net::TcpStream, time::Duration};
 
-use crate::gui::app::{LibMsg, Msg, PlayerMsg};
+use crate::{
+    gui::app::{LibMsg, Msg},
+    player::PlayerMsg,
+};
 
 pub struct Instance {
     // Actions to be sent to instance
@@ -59,8 +62,8 @@ impl Instance {
                     _ => None,
                 }
             }
-            "next" => Some(Msg::Plr(PlayerMsg::Next)),
-            "prev" => Some(Msg::Plr(PlayerMsg::Prev)),
+            "next" => Some(Msg::Plr(PlayerMsg::Next(None))),
+            "prev" => Some(Msg::Plr(PlayerMsg::Prev(None))),
             s if s.starts_with("seek") || s.starts_with("seek-to") => {
                 let param = get_action_param(action).unwrap_or("");
                 match Instance::string_to_dur(param) {

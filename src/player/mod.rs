@@ -1,4 +1,5 @@
+mod msg;
 mod player;
 mod sinker;
 
-pub use self::player::*;
+pub use self::{msg::*, player::*};

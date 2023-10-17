@@ -2,7 +2,8 @@ use std::fs;
 use std::io::{prelude::*, BufReader};
 use std::net::TcpStream;
 
-use crate::gui::app::{Msg, PlayerMsg};
+use crate::gui::app::Msg;
+use crate::player::PlayerMsg;
 
 pub struct Server;
 

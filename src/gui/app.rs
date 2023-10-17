@@ -13,7 +13,7 @@ use tokio::sync::mpsc::{self, UnboundedReceiver, UnboundedSender};
 use crate::config::{ConfMsg, Config};
 use crate::hotkeys::Hotkeys;
 use crate::library::Library;
-use crate::player::Player;
+use crate::player::{Player, PlayerMsg};
 use crate::server::Server;
 
 use super::gui::Gui;
@@ -32,23 +32,6 @@ pub struct BumpApp {
     pub hard_pause: Option<Instant>,
     listener: Cell<Option<TcpListener>>,
     pub hotkeys: Option<Hotkeys>,
-}
-
-/// Messages to player
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq)]
-pub enum PlayerMsg {
-    Play(Option<bool>),
-    PlaySong(usize, bool),
-    Next,
-    Prev,
-    SeekTo(Duration),
-    SongEnd,
-    Volume(f32),
-    Mute(Option<bool>),
-    Shuffle,
-    VolumeUp(Option<f32>),
-    VolumeDown(Option<f32>),
-    Info,
 }
 
 /// All pages enum
@@ -107,7 +90,7 @@ impl Application for BumpApp {
                     self.player.get_current();
                 self.page = msg
             }
-            Msg::Plr(msg) => self.player.handle_msg(msg, &mut self.library),
+            Msg::Plr(msg) => self.player_update(msg),
             Msg::Lib(msg) => {
                 self.library
                     .handle_msg(&self.config, self.sender.clone(), msg)

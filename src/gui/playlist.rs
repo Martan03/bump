@@ -4,8 +4,10 @@ use iced::{
 };
 use iced_core::Length;
 
+use crate::player::PlayerMsg;
+
 use super::{
-    app::{BumpApp, Msg, PlayerMsg},
+    app::{BumpApp, Msg},
     theme::{Button, Text, Theme},
     widgets::list_view::WrapBox,
 };
@@ -32,7 +34,7 @@ impl BumpApp {
     }
 
     fn playlist_songs(&self) -> Element {
-        let cur = self.player.get_current();
+        let cur = self.player.get_current_playing();
 
         WrapBox::with_children(
             self.player

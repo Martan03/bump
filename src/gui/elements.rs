@@ -8,8 +8,9 @@ use iced_core::alignment::{Horizontal, Vertical};
 use iced_core::{Alignment, Length};
 
 use crate::library::Song;
+use crate::player::PlayerMsg;
 
-use super::app::{BumpApp, Msg, Page, PlayerMsg};
+use super::app::{BumpApp, Msg, Page};
 use super::svg_data::{pp_icon, vol_icon, ICON, NEXT, PREV};
 use super::theme::{
     self, Button, Container, SvgButton as SvgTheme, Text, Theme,
@@ -175,12 +176,16 @@ impl BumpApp {
 
     /// Gets player bar
     pub fn player_bar(&self) -> Element {
-        let (time, len) = self.player.get_timestamp();
+        let timestamp = self.player.get_timestamp();
 
         container(column![
-            slider(0.0..=len.as_secs_f32(), time.as_secs_f32(), |v| {
-                Msg::Plr(PlayerMsg::SeekTo(Duration::from_secs_f32(v)))
-            })
+            slider(
+                0.0..=timestamp.total.as_secs_f32(),
+                timestamp.current.as_secs_f32(),
+                |v| {
+                    Msg::Plr(PlayerMsg::SeekTo(Duration::from_secs_f32(v)))
+                }
+            )
             .height(4)
             .step(0.01),
             row![
@@ -221,7 +226,7 @@ impl BumpApp {
             SvgButton::new(PREV.into())
                 .width(16)
                 .height(16)
-                .on_press(Msg::Plr(PlayerMsg::Prev)),
+                .on_press(Msg::Plr(PlayerMsg::Prev(None))),
             SvgButton::new(pp_icon(self.player.is_playing()))
                 .width(30)
                 .height(30)
@@ -231,7 +236,7 @@ impl BumpApp {
             SvgButton::new(NEXT.into())
                 .width(16)
                 .height(16)
-                .on_press(Msg::Plr(PlayerMsg::Next)),
+                .on_press(Msg::Plr(PlayerMsg::Next(None))),
         ]
         .align_items(Alignment::Center)
         .spacing(20)

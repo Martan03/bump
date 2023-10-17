@@ -56,6 +56,7 @@ generate_struct! {
         },
         ;
         fade: Duration => Duration::from_millis(150),
+        volume_step: f32 => 0.1,
         recursive_search: bool => true,
         shuffle_current: bool => false,
         autoplay: bool => false,
@@ -167,6 +168,7 @@ impl Default for Config {
             recursive_search: Config::default_recursive_search(),
             shuffle_current: Config::default_shuffle_current(),
             fade: Config::default_fade(),
+            volume_step: Config::default_volume_step(),
             autoplay: Config::default_autoplay(),
             start_load: Config::default_start_load(),
             gapless: Config::default_gapless(),
@@ -189,10 +191,11 @@ impl BumpApp {
             ConfMsg::RemPath(id) => self.config.remove_path(id),
             ConfMsg::EnableHotkeys(val) => self.enable_hotkeys(val),
             ConfMsg::RecursiveSearch(val) => {
-                self.config.set_recursive_search(val)
+                self.config.set_recursive_search(val);
             }
             ConfMsg::ShuffleCurrent(val) => {
-                self.config.set_shuffle_current(val)
+                self.config.set_shuffle_current(val);
+                self.player.load_config(&self.config);
             }
             ConfMsg::Autoplay(val) => self.config.set_autoplay(val),
             ConfMsg::StartLoad(val) => self.config.set_start_load(val),
