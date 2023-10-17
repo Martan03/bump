@@ -237,9 +237,9 @@ impl Player {
         };
     }
 
-    /// Gets current as option, returns None when playback stopped
-    pub fn get_current_playing(&self) -> Option<usize> {
-        if self.current.is_none() || self.state == PlayState::Stopped {
+    /// Gets current id as option, returns None when playback stopped
+    pub fn get_current_id(&self) -> Option<usize> {
+        if self.get_current().is_none() || self.is_stopped() {
             return None;
         }
         self.playlist.get(self.current.unwrap()).map(|id| *id)
@@ -247,9 +247,9 @@ impl Player {
 
     /// Gets currently playing song
     pub fn get_current_song(&self, lib: &Library) -> Song {
-        if let Some(current) = self.current {
+        if let Some(current) = self.get_current() {
             match self.playlist.get(current) {
-                Some(index) if self.state != PlayState::Stopped => {
+                Some(index) if !self.is_stopped() => {
                     lib.get_song(index.to_owned())
                 }
                 _ => Song::default(),
@@ -260,12 +260,8 @@ impl Player {
     }
 
     /// Sets playback volume
-    pub fn set_vol(&mut self, mut volume: f32) {
-        if volume < 0. {
-            volume = 0.;
-        } else if volume > 1. {
-            volume = 1.;
-        }
+    pub fn set_vol(&mut self, volume: f32) {
+        let volume = volume.clamp(0.0, 1.0);
         match self.sinker.set_volume(volume) {
             Ok(_) => self.set_volume(volume),
             Err(e) => error!("Failed to set volume: {e}"),
@@ -274,19 +270,13 @@ impl Player {
 
     /// Sets volume up by given step
     pub fn volume_up(&mut self, step: Option<f32>) {
-        let step = match step {
-            Some(step) => step,
-            None => self.volume_step,
-        };
+        let step = step.unwrap_or(self.volume_step);
         self.set_vol(self.volume + step);
     }
 
     /// Sets volume down by given step
     pub fn volume_down(&mut self, step: Option<f32>) {
-        let step = match step {
-            Some(step) => step,
-            None => self.volume_step,
-        };
+        let step = step.unwrap_or(self.volume_step);
         self.set_vol(self.volume - step);
     }
 
@@ -310,6 +300,12 @@ impl Player {
             ),
         }
     }
+
+    /// Creates playlist from library
+    pub fn create_playlist(&mut self, library: &Library, id: usize) {
+        self.set_playlist((0..library.count()).collect());
+        self.find_current(id);
+    }
 }
 
 ///>=======================================================================<///
@@ -319,7 +315,10 @@ impl BumpApp {
     /// Handles player update
     pub fn player_update(&mut self, msg: PlayerMsg) {
         match msg {
-            PlayerMsg::Play(play) => self.player.play_pause(play),
+            PlayerMsg::Play(play) => {
+                self.player.play_pause(play);
+                self.hard_pause = None;
+            },
             PlayerMsg::Next(val) if self.player.get_playlist().len() > 0 => {
                 _ = self.player.next(val, &self.library)
             }
@@ -334,7 +333,8 @@ impl BumpApp {
                 }
 
                 if let Some(current) = self.player.get_current() {
-                    self.player.play_at(&self.library, current, true)
+                    self.player.play_at(&self.library, current, true);
+                    self.hard_pause = None;
                 }
             }
             PlayerMsg::SeekTo(time) => {
@@ -346,7 +346,7 @@ impl BumpApp {
             PlayerMsg::Shuffle => self.player.shuffle(),
             PlayerMsg::VolumeUp(step) => self.player.volume_up(step),
             PlayerMsg::VolumeDown(step) => self.player.volume_down(step),
-            _ => {}
+            _ => self.player.stop(),
         }
     }
 }
@@ -371,12 +371,6 @@ impl Player {
             }
             _ => self.stop(),
         }
-    }
-
-    /// Creates playlist from library
-    pub fn create_playlist(&mut self, library: &Library, id: usize) {
-        self.set_playlist((0..library.count()).collect());
-        self.find_current(id);
     }
 
     /// Finds current

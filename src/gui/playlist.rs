@@ -34,7 +34,7 @@ impl BumpApp {
     }
 
     fn playlist_songs(&self) -> Element {
-        let cur = self.player.get_current_playing();
+        let cur = self.player.get_current_id();
 
         WrapBox::with_children(
             self.player
