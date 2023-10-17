@@ -163,18 +163,6 @@ impl BumpApp {
             Ok(listener) => Some(listener),
             Err(_) => None,
         };
-        let hotkeys = if config.get_enable_hotkeys() {
-            let mut hotkeys = Hotkeys::new();
-            match hotkeys.init(&config, sender.clone()) {
-                Ok(_) => Some(hotkeys),
-                Err(e) => {
-                    error!("{e}");
-                    None
-                }
-            }
-        } else {
-            None
-        };
 
         let mut app = Self {
             player: Player::new(sender.clone(), &library, &config),
@@ -187,9 +175,10 @@ impl BumpApp {
             page: Page::Library,
             hard_pause: None,
             listener: Cell::new(listener),
-            hotkeys,
+            hotkeys: None,
         };
 
+        app.enable_hotkeys(app.config.get_enable_hotkeys());
         if app.config.get_start_load() {
             app.library.start_find(&mut app.config, app.sender.clone());
         }

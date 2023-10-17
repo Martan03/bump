@@ -318,7 +318,7 @@ impl BumpApp {
             PlayerMsg::Play(play) => {
                 self.player.play_pause(play);
                 self.hard_pause = None;
-            },
+            }
             PlayerMsg::Next(val) if self.player.get_playlist().len() > 0 => {
                 _ = self.player.next(val, &self.library)
             }
@@ -375,11 +375,7 @@ impl Player {
 
     /// Finds current
     fn find_current(&mut self, id: usize) {
-        if let Some(index) = self.playlist.iter().position(|&x| x == id) {
-            self.set_current(Some(index));
-        } else {
-            self.set_current(None)
-        }
+        self.set_current(self.playlist.iter().position(|&x| x == id));
     }
 
     /// Initializes player sinker
@@ -392,13 +388,13 @@ impl Player {
         // Loads default song
         self.try_load_song(lib, conf.get_autoplay());
         // Sets volume
-        if self.mute {
+        if self.get_mute() {
             if let Err(_) = self.sinker.set_volume(0.) {
-                self.mute = false;
+                self.set_mute(false);
             }
         } else {
-            if let Err(_) = self.sinker.set_volume(self.volume) {
-                self.volume = 1.;
+            if let Err(_) = self.sinker.set_volume(self.get_volume()) {
+                self.set_volume(1.);
             }
         }
         // Sets fade length

@@ -73,12 +73,11 @@ impl Config {
         let mut path = Config::get_config_dir();
         path.push("config.json");
 
-        match fs::read_to_string(path) {
+        match serde_json::from_str::<Config>(
+            &fs::read_to_string(path).unwrap_or("".to_owned()),
+        ) {
+            Ok(conf) => conf,
             Err(_) => Config::default(),
-            Ok(c) => match serde_json::from_str::<Config>(&c) {
-                Err(_) => Config::default(),
-                Ok(conf) => conf,
-            },
         }
     }
 
@@ -95,9 +94,7 @@ impl Config {
         dir.push("config.json");
         File::create(&dir)?;
 
-        let text = serde_json::to_string_pretty::<Config>(self)?;
-        fs::write(dir, text)?;
-
+        fs::write(dir, serde_json::to_string_pretty::<Config>(self)?)?;
         self.changed = false;
 
         Ok(())
@@ -205,7 +202,7 @@ impl BumpApp {
     }
 
     /// Enables/disables hotkeys
-    fn enable_hotkeys(&mut self, val: bool) {
+    pub fn enable_hotkeys(&mut self, mut val: bool) {
         if !val {
             if let Some(hotkeys) = &mut self.hotkeys {
                 hotkeys.disable();
@@ -217,9 +214,9 @@ impl BumpApp {
         self.hotkeys = match hotkeys.init(&self.config, self.sender.clone()) {
             Ok(_) => Some(hotkeys),
             Err(e) => {
-                self.config.set_enable_hotkeys(false);
+                val = false;
                 error!("{e}");
-                return;
+                None
             }
         };
         self.config.set_enable_hotkeys(val);
