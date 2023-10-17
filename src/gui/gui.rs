@@ -96,6 +96,13 @@ impl Gui {
     pub fn get_wb_state(&self, index: usize) -> &Cell<list_view::State> {
         &self.wb_states[index]
     }
+
+    pub fn get_wb_state_mut(
+        &mut self,
+        index: usize,
+    ) -> &mut Cell<list_view::State> {
+        &mut self.wb_states[index]
+    }
 }
 
 /// Implements default for GUI

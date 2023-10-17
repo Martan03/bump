@@ -40,13 +40,24 @@ impl<Message> Component<Message, Renderer> for NumberInput<Message> {
 
     fn update(
         &mut self,
-        state: &mut Self::State,
-        event: Self::Event,
+        _state: &mut Self::State,
+        event: Event,
     ) -> Option<Message> {
-        todo!()
+        match event {
+            Event::InputChanged(value) => {
+                if value.is_empty() {
+                    Some((self.on_change)(None))
+                } else {
+                    value.parse().ok().map(Some).map(self.on_change.as_ref())
+                }
+            }
+        }
     }
 
-    fn view(&self, state: &Self::State) -> Element<'_, Self::Event, Renderer> {
+    fn view(
+        &self,
+        _state: &Self::State,
+    ) -> Element<'_, Self::Event, Renderer> {
         todo!()
     }
 }

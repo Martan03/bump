@@ -102,7 +102,11 @@ impl Application for BumpApp {
     fn update(&mut self, message: Self::Message) -> Command<Self::Message> {
         // Handle messages
         match message {
-            Msg::Page(msg) => self.page = msg,
+            Msg::Page(msg) => {
+                self.gui.get_wb_state_mut(1).get_mut().scroll_to =
+                    self.player.get_current();
+                self.page = msg
+            }
             Msg::Plr(msg) => self.player.handle_msg(msg, &mut self.library),
             Msg::Lib(msg) => {
                 self.library
