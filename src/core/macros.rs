@@ -39,10 +39,12 @@ macro_rules! generate_struct {
 
             impl $name {
                 $(
+                    #[allow(unused)]
                     pub fn __ident__("get_" $ref_name)(&self) -> &$ref_type {
                         &self.$ref_name
                     }
 
+                    #[allow(unused)]
                     pub fn __ident__("set_" $ref_name)(&mut self, value: $ref_type) {
                         self.changed = true;
                         self.$ref_name = value;
@@ -55,10 +57,12 @@ macro_rules! generate_struct {
                     )?
                 )*
                 $(
+                    #[allow(unused)]
                     pub fn __ident__("get_" $var_name)(&self) -> $var_type {
                         self.$var_name
                     }
 
+                    #[allow(unused)]
                     pub fn __ident__("set_" $var_name)(&mut self, value: $var_type) {
                         self.changed = true;
                         self.$var_name = value;
