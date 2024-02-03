@@ -4,13 +4,14 @@ use iced::{
     widget::{button, column, scrollable, text},
     Command, Renderer,
 };
-use iced_core::Length;
+use iced_core::{Length, Padding};
 
 use crate::{
     config::ConfMsg,
     gui::{
         app::{BumpApp, LibMsg, Msg},
         theme::{Button, Text, Theme},
+        widgets::hover_grad::HoverGrad,
     },
 };
 
@@ -26,20 +27,28 @@ impl BumpApp {
         scrollable(
             column![
                 text("Settings").size(25).style(Text::Normal),
-                button("Update library")
-                    .on_press(Msg::Lib(LibMsg::LoadStart))
-                    .style(Button::Primary),
-                text("Songs loading:").height(22).style(Text::Normal),
-                toggler(
-                    "Update library on start".to_owned(),
-                    self.config.get_start_load(),
-                    |val| Msg::Conf(ConfMsg::StartLoad(val))
-                ),
-                toggler(
-                    "Recursive search for songs".to_owned(),
-                    self.config.get_recursive_search(),
-                    |val| Msg::Conf(ConfMsg::RecursiveSearch(val))
-                ),
+                column![
+                    text("Songs loading:").height(22).style(Text::Normal),
+                    button(
+                        HoverGrad::new(
+                            text("Update library").style(Text::Normal).into()
+                        )
+                        .width(Length::Shrink)
+                        .height(Length::Shrink)
+                        .padding(Padding::from([3, 5]))
+                    )
+                    .on_press(Msg::Lib(LibMsg::LoadStart)),
+                    toggler(
+                        "Update library on start".to_owned(),
+                        self.config.get_start_load(),
+                        |val| Msg::Conf(ConfMsg::StartLoad(val))
+                    ),
+                    toggler(
+                        "Recursive search for songs".to_owned(),
+                        self.config.get_recursive_search(),
+                        |val| Msg::Conf(ConfMsg::RecursiveSearch(val))
+                    ),
+                ],
                 self.get_paths_input(),
                 text("Playback:").height(22).style(Text::Normal),
                 toggler(
@@ -115,10 +124,8 @@ pub async fn pick_folder() -> Option<Vec<PathBuf>> {
         .pick_folders()
         .await;
     if let Some(handle) = handle {
-        let mut paths: Vec<PathBuf> = Vec::new();
-        for path in handle {
-            paths.push(path.path().into())
-        }
+        let paths: Vec<PathBuf> =
+            handle.iter().map(|path| path.path().to_owned()).collect();
         Some(paths)
     } else {
         None
