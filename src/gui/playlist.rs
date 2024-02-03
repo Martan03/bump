@@ -2,14 +2,17 @@ use iced::{
     widget::{button, column, row, text, Space},
     Renderer,
 };
-use iced_core::Length;
+use iced_core::{Length, Padding};
 
 use crate::player::PlayerMsg;
 
 use super::{
     app::{BumpApp, Msg},
+    svg_data::SHUFFLE,
     theme::{Button, Text, Theme},
-    widgets::list_view::WrapBox,
+    widgets::{
+        hover_grad::HoverGrad, list_view::WrapBox, svg_button::SvgButton,
+    },
 };
 
 type Element<'a> = iced::Element<'a, Msg, Renderer<Theme>>;
@@ -20,9 +23,25 @@ impl BumpApp {
             row![
                 text("Playlist").size(25).style(Text::Light),
                 Space::new(Length::Fill, Length::Shrink),
-                button("Shuffle")
-                    .style(Button::Primary)
-                    .on_press(Msg::Plr(PlayerMsg::Shuffle)),
+                button(
+                    HoverGrad::new(
+                        row![
+                            SvgButton::new(SHUFFLE.into())
+                                .width(20)
+                                .height(20),
+                            text("Shuffle")
+                        ]
+                        .spacing(4)
+                        .into()
+                    )
+                    .padding(Padding::from([3, 5]))
+                    .height(Length::Shrink)
+                    .width(Length::Shrink)
+                )
+                .style(Button::Item)
+                .width(Length::Shrink)
+                .height(Length::Shrink)
+                .on_press(Msg::Plr(PlayerMsg::Shuffle)),
             ]
             .padding(5),
             self.list_header(true),

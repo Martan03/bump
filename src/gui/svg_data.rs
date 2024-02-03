@@ -17,6 +17,9 @@ pub const PREV: SvgData =
 /// Next song icon
 pub const NEXT: SvgData =
     SvgData::new(include_bytes!("../../assets/icons/next.svg"));
+/// Shuffle playlist
+pub const SHUFFLE: SvgData =
+    SvgData::new(include_bytes!("../../assets/icons/shuffle.svg"));
 
 /// Volume icons - icons for each volume level
 pub const VOL_100: SvgData =
