@@ -17,7 +17,7 @@ use crate::player::{Player, PlayerMsg};
 use crate::server::Server;
 
 use super::gui::Gui;
-use super::settings::SettingsMsg;
+use super::settings::{Settings, SettingsMsg};
 use super::theme::Theme;
 
 pub struct BumpApp {
@@ -32,6 +32,7 @@ pub struct BumpApp {
     pub hard_pause: Option<Instant>,
     listener: Cell<Option<TcpListener>>,
     pub hotkeys: Option<Hotkeys>,
+    pub settings: Settings,
 }
 
 /// All pages enum
@@ -176,6 +177,7 @@ impl BumpApp {
             hard_pause: None,
             listener: Cell::new(listener),
             hotkeys: None,
+            settings: Default::default(),
         };
 
         app.enable_hotkeys(app.config.get_enable_hotkeys());
