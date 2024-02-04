@@ -12,20 +12,22 @@ use crate::{
     },
 };
 
-use super::elements::toggler;
+use super::elements::{removable_item, toggler};
 
 type Element<'a> = iced::Element<'a, Msg, Renderer<Theme>>;
 
 impl BumpApp {
     pub fn hotkeys_settings(&self) -> Element {
-        scrollable(
-            column![toggler(
-                "Enable hotkeys".to_owned(),
-                self.config.get_enable_hotkeys(),
-                |val| Msg::Conf(ConfMsg::EnableHotkeys(val))
-            ),]
-            .padding(Padding::from([5, 15])),
-        )
-        .into()
+        let mut col = column![toggler(
+            "Enable hotkeys".to_owned(),
+            self.config.get_enable_hotkeys(),
+            |val| Msg::Conf(ConfMsg::EnableHotkeys(val))
+        ),];
+
+        for (key, val) in self.config.get_hotkeys().iter() {
+            col = col.push(removable_item(format!("{key}: {val}"), Msg::Tick));
+        }
+
+        scrollable(col.padding(Padding::from([5, 15]))).into()
     }
 }

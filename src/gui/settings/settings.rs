@@ -154,7 +154,7 @@ impl BumpApp {
         .into()
     }
 
-    fn convert_to_duration(&self, dur: &str) -> Result<Duration> {
+    pub fn convert_to_duration(&self, dur: &str) -> Result<Duration> {
         if let Some(minute_sep) = dur.find(':') {
             if let Some(second_sep) = dur[minute_sep + 1..].find('.') {
                 let minutes: u64 = dur[..minute_sep].parse()?;

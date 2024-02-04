@@ -434,7 +434,7 @@ impl text_input::StyleSheet for Theme {
 
     fn active(&self, _style: &Self::Style) -> text_input::Appearance {
         text_input::Appearance {
-            background: Background::Color(BG_LIGHT),
+            background: Background::Color(Color::TRANSPARENT),
             border_radius: BorderRadius::from(6.),
             border_width: 0.,
             border_color: BG_LIGHT,
@@ -447,7 +447,7 @@ impl text_input::StyleSheet for Theme {
     }
 
     fn placeholder_color(&self, _style: &Self::Style) -> Color {
-        FG
+        FG_DARKER
     }
 
     fn value_color(&self, _style: &Self::Style) -> Color {
@@ -459,7 +459,7 @@ impl text_input::StyleSheet for Theme {
     }
 
     fn selection_color(&self, _style: &Self::Style) -> Color {
-        FG
+        OUTLINE
     }
 
     fn disabled(&self, style: &Self::Style) -> text_input::Appearance {

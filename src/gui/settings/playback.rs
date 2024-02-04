@@ -49,7 +49,7 @@ impl BumpApp {
                                         SettingsMsg::FadeSave
                                     )),
                             )
-                            .height(28)
+                            .height(30)
                             .padding(3)
                             .center_x()
                             .center_y(),
@@ -74,7 +74,7 @@ impl BumpApp {
                                         SettingsMsg::VolJumpSave
                                     )),
                             )
-                            .height(28)
+                            .height(30)
                             .padding(3)
                             .center_x()
                             .center_y(),
