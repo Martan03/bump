@@ -164,6 +164,7 @@ impl BumpApp {
             Ok(listener) => Some(listener),
             Err(_) => None,
         };
+        let settings = Settings::new(&config);
 
         let mut app = Self {
             player: Player::new(sender.clone(), &library, &config),
@@ -177,7 +178,7 @@ impl BumpApp {
             hard_pause: None,
             listener: Cell::new(listener),
             hotkeys: None,
-            settings: Default::default(),
+            settings,
         };
 
         app.enable_hotkeys(app.config.get_enable_hotkeys());

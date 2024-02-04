@@ -6,4 +6,8 @@ use super::SettingsPage;
 pub enum SettingsMsg {
     PickSearchPath,
     Page(SettingsPage),
+    Fade(String),
+    FadeSave,
+    VolJump(String),
+    VolJumpSave,
 }

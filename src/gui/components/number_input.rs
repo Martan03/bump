@@ -5,6 +5,7 @@ use iced::{
 
 #[derive(Debug, Clone)]
 /// [`NumberInput`] events
+#[allow(unused)]
 pub enum Event {
     InputChanged(String),
 }
@@ -15,6 +16,7 @@ pub struct NumberInput<Message> {
 }
 
 /// Creates new [`NumberInput`]
+#[allow(unused)]
 pub fn number_input<Message>(
     value: Option<u32>,
     on_change: impl Fn(Option<u32>) -> Message + 'static,

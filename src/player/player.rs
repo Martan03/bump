@@ -306,6 +306,18 @@ impl Player {
         self.set_playlist((0..library.count()).collect());
         self.find_current(id);
     }
+
+    /// Sets fade duration
+    pub fn fade(&mut self, fade: Duration) {
+        if let Err(e) = self.sinker.set_fade(fade) {
+            error!("Failed to set fade: {e}");
+        }
+    }
+
+    /// Sets player volume step
+    pub fn volume_step(&mut self, step: f32) {
+        self.volume_step = step;
+    }
 }
 
 ///>=======================================================================<///

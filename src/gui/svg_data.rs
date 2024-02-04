@@ -44,6 +44,9 @@ pub const PLUS: SvgData =
     SvgData::new(include_bytes!("../../assets/icons/add.svg"));
 */
 
+pub const TICK: SvgData =
+    SvgData::new(include_bytes!("../../assets/icons/tick.svg"));
+
 /// Gets play or pause icon based on play bool
 pub fn pp_icon(play: bool) -> Handle {
     if play {

@@ -1,5 +1,6 @@
-use std::path::PathBuf;
+use std::{path::PathBuf, time::Duration};
 
+use eyre::{Report, Result};
 use iced::{
     widget::{button, column, row, text},
     Command, Renderer,
@@ -8,7 +9,7 @@ use iced_core::{Length, Padding};
 use serde_derive::{Deserialize, Serialize};
 
 use crate::{
-    config::ConfMsg,
+    config::{ConfMsg, Config},
     gui::{
         app::{BumpApp, Msg},
         theme::{Button, Theme},
@@ -29,12 +30,38 @@ pub enum SettingsPage {
 
 pub struct Settings {
     page: SettingsPage,
+    pub fade: String,
+    pub vol_jmp: String,
+}
+
+impl Settings {
+    /// Creates new [`Settings`] struct
+    pub fn new(config: &Config) -> Self {
+        let fade_secs = config.get_fade().as_secs();
+        let fade_millis = config.get_fade().subsec_millis();
+        let fade = format!(
+            "{:02}:{:02}.{:02}",
+            fade_secs / 60,
+            fade_secs % 60,
+            fade_millis,
+        );
+
+        let vol_jmp = format!("{}", config.get_volume_step());
+
+        Self {
+            fade,
+            vol_jmp,
+            ..Default::default()
+        }
+    }
 }
 
 impl Default for Settings {
     fn default() -> Self {
         Self {
             page: SettingsPage::Library,
+            fade: "00:00.150".to_owned(),
+            vol_jmp: "0.1".to_owned(),
         }
     }
 }
@@ -65,6 +92,29 @@ impl BumpApp {
             }
             SettingsMsg::Page(page) => {
                 self.settings.page = page;
+                Command::none()
+            }
+            SettingsMsg::Fade(val) => {
+                self.settings.fade = val;
+                Command::none()
+            }
+            SettingsMsg::FadeSave => {
+                if let Ok(val) = self.convert_to_duration(&self.settings.fade)
+                {
+                    self.config.set_fade(val);
+                    self.player.fade(self.config.get_fade());
+                }
+                Command::none()
+            }
+            SettingsMsg::VolJump(val) => {
+                self.settings.vol_jmp = val;
+                Command::none()
+            }
+            SettingsMsg::VolJumpSave => {
+                if let Ok(val) = self.settings.vol_jmp.parse::<f32>() {
+                    self.config.set_volume_step(val);
+                    self.player.volume_step(self.config.get_volume_step());
+                }
                 Command::none()
             }
         }
@@ -102,6 +152,25 @@ impl BumpApp {
         ]
         .spacing(5)
         .into()
+    }
+
+    fn convert_to_duration(&self, dur: &str) -> Result<Duration> {
+        if let Some(minute_sep) = dur.find(':') {
+            if let Some(second_sep) = dur[minute_sep + 1..].find('.') {
+                let minutes: u64 = dur[..minute_sep].parse()?;
+                let seconds: u64 = dur
+                    [minute_sep + 1..minute_sep + second_sep + 1]
+                    .parse()?;
+                let milliseconds: u64 =
+                    dur[minute_sep + second_sep + 2..].parse()?;
+                let nanoseconds: u32 =
+                    format!("{:09}", milliseconds * 1_000_000).parse()?;
+
+                return Ok(Duration::new(minutes * 60 + seconds, nanoseconds));
+            }
+        }
+
+        Err(Report::msg("Invalid format"))
     }
 }
 

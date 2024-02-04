@@ -1,18 +1,20 @@
 use iced::{
-    widget::{column, scrollable},
+    widget::{column, container, row, scrollable, text, text_input},
     Renderer,
 };
-use iced_core::Padding;
+use iced_core::{Length, Padding};
 
 use crate::{
     config::ConfMsg,
     gui::{
         app::{BumpApp, Msg},
-        theme::Theme,
+        svg_data::TICK,
+        theme::{Text, Theme},
+        widgets::{hover_grad::HoverGrad, svg_button::SvgButton},
     },
 };
 
-use super::elements::toggler;
+use super::{elements::toggler, SettingsMsg};
 
 type Element<'a> = iced::Element<'a, Msg, Renderer<Theme>>;
 
@@ -26,15 +28,66 @@ impl BumpApp {
                     |val| Msg::Conf(ConfMsg::ShuffleCurrent(val))
                 ),
                 toggler(
-                    "Automatically start playing song on start".to_owned(),
+                    "Auto play on startup".to_owned(),
                     self.config.get_autoplay(),
                     |val| Msg::Conf(ConfMsg::Autoplay(val))
                 ),
                 toggler(
-                    "Play songs without gap between them".to_owned(),
+                    "Gapless playback".to_owned(),
                     self.config.get_gapless(),
                     |val| Msg::Conf(ConfMsg::Gapless(val))
                 ),
+                column![
+                    text("Fade play/pause:").style(Text::Normal),
+                    HoverGrad::new(
+                        row![
+                            container(
+                                SvgButton::new(TICK.into())
+                                    .width(15)
+                                    .height(15)
+                                    .on_press(Msg::Settings(
+                                        SettingsMsg::FadeSave
+                                    )),
+                            )
+                            .height(28)
+                            .padding(3)
+                            .center_x()
+                            .center_y(),
+                            text_input("Fade", &self.settings.fade).on_input(
+                                |val| Msg::Settings(SettingsMsg::Fade(val))
+                            )
+                        ]
+                        .into()
+                    )
+                    .height(Length::Shrink),
+                ]
+                .spacing(3),
+                column![
+                    text("Volume jump:").style(Text::Normal),
+                    HoverGrad::new(
+                        row![
+                            container(
+                                SvgButton::new(TICK.into())
+                                    .width(15)
+                                    .height(15)
+                                    .on_press(Msg::Settings(
+                                        SettingsMsg::VolJumpSave
+                                    )),
+                            )
+                            .height(28)
+                            .padding(3)
+                            .center_x()
+                            .center_y(),
+                            text_input("Fade", &self.settings.vol_jmp)
+                                .on_input(|val| Msg::Settings(
+                                    SettingsMsg::VolJump(val)
+                                ))
+                        ]
+                        .into()
+                    )
+                    .height(Length::Shrink),
+                ]
+                .spacing(3)
             ]
             .padding(Padding::from([5, 15])),
         )

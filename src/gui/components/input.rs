@@ -18,6 +18,7 @@ pub struct Input<Message> {
 }
 
 /// Creates new [`Input`]
+#[allow(unused)]
 pub fn input<Message>(
     placeholder: Option<String>,
     value: Option<String>,
