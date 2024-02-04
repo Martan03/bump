@@ -36,7 +36,7 @@ impl Hotkey {
             } else if let Some(c) = string_to_code(part) {
                 code = Some(c);
             } else {
-                return Err(Report::msg("Key no supported: {part}"));
+                return Err(Report::msg("Key not supported: {part}"));
             }
         }
 

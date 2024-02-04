@@ -9,7 +9,11 @@ use std::{
     time::Duration,
 };
 
-use crate::{generate_struct, gui::app::BumpApp, hotkeys::Hotkeys};
+use crate::{
+    generate_struct,
+    gui::app::BumpApp,
+    hotkeys::{Hotkey, Hotkeys},
+};
 
 use super::ConfMsg;
 
@@ -145,6 +149,12 @@ impl Config {
     /// Gets server address
     pub fn get_server_address(&self) -> String {
         format!("{}:{}", self.get_server_ip(), self.get_server_port())
+    }
+
+    /// Adds given hotkey to hotkeys
+    pub fn add_hotkey(&mut self, hotkey: Hotkey) {
+        self.hotkeys
+            .insert(hotkey.to_string(), hotkey.get_action().to_owned());
     }
 
     /// Resets all the settings to the default value

@@ -6,6 +6,7 @@ use iced::{
     Command, Renderer,
 };
 use iced_core::{Length, Padding};
+use log::error;
 use serde_derive::{Deserialize, Serialize};
 
 use crate::{
@@ -15,6 +16,7 @@ use crate::{
         theme::{Button, Theme},
         widgets::hover_grad::HoverGrad,
     },
+    hotkeys::Hotkey,
 };
 
 use super::SettingsMsg;
@@ -32,6 +34,7 @@ pub struct Settings {
     page: SettingsPage,
     pub fade: String,
     pub vol_jmp: String,
+    pub hotkey: String,
 }
 
 impl Settings {
@@ -62,6 +65,7 @@ impl Default for Settings {
             page: SettingsPage::Library,
             fade: "00:00.150".to_owned(),
             vol_jmp: "0.1".to_owned(),
+            hotkey: "".to_owned(),
         }
     }
 }
@@ -115,6 +119,14 @@ impl BumpApp {
                     self.config.set_volume_step(val);
                     self.player.volume_step(self.config.get_volume_step());
                 }
+                Command::none()
+            }
+            SettingsMsg::Hotkey(val) => {
+                self.settings.hotkey = val;
+                Command::none()
+            }
+            SettingsMsg::HotkeySave => {
+                _ = self.add_hotkey();
                 Command::none()
             }
         }
@@ -171,6 +183,23 @@ impl BumpApp {
         }
 
         Err(Report::msg("Invalid format"))
+    }
+
+    /// Adds given hotkeys
+    fn add_hotkey(&mut self) -> Result<()> {
+        let parts: Vec<&str> =
+            self.settings.hotkey.split(":").map(|p| p.trim()).collect();
+        let hk = parts.get(0).ok_or(Report::msg("Invalid format"))?;
+        let cmd = parts.get(1).ok_or(Report::msg("Invalid format"))?;
+        if let Ok(hotkey) =
+            Hotkey::new_from_str(hk.to_string(), cmd.to_string())
+        {
+            self.config.add_hotkey(hotkey);
+            Ok(())
+        } else {
+            error!("Error adding hotkey");
+            Err(Report::msg("Invalid format"))
+        }
     }
 }
 

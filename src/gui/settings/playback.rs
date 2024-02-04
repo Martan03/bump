@@ -53,7 +53,7 @@ impl BumpApp {
                             .padding(3)
                             .center_x()
                             .center_y(),
-                            text_input("Fade", &self.settings.fade).on_input(
+                            text_input("0.150", &self.settings.fade).on_input(
                                 |val| Msg::Settings(SettingsMsg::Fade(val))
                             )
                         ]
@@ -63,7 +63,7 @@ impl BumpApp {
                 ]
                 .spacing(3),
                 column![
-                    text("Volume jump:").style(Text::Normal),
+                    text("Volume step:").style(Text::Normal),
                     HoverGrad::new(
                         row![
                             container(
@@ -78,7 +78,7 @@ impl BumpApp {
                             .padding(3)
                             .center_x()
                             .center_y(),
-                            text_input("Fade", &self.settings.vol_jmp)
+                            text_input("0.1", &self.settings.vol_jmp)
                                 .on_input(|val| Msg::Settings(
                                     SettingsMsg::VolJump(val)
                                 ))

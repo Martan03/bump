@@ -10,4 +10,6 @@ pub enum SettingsMsg {
     FadeSave,
     VolJump(String),
     VolJumpSave,
+    Hotkey(String),
+    HotkeySave,
 }

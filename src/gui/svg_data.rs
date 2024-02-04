@@ -39,10 +39,8 @@ pub const SCROLL_DOWN: SvgData =
 
 pub const BIN: SvgData =
     SvgData::new(include_bytes!("../../assets/icons/bin.svg"));
-/*
 pub const PLUS: SvgData =
     SvgData::new(include_bytes!("../../assets/icons/add.svg"));
-*/
 
 pub const TICK: SvgData =
     SvgData::new(include_bytes!("../../assets/icons/tick.svg"));
