@@ -19,7 +19,7 @@ where
     F: Fn(bool) -> Msg + 'static,
 {
     HoverGrad::new(
-        Toggler::new(Some(text), val, move |val| msg(val))
+        Toggler::new(Some(text), val, msg)
             .width(Length::Shrink)
             .spacing(5)
             .into(),

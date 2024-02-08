@@ -24,11 +24,11 @@ impl Hotkey {
 
     /// Creates new [`Hotkey`] by given String
     pub fn new_from_str(hotkey: String, action: String) -> Result<Self> {
-        let parts = hotkey.split("+");
+        let parts = hotkey.split('+');
         let mut mods = Modifiers::empty();
         let mut code: Option<Code> = None;
         for part in parts {
-            let part = &part.to_lowercase().replace("-", "_");
+            let part = &part.to_lowercase().replace('-', "_");
             if let Some(modifier) = string_to_modifier(part) {
                 mods |= modifier;
             } else if code.is_some() {
@@ -69,8 +69,8 @@ impl ToString for Hotkey {
 impl Clone for Hotkey {
     fn clone(&self) -> Self {
         Self {
-            modifiers: self.modifiers.clone(),
-            code: self.code.clone(),
+            modifiers: self.modifiers,
+            code: self.code,
             action: self.action.clone(),
         }
     }

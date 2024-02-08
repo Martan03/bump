@@ -63,8 +63,8 @@ impl<Message> Component<Message, Renderer<Theme>> for Input<Message> {
         _state: &Self::State,
     ) -> Element<'_, Self::Event, Renderer<Theme>> {
         text_input(
-            self.placeholder.as_ref().map(|p| p.as_str()).unwrap_or(""),
-            self.value.as_ref().map(|v| v.as_str()).unwrap_or(""),
+            self.placeholder.as_deref().unwrap_or(""),
+            self.value.as_deref().unwrap_or(""),
         )
         .into()
     }

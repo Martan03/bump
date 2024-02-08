@@ -55,7 +55,7 @@ impl BumpApp {
 
     /// Create list header
     pub fn list_header(&self, numbered: bool) -> Element {
-        fn header_item<'a>(data: &'a str, fill: u16) -> Element<'a> {
+        fn header_item(data: &str, fill: u16) -> Element {
             TextEllipsis::new(data)
                 .width(Length::FillPortion(fill))
                 .style(Text::Darker)

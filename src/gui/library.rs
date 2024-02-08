@@ -38,7 +38,7 @@ impl BumpApp {
                         None
                     } else {
                         let style = match cur {
-                            Some(value) if value.to_owned() == c => Text::Prim,
+                            Some(value) if value == c => Text::Prim,
                             _ => Text::Default,
                         };
                         Some(self.list_item(s, style, c, None, true))

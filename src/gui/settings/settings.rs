@@ -188,8 +188,8 @@ impl BumpApp {
     /// Adds given hotkeys
     fn add_hotkey(&mut self) -> Result<()> {
         let parts: Vec<&str> =
-            self.settings.hotkey.split(":").map(|p| p.trim()).collect();
-        let hk = parts.get(0).ok_or(Report::msg("Invalid format"))?;
+            self.settings.hotkey.split(':').map(|p| p.trim()).collect();
+        let hk = parts.first().ok_or(Report::msg("Invalid format"))?;
         let cmd = parts.get(1).ok_or(Report::msg("Invalid format"))?;
         if let Ok(hotkey) =
             Hotkey::new_from_str(hk.to_string(), cmd.to_string())

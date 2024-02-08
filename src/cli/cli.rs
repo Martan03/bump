@@ -23,7 +23,7 @@ impl Cli {
 
     /// Parses given arguments
     pub fn parse(&mut self, args: Vec<String>) {
-        if let Some(arg) = args.get(0) {
+        if let Some(arg) = args.first() {
             match arg.as_str() {
                 "h" | "-h" | "--help" => self.help(),
                 "i" | "instance" => {

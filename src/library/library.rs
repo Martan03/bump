@@ -37,7 +37,7 @@ impl Library {
     /// Saves songs to the library
     pub fn save(&self, config: &Config) -> Result<()> {
         let path = config.get_library_path();
-        File::create(&path)?;
+        File::create(path)?;
 
         let text = serde_json::to_string::<Library>(self)?;
         fs::write(path, text)?;

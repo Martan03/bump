@@ -109,7 +109,7 @@ impl Player {
         };
 
         let path = config.get_player_path();
-        File::create(&path)?;
+        File::create(path)?;
 
         fs::write(path, serde_json::to_string::<PlayerSave>(&data)?)?;
 
@@ -185,7 +185,7 @@ impl Player {
             Some(current) => current,
             None => return,
         };
-        let id = self.playlist.get(current).map(|c| *c);
+        let id = self.playlist.get(current).copied();
 
         let mut rng = rand::thread_rng();
         self.playlist.shuffle(&mut rng);
@@ -242,7 +242,7 @@ impl Player {
         if self.get_current().is_none() || self.is_stopped() {
             return None;
         }
-        self.playlist.get(self.current.unwrap()).map(|id| *id)
+        self.playlist.get(self.current.unwrap()).copied()
     }
 
     /// Gets currently playing song
@@ -331,11 +331,11 @@ impl BumpApp {
                 self.player.play_pause(play);
                 self.hard_pause = None;
             }
-            PlayerMsg::Next(val) if self.player.get_playlist().len() > 0 => {
-                _ = self.player.next(val, &self.library)
+            PlayerMsg::Next(val) if !self.player.get_playlist().is_empty() => {
+                self.player.next(val, &self.library)
             }
-            PlayerMsg::Prev(val) if self.player.get_playlist().len() > 0 => {
-                _ = self.player.prev(val, &self.library)
+            PlayerMsg::Prev(val) if !self.player.get_playlist().is_empty() => {
+                self.player.prev(val, &self.library)
             }
             PlayerMsg::PlaySong(id, new) => {
                 if new {
@@ -352,9 +352,9 @@ impl BumpApp {
             PlayerMsg::SeekTo(time) => {
                 _ = self.player.seek_to(&self.library, time);
             }
-            PlayerMsg::SongEnd => _ = self.player.next(Some(1), &self.library),
-            PlayerMsg::Volume(vol) => _ = self.player.set_vol(vol),
-            PlayerMsg::Mute(mute) => _ = self.player.mute(mute),
+            PlayerMsg::SongEnd => self.player.next(Some(1), &self.library),
+            PlayerMsg::Volume(vol) => self.player.set_vol(vol),
+            PlayerMsg::Mute(mute) => self.player.mute(mute),
             PlayerMsg::Shuffle => self.player.shuffle(),
             PlayerMsg::VolumeUp(step) => self.player.volume_up(step),
             PlayerMsg::VolumeDown(step) => self.player.volume_down(step),
@@ -401,18 +401,16 @@ impl Player {
         self.try_load_song(lib, conf.get_autoplay());
         // Sets volume
         if self.get_mute() {
-            if let Err(_) = self.sinker.set_volume(0.) {
+            if self.sinker.set_volume(0.).is_err() {
                 self.set_mute(false);
             }
-        } else {
-            if let Err(_) = self.sinker.set_volume(self.get_volume()) {
-                self.set_volume(1.);
-            }
+        } else if self.sinker.set_volume(self.get_volume()).is_err() {
+            self.set_volume(1.);
         }
         // Sets fade length
         _ = self.sinker.set_fade(conf.get_fade());
         // Sets gapless playing
-        _ = self.sinker.set_gapless(conf.get_gapless());
+        self.sinker.set_gapless(conf.get_gapless());
         // Sets on song end function
         _ = self.sinker.song_end(move |info| match info {
             CallbackInfo::SourceEnded => {

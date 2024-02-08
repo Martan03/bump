@@ -31,7 +31,7 @@ fn main() -> Result<(), iced::Error> {
     // until it is fixed
     env::set_var("WINIT_UNIX_BACKEND", "x11");
 
-    if let Err(_) = init_logger() {
+    if init_logger().is_err() {
         eprintln!("Failed to start logger");
     }
 

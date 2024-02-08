@@ -47,7 +47,7 @@ impl Instance {
     /// Gets [`Msg`] by [`Instance`] action
     pub fn get_action_msg(action: &str) -> Option<Msg> {
         fn get_action_param(action: &str) -> Option<&str> {
-            let mut param = action.split("=");
+            let mut param = action.split('=');
             param.next();
             param.next()
         }
@@ -66,10 +66,8 @@ impl Instance {
             "prev" => Some(Msg::Plr(PlayerMsg::Prev(None))),
             s if s.starts_with("seek") || s.starts_with("seek-to") => {
                 let param = get_action_param(action).unwrap_or("");
-                match Instance::string_to_dur(param) {
-                    Some(dur) => Some(Msg::Plr(PlayerMsg::SeekTo(dur))),
-                    None => None,
-                }
+                Instance::string_to_dur(param)
+                    .map(|dur| Msg::Plr(PlayerMsg::SeekTo(dur)))
             }
             "vu" | "volume-up" => Some(Msg::Plr(PlayerMsg::VolumeUp(None))),
             s if s.starts_with("vu=") || s.starts_with("volume-up=") => {
@@ -170,13 +168,13 @@ impl Instance {
     fn string_to_dur(data: &str) -> Option<Duration> {
         let mut time = 0.;
         let base: f32 = 60.;
-        let parts: Vec<_> = data.split(":").collect();
+        let parts: Vec<_> = data.split(':').collect();
         let len = parts.len();
         if len > 3 {
             return None;
         }
-        for i in 0..len {
-            match parts[i].parse::<f32>() {
+        for (i, item) in parts.iter().enumerate().take(len) {
+            match item.parse::<f32>() {
                 Ok(val) => time += val * base.powf((len - i - 1) as f32),
                 Err(_) => return None,
             }

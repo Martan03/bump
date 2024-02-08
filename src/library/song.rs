@@ -112,9 +112,8 @@ impl Song {
     fn set_length_symph(&mut self) -> Result<()> {
         let file = File::open(&self.path)?;
         let symph = Symph::try_new(file, &Default::default())?;
-        match symph.get_time() {
-            Some(t) => self.length = t.total,
-            _ => {}
+        if let Some(t) = symph.get_time() {
+            self.length = t.total;
         }
         Ok(())
     }

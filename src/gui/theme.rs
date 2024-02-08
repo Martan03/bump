@@ -394,9 +394,7 @@ impl svg::StyleSheet for Theme {
     type Style = Svg;
 
     fn appearance(&self, style: &Self::Style) -> svg::Appearance {
-        match style {
-            _ => svg::Appearance::default(),
-        }
+        svg::Appearance::default()
     }
 }
 
@@ -610,7 +608,7 @@ impl list_view::StyleSheet for Theme {
         let square = list_view::SquareStyle {
             background: Background::Color(Color::TRANSPARENT),
             border: Color::TRANSPARENT,
-            border_thickness: 0.0.into(),
+            border_thickness: 0.0,
             border_radius: 6.0.into(),
         };
 
@@ -662,12 +660,7 @@ impl list_view::StyleSheet for Theme {
             _ => square,
         };
 
-        if pressed {
-            list_view::SquareStyle {
-                background: Background::Color(OUTLINE),
-                ..square
-            }
-        } else if pos == list_view::MousePos::DirectlyOver {
+        if pressed || pos == list_view::MousePos::DirectlyOver {
             list_view::SquareStyle {
                 background: Background::Color(OUTLINE),
                 ..square

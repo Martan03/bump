@@ -302,9 +302,9 @@ where
             toggler_style.foreground,
         );
 
-        let mut text_style = renderer::Style::default();
-        text_style.text_color =
-            theme.active(&self.style, self.is_toggled).text_color;
+        let text_style = iced_core::renderer::Style {
+            text_color: theme.active(&self.style, self.is_toggled).text_color,
+        };
         if let Some(label) = &self.label {
             let label_layout = children.next().unwrap();
 

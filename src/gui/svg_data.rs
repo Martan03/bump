@@ -77,8 +77,8 @@ impl SvgData {
     }
 }
 
-impl Into<Handle> for SvgData {
-    fn into(self) -> Handle {
-        Handle::from_memory(self.data)
+impl From<SvgData> for Handle {
+    fn from(value: SvgData) -> Self {
+        Handle::from_memory(value.data)
     }
 }

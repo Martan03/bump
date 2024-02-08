@@ -171,7 +171,7 @@ impl BumpApp {
             library,
             config,
             gui,
-            sender: sender,
+            sender,
             receiver: Cell::new(Some(receiver)),
             theme: Theme::default(),
             page: Page::Library,
@@ -183,7 +183,7 @@ impl BumpApp {
 
         app.enable_hotkeys(app.config.get_enable_hotkeys());
         if app.config.get_start_load() {
-            app.library.start_find(&mut app.config, app.sender.clone());
+            app.library.start_find(&app.config, app.sender.clone());
         }
         app
     }
