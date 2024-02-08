@@ -9,13 +9,20 @@ use iced::window::PlatformSpecific;
 use iced::Application;
 use iced::Settings;
 
+#[allow(clippy::module_inception)]
 mod cli;
+#[allow(clippy::module_inception)]
 mod config;
 mod core;
+#[allow(clippy::module_inception)]
 mod gui;
+#[allow(clippy::module_inception)]
 mod hotkeys;
+#[allow(clippy::module_inception)]
 mod library;
+#[allow(clippy::module_inception)]
 mod player;
+#[allow(clippy::module_inception)]
 mod server;
 
 fn main() -> Result<(), iced::Error> {
