@@ -314,7 +314,7 @@ where
         self
     }
 
-    pub fn from_layout_style(
+    pub fn conv_layout_style(
         mut self,
         style: &impl LayoutStyleSheet<<Renderer::Theme as StyleSheet>::Style>,
     ) -> Self {
@@ -772,6 +772,10 @@ where
             Behaviour::Disabled => false,
         };
 
+        if !draw_scroll {
+            return;
+        }
+
         self.draw_scrollbar(
             child,
             layout.bounds(),
@@ -779,7 +783,6 @@ where
             cursor,
             renderer,
             theme,
-            draw_scroll,
         );
     }
 
@@ -1133,7 +1136,6 @@ where
         cursor: mouse::Cursor,
         renderer: &mut Renderer,
         theme: &Renderer::Theme,
-        draw_scroll: bool,
     ) {
         // the childern.next will always be Some
         let view_size = self.pad_size(bounds.size());
@@ -1156,10 +1158,6 @@ where
                 MousePos::from_bools(mo_wrap, mo_scroll, mo_wrap),
             )
             .draw(renderer, bounds);
-
-        if !draw_scroll {
-            return;
-        }
 
         // draw the top scrollbar button
         let top_button = self.top_button_bounds(bounds);
